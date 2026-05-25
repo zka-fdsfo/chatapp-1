@@ -23,7 +23,6 @@ export const signup = async (name, email, password) => {
       name,
       email,
       password,
-     
     });
     return response.data;
   } catch (error) {
@@ -35,7 +34,7 @@ throw new Error(
 
 export const getallusers = async () => {
     try {
-        const response = await api.get("/auth/getallusers");
+        const response = await api.get("/users/allusers");
         return response.data;
     } catch (error) {
         throw new Error(
@@ -47,18 +46,17 @@ export const verifyaccessToken = async () => {
   try {
     const response = await api.get("/auth/verify-token");
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error(
   error.response?.data?.message || "unauthorized"
 );
   }
 }
+
 export const verifyrefreshToken = async () => {
   try {
  await api.get("/auth/refresh-token");
-  }
-  catch (error) {
+  } catch (error) {
     throw new Error(
   error.response?.data?.message || "unauthorized"
 );

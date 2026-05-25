@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import Session from "../model/session.model.js";
 import crypto from "crypto";
 export const authMiddleware = async (req, res, next) => {
-
   try {
     const accessToken = req.cookies.accessToken;
     
@@ -31,15 +30,14 @@ export const authMiddleware = async (req, res, next) => {
 
     req.user = session.userId;
     next();
-
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-
    return res.status(401).json({
       message: "Access token expired",
       expired: true,
    });
 }
+
     return res.status(401).json({
       message: "Invalid access token",
     });
@@ -53,12 +51,14 @@ export const refreshTokenMiddleware = async (req, res, next) => {
         if (!refreshToken) {
             return res.status(401).json({ message: "Unauthorized" });
         }   
+
         const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
         const session = await Session.findOne({ userId: decoded.id, valid: true });
 
         if (!session || !session.valid) {
             return res.status(401).json({ message: "Session expired" });
         }
+
         const newRefreshToken = jwt.sign(
             { id: session.userId },
             process.env.JWT_SECRET,
@@ -84,10 +84,7 @@ export const refreshTokenMiddleware = async (req, res, next) => {
         });
         req.user = session.userId;
         next();
-    }
-    catch (error) {
+    } catch (error) {
         return res.status(401).json({ message: "Invalid refresh token" });
     }
-
-
 }

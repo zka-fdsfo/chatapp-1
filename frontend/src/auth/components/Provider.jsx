@@ -12,6 +12,7 @@ const Provider = ({ children }) => {
             </div>
         );
     }   
+
     // 2. ONLY redirect AFTER loading is false
   if (!loading && !user && !authReady) {
     return <Navigate to="/login" replace />;

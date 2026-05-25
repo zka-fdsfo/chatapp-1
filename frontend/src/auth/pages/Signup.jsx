@@ -16,8 +16,9 @@ export default function SignupPage() {
       alert("Passwords do not match");
       return;
     }
+
     await handleSignup(name, email, password);
-    navigate("/login");
+    navigate("/");
   };
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4 py-10">
@@ -159,7 +160,6 @@ export default function SignupPage() {
                 Google
               </button>
 
-          
             </div>
 
             {/* Footer */}

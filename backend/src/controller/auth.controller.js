@@ -16,6 +16,7 @@ export const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
+
     // Hash the password
     const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -55,14 +56,18 @@ export const registerUser = async (req, res) => {
         expiresIn: "15m",
       },
     );
-    // Set token in cookie
+      // Set token in cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      //secure: process.env.NODE_ENV === "production",
+        secure: false,
+  sameSite: "lax",
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
+        secure: false,
+  sameSite: "lax",
     });
     const safeUser = {
       _id:newUser._id,
@@ -121,6 +126,7 @@ export const loginUser = async (req, res) => {
       if (!newSession) {
         return res.status(500).json({ message: "Failed to create session" });
       }
+
       accessToken = await jwt.sign(
         { id: existingUser._id, session: newSession._id },
         process.env.JWT_SECRET,
@@ -178,6 +184,7 @@ export const verifyTokenMiddleware = async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Unauthorized function user" });
     }
+
     const safeUser = {
       _id: user._id,
       name: user.name,
