@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
@@ -6,8 +6,10 @@ import MessageInput from "./MessageInput";
 
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
-
+import { createSocket } from "../Socket.IO/Socket.Io.js";
 const Chat = ({ selectedUser, setSelectedUser }) => {
+
+
   const {
     messages,
     fetchMessages,
@@ -21,6 +23,7 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
+ const [onlineUsers, setOnlineUsers] = useState([]);
 
   const currentUserId = user?._id;
 

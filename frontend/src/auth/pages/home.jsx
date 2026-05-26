@@ -8,22 +8,50 @@ import {
   Send,
 } from "lucide-react";
 import Chat from "../components/Chat";
-
+import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
 
 export default function UsersPage() {
+  
   const { fetchAllUsers, user } = useAuth();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedUser, setSelectedUser] = useState(null);
-
+  const socketRef = useRef();
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const currentUserId = user?._id || null;
 
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
+    // SOCKET.IO
+    // ================= SOCKET =================
+  useEffect(() => {
+  const socket = createSocket();
+  socketRef.current = socket;
 
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+
+    if (user?._id) {
+      socket.emit("online-user", user._id);
+    }
+  });
+
+  socket.on("online-users", (users) => {
+    setOnlineUsers(users);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected");
+  });
+
+  return () => {
+    socket.disconnect();
+    socketRef.current = null;
+  };
+}, [user?._id]);
   useEffect(() => {
     if (fetched.current) return;
 
@@ -47,6 +75,7 @@ export default function UsersPage() {
 
     loadUsers();
   }, []);
+
 
   return (
     <div className="h-screen bg-black flex overflow-hidden">
@@ -147,7 +176,7 @@ export default function UsersPage() {
                 cursor-pointer transition
                 ${
                   selectedUser?._id === userItem._id
-                    ? "bg-[#343434]"
+                    ? "bg-[#5e519b] px-4 py-3 rounded-2xl text-black font-semibold"
                     : "hover:bg-[#2b2b2b]"
                 }
 
@@ -173,9 +202,15 @@ export default function UsersPage() {
                       " (You)"}
                   </h2>
 
-                  <span className="text-xs text-green-400">
-                    Online
-                  </span>
+                 <span
+  className={`text-xs ${
+    onlineUsers.includes(userItem._id)
+      ? "text-green-500"
+      : "text-gray-200"
+  }`}
+>
+  {onlineUsers.includes(userItem._id) ? "Online" : "Offline"}
+</span>
 
                 </div>
 
@@ -198,11 +233,12 @@ export default function UsersPage() {
     flex-1
     h-screen
     overflow-hidden
+    bg-transparent
   "
 >
 
   {/* ================= BACKGROUNDS ================= */}
-  <div className="absolute inset-0 overflow-hidden">
+  <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/2a/80/d6/2a80d6b14706411e887e26b97064f3ed.jpg')] bg-cover bg-center">
 
     {/* BG 1 */}
     <div
@@ -227,7 +263,7 @@ export default function UsersPage() {
       className="absolute inset-0 bg-cover bg-center animate-fade3"
       style={{
         backgroundImage:
-          "url('https://i.pinimg.com/originals/3d/13/f0/3d13f01dc20ae47db6f6a30c604778d9.gif')",
+          "url('https://i.pinimg.com/originals/b2/e4/fc/b2e4fcb625fe5b31fb96eca51e85c416.gif')",
       }}
     />
 
@@ -243,7 +279,7 @@ export default function UsersPage() {
   </div>
 
   {/* ================= OVERLAY ================= */}
-  <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
+  <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
 
   {/* ================= CONTENT ================= */}
   <div className="relative z-10 h-full overflow-hidden">

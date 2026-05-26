@@ -17,7 +17,7 @@ const MessageInput = ({
   };
 
   return (
-    <div className="p-3 md:p-4 backdrop-blur-md">
+    <div className="p-3 md:p-4 ">
       <div
         className="
           flex items-center gap-3

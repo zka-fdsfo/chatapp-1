@@ -1,5 +1,5 @@
 import React from "react";
-
+import {  ChevronLeft } from 'lucide-react';
 const ChatHeader = ({ selectedUser, setSelectedUser }) => {
   return (
     <div className="h-[70px] md:h-[80px] bg-[#1b1b1b44] backdrop-blur-md px-4 md:px-6 flex items-center gap-3 border-b border-white/5">
@@ -9,7 +9,7 @@ const ChatHeader = ({ selectedUser, setSelectedUser }) => {
         onClick={() => setSelectedUser(null)}
         className="md:hidden text-white text-2xl"
       >
-        ←
+        <ChevronLeft size={28} />
       </button>
 
       {/* USER AVATAR */}
