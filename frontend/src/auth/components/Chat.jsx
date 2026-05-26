@@ -1,9 +1,18 @@
 import React from "react";
 
 import { useState, useEffect, useRef } from "react";
-import { Menu, Search, Archive, Send } from "lucide-react";
-import { Reply, Pencil, Copy, Trash2 } from "lucide-react";
-import Linkify from "react-linkify";
+
+
+import {
+  Send,
+  Reply,
+  Pencil,
+  Copy,
+  Trash2,
+  Check,
+  CheckCheck,
+} from "lucide-react";
+
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
 const Chat = ({ selectedUser, setSelectedUser }) => {
@@ -11,7 +20,7 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
     useMessage();
   const { user } = useAuth();
   const [messageText, setMessageText] = useState("");
-
+  const [replyMessage, setReplyMessage] = useState(null);
   const [menuMsg, setMenuMsg] = useState(null);
 
   const [editMsg, setEditMsg] = useState(null);
@@ -72,7 +81,7 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
     min-h-0
     overflow-y-auto
     px-6 py-4
-    space-y-4
+    space-y-4 scrollbar-none
   "
       >
         {/* ================= NO MESSAGE ================= */}
@@ -112,7 +121,7 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
                   } relative mb-1 px-2`}
                 >
                   {/* ================= MESSAGE WRAPPER ================= */}
-                  <div className="relative max-w-[82%] md:max-w-[430px]">
+                  <div className="relative max-w-[82%] md:max-w-[430px] mb-7">
                     {/* ================= MESSAGE BUBBLE ================= */}
                     <div
                       onClick={(e) => {
@@ -158,11 +167,15 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
                         {isMe && (
                           <span
                             className={`
-      text-[10px]
+      flex items-center
       ${msg.seen ? "text-sky-400" : "text-white/70"}
     `}
                           >
-                            ✓✓
+                            {msg.seen ? (
+                              <CheckCheck size={16} strokeWidth={2.5} />
+                            ) : (
+                              <Check size={16} strokeWidth={2.5} />
+                            )}
                           </span>
                         )}
                       </div>
@@ -176,8 +189,8 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
                     absolute
                     ${
                       isMe
-                        ? "-right-[6px] bottom-0 scale-x-[-1] text-[#8774e1] rotate-[329deg] top-[26px]"
-                        : "-left-[6px] bottom-0 text-[#212121] rotate-43  top-[26px]"
+                        ? "-right-[6px] bottom-0 scale-x-[-1] text-[#8774e1] rotate-[329deg] bottom-[-7px]"
+                        : "-left-[6px] bottom-0 text-[#212121] rotate-43  bottom-[-7px]"
                     }
                   `}
                       >
@@ -216,7 +229,7 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
         transition
       "
                         >
-                          <Reply size={18} strokeWidth={2.2} />
+                        <Reply size={18} strokeWidth={2.2} />
                           Reply
                         </button>
 
