@@ -11,9 +11,7 @@ export const login = async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
     return response.data;
   } catch (error) {
-    throw new Error(
-  error.response?.data?.message || "Login failed"
-);
+    throw new Error(error.response?.data?.message || "Login failed");
   }
 };
 
@@ -26,39 +24,82 @@ export const signup = async (name, email, password) => {
     });
     return response.data;
   } catch (error) {
-throw new Error(
-  error.response?.data?.message || "Login failed"
-);
+    throw new Error(error.response?.data?.message || "Login failed");
   }
 };
 
 export const getallusers = async () => {
-    try {
-        const response = await api.get("/users/allusers");
-        return response.data;
-    } catch (error) {
-        throw new Error(
-  error.response?.data?.message || "Login failed"
-);
-    }
+  try {
+    const response = await api.get("/users/allusers");
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Login failed");
+  }
 };
 export const verifyaccessToken = async () => {
   try {
     const response = await api.get("/auth/verify-token");
     return response.data;
   } catch (error) {
-    throw new Error(
-  error.response?.data?.message || "unauthorized"
-);
+    throw new Error(error.response?.data?.message || "unauthorized");
   }
-}
+};
 
 export const verifyrefreshToken = async () => {
   try {
- await api.get("/auth/refresh-token");
+    await api.get("/auth/refresh-token");
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "unauthorized");
+  }
+};
+
+export const getallchatusers = async (userId) => {
+  try {
+    const response = await api.get("/messages/chatusers", {
+      params: {
+        userId,
+      },
+    });
+
+    return response.data;
   } catch (error) {
     throw new Error(
-  error.response?.data?.message || "unauthorized"
-);
+      error.response?.data?.message || "Failed to fetch messages"
+    );
   }
-}
+};
+
+export const sendMessage = async (receiverId, content) => {
+  try {
+    const response = await api.post("/messages/send", {
+      receiver: receiverId,
+      text: content,
+    });
+    return response.data.data;
+  }
+    catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to send message"
+      );
+    }
+};
+
+export const markAsSeen = async (senderId) => {
+  try {
+
+    const response = await api.put(
+      "/messages/seen",
+      { senderId }
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    throw new Error(
+      error.response?.data?.message ||
+      "Failed to mark message as seen"
+    );
+
+  }
+};

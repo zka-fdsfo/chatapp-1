@@ -6,6 +6,7 @@ dotenv.config();
 import authRouter from "./router/auth.route.js";
 import cookieParser from "cookie-parser";
 import userRouter from "./router/user.route.js";
+import messageRouter from "./router/massage.route.js";
 import cors from 'cors';
 
 const app = express();
@@ -23,4 +24,5 @@ app.set("trust proxy", true);
 app.use("/api/auth", authRouter);
 
 app.use("/api/users", userRouter);
+app.use("/api/messages", messageRouter);
 export default app;
