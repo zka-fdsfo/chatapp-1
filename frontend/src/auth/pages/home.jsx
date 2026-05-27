@@ -305,6 +305,8 @@ export default function UsersPage() {
         <Chat
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
+          setOnlineUsers={setOnlineUsers}
+          onlineUsers={onlineUsers}
         />
       )}
 

@@ -41,7 +41,7 @@ const MessageBubble = ({
                     onClick={(e) => {
                         e.stopPropagation();
 
-                        setMenuMsg(menuMsg?._id === msg._id ? null : msg);
+                       setMenuMsg(menuMsg === msg._id ? null : msg._id);
                     }}
                     className={`
             relative px-3 pt-2 pb-1
@@ -88,21 +88,17 @@ const MessageBubble = ({
             `}
                     >
                         <span>{formatTime(msg.createdAt)}</span>
-
-                        {isMe && (
-                            <span
-                                className={`
-                  flex items-center
-                  ${msg.seen ? "text-sky-400" : "text-white/70"}
-                `}
-                            >
-                                {msg.seen ? (
-                                    <CheckCheck size={16} strokeWidth={2.5} />
-                                ) : (
-                                    <Check size={16} strokeWidth={2.5} />
-                                )}
-                            </span>
-                        )}
+{isMe && (
+  <span
+    className={
+      msg.seen
+        ? "text-sky-400"
+        : "text-white/50"
+    }
+  >
+    <CheckCheck size={16} />
+  </span>
+)}
                     </div>
 
                     {/* MESSAGE TAIL */}
@@ -126,7 +122,7 @@ const MessageBubble = ({
                 </div>
 
                 {/* POPUP MENU */}
-                {menuMsg?._id === msg._id && (
+                {menuMsg === msg._id && (
                     <div
                         className={`
               absolute z-50 

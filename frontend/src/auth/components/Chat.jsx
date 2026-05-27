@@ -1,4 +1,5 @@
-import React, { useEffect, useState ,useRef} from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
@@ -6,12 +7,18 @@ import MessageInput from "./MessageInput";
 
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
-import { createSocket } from "../Socket.IO/Socket.Io.js";
-const Chat = ({ selectedUser, setSelectedUser }) => {
 
+const Chat = ({
+  selectedUser,
+  setSelectedUser,
+  setOnlineUsers,
+  onlineUsers,
+}) => {
+  const socketRef = useRef(null);
 
   const {
     messages,
+    setMessages,
     fetchMessages,
     handleSendMessage,
     handleDeleteMessage,
@@ -23,16 +30,94 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
- const [onlineUsers, setOnlineUsers] = useState([]);
 
   const currentUserId = user?._id;
 
-  // FETCH MESSAGES
+  // ================= SOCKET INIT =================
+  useEffect(() => {
+    socketRef.current = io("http://localhost:5000", {
+      withCredentials: true,
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("🟢 Socket connected:", socketRef.current.id);
+    });
+
+    return () => socketRef.current.disconnect();
+  }, []);
+
+  // ================= ONLINE USER =================
+  useEffect(() => {
+    if (!user?._id || !socketRef.current) return;
+    socketRef.current.emit("online-user", user._id);
+  }, [user?._id]);
+
+  // ================= FETCH MESSAGES =================
   useEffect(() => {
     if (selectedUser?._id) {
       fetchMessages(selectedUser._id);
     }
-  }, [selectedUser]);
+  }, [selectedUser?._id]);
+
+  // ================= RECEIVE MESSAGE =================
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const handleReceiveMessage = (msg) => {
+      const isActiveChat =
+        msg.senderId === selectedUser?._id ||
+        msg.receiverId === selectedUser?._id;
+
+      if (!isActiveChat) return;
+
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === msg._id);
+        if (exists) return prev;
+        return [...prev, msg];
+      });
+    };
+
+    socketRef.current.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socketRef.current.off("receive_message", handleReceiveMessage);
+    };
+  }, [selectedUser?._id]);
+
+  // ================= SEEN / UNSEEN =================
+  useEffect(() => {
+    if (!socketRef.current || !messages.length) return;
+
+    const unseen = messages.filter(
+      (m) => m.receiverId === user?._id && !m.seen
+    );
+
+    unseen.forEach((msg) => {
+      socketRef.current.emit("message_seen", {
+        messageId: msg._id,
+        userId: user?._id,
+      });
+    });
+  }, [messages, selectedUser?._id, user?._id]);
+
+  // ================= LISTEN SEEN UPDATE =================
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const handleSeenUpdate = ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, seen: true } : msg
+        )
+      );
+    };
+
+    socketRef.current.on("message_seen_update", handleSeenUpdate);
+
+    return () => {
+      socketRef.current.off("message_seen_update", handleSeenUpdate);
+    };
+  }, []);
 
   if (!selectedUser) {
     return (
@@ -44,16 +129,16 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
 
   return (
     <div className="flex flex-col h-full">
-
-      {/* HEADER */}
       <ChatHeader
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
+        setOnlineUsers={setOnlineUsers}
+        onlineUsers={onlineUsers}
       />
 
-      {/* MESSAGES */}
       <MessageList
         messages={messages}
+        setMessages={setMessages}
         currentUserId={currentUserId}
         menuMsg={menuMsg}
         setMenuMsg={setMenuMsg}
@@ -62,14 +147,14 @@ const Chat = ({ selectedUser, setSelectedUser }) => {
         handleDeleteMessage={handleDeleteMessage}
       />
 
-      {/* INPUT */}
       <MessageInput
         messageText={messageText}
         setMessageText={setMessageText}
         selectedUser={selectedUser}
         handleSendMessage={handleSendMessage}
+        socketRef={socketRef}
+        user={user}
       />
-
     </div>
   );
 };

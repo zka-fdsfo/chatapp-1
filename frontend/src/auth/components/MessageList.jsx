@@ -20,9 +20,9 @@ const MessageList = ({
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   // FILTER VALID MESSAGES
-  const validMessages = messages.filter(
-    (msg) => msg && msg.text && msg.text.trim() !== "",
-  );
+const validMessages = messages.filter(
+  (msg) => msg && (msg.text || msg.message)
+);
 
   // AUTO SCROLL ON NEW MESSAGE
   useEffect(() => {
@@ -77,28 +77,33 @@ useEffect(() => {
       >
         {/* EMPTY STATE */}
         {validMessages.length === 0 ? (
-          <EmptyChat />
-        ) : (
-          validMessages.map((msg) => {
-            const senderId =
-              typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+  <EmptyChat />
+) : (
+  validMessages.map((msg) => {
+    const senderId =
+      typeof msg.sender === "object"
+        ? msg.sender._id
+        : msg.sender;
 
-            const isMe = senderId === currentUserId;
+    const isMe = senderId === currentUserId;
 
-            return (
-              <MessageBubble
-                key={msg._id}
-                msg={msg}
-                isMe={isMe}
-                menuMsg={menuMsg}
-                setMenuMsg={setMenuMsg}
-                setEditMsg={setEditMsg}
-                setEditText={setEditText}
-                handleDeleteMessage={handleDeleteMessage}
-              />
-            );
-          })
-        )}
+    return (
+      <MessageBubble
+        key={msg._id}
+        msg={{
+          ...msg,
+          text: msg.text || msg.message, // IMPORTANT FIX
+        }}
+        isMe={isMe}
+        menuMsg={menuMsg}
+        setMenuMsg={setMenuMsg}
+        setEditMsg={setEditMsg}
+        setEditText={setEditText}
+        handleDeleteMessage={handleDeleteMessage}
+      />
+    );
+  })
+)}
 
         {/* BOTTOM ANCHOR */}
         <div ref={bottomRef} />
