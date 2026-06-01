@@ -64,7 +64,7 @@ const SidebarPopup = ({ open, onClose , user}) => {
     backdrop-blur-3xl
     rounded-2xl
     overflow-hidden
-    shadow-[0_8px_40px_rgba(0,0,0,0.6)]
+   
     border border-white/5
     z-50
   "
