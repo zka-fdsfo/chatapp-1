@@ -163,22 +163,32 @@ const MessageBubble = ({
             )}
 
             {/* COPY */}
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(msg.text);
-                setMenuMsg(null);
-              }}
-              className="
-                w-full flex items-center gap-4
-                px-4 py-3
-                hover:bg-[#2b2b2b]
-                text-white text-sm
-                transition
-              "
-            >
-              <Copy size={18} strokeWidth={2.2} />
-              Copy
-            </button>
+           <button
+  onClick={async () => {
+    try {
+      await navigator.clipboard.writeText(msg.text);
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = msg.text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setMenuMsg(null);
+  }}
+  className="
+    w-full flex items-center gap-4
+    px-4 py-3
+    hover:bg-[#2b2b2b]
+    text-white text-sm
+    transition
+  "
+>
+  <Copy size={18} strokeWidth={2.2} />
+  Copy
+</button>
 
             {/* DELETE */}
             {isMe && (

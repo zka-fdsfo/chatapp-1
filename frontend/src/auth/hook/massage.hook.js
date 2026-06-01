@@ -10,7 +10,6 @@ import {
 } from "../services/auth.api.js";
 
 export const useMessage = () => {
-
   const [messages, setMessages] = useState([]);
 
   const [loadingMessages, setLoadingMessages] =
@@ -18,9 +17,7 @@ export const useMessage = () => {
 
   /* ================= FETCH MESSAGES ================= */
   const fetchMessages = async (userId) => {
-
     try {
-
       setLoadingMessages(true);
 
       const response =
@@ -30,18 +27,13 @@ export const useMessage = () => {
 
       /* MARK AS SEEN */
       await markAsSeen(userId);
-
     } catch (error) {
-
       console.error(
         "Fetch Messages Error:",
         error.message
       );
-
     } finally {
-
       setLoadingMessages(false);
-
     }
   };
 
@@ -50,11 +42,9 @@ export const useMessage = () => {
     receiverId,
     text
   ) => {
-
     if (!text.trim()) return;
 
     try {
-
       const newMessage =
         await sendMessage(
           receiverId,
@@ -66,19 +56,15 @@ export const useMessage = () => {
         ...prev,
         newMessage,
       ]);
-
     } catch (error) {
-
       console.error(
         "Send Message Error:",
         error.message
       );
-
     }
   };
 
   return {
-
     messages,
 
     setMessages,
@@ -88,6 +74,5 @@ export const useMessage = () => {
     fetchMessages,
 
     handleSendMessage,
-
   };
 };

@@ -109,13 +109,14 @@ export default function UsersPage() {
 
     w-full md:w-[350px]
     bg-[#1f1f1f]
+    bg-[url(https://i.pinimg.com/736x/6f/a1/ec/6fa1ec0538d9e2e49a26d85c23b9bbbe.jpg)]
     border-r border-zinc-800
     flex flex-col
-
+    scrollbar-x-hide
     transition-all
     duration-500
     ease-[cubic-bezier(0.22,1,0.36,1)]
-
+    
     ${selectedUser ? "-translate-x-full md:translate-x-0" : "translate-x-0"}
 
   `}
@@ -178,7 +179,7 @@ export default function UsersPage() {
         )}
 
         {/* USER LIST */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto  ">
           {!loading && users.length === 0 && (
             <div className="text-center text-zinc-500 mt-10">
               No users found
@@ -197,10 +198,11 @@ export default function UsersPage() {
                 className={`
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
+                scrollbar-hide
                 ${
                   selectedUser?._id === userItem._id
-                    ? "bg-[#5e519b]  px-4 py-3 rounded-2xl text-black font-semibold "
-                    : "hover:bg-[#2f0164]"
+                    ? "bg-[#8774e1]   px-4 py-3 rounded-2xl m-1 text-black font-semibold "
+                    : "hover:bg-[#2f016480] transition   rounded-2xl"
                 }
 
               `}
@@ -257,7 +259,7 @@ export default function UsersPage() {
                     className={`text-sm truncate ${
                       userItem.lastMessage?.text
                         ? "text-white font-semibold"
-                        : "text-zinc-400"
+                        : "text-zinc-200"
                     }`}
                   >
                     {userItem.lastMessage?.text ||
@@ -282,7 +284,7 @@ export default function UsersPage() {
   "
       >
         {/* ================= BACKGROUNDS ================= */}
-        <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/30/51/02/305102b782a2a2e82dd55e31ee9cc5cb.jpg')] bg-cover bg-center">
+        <div className="absolute inset-0 overflow-hidden bg-[url('https://images4.alphacoders.com/938/thumb-1920-938819.jpg')] bg-cover bg-center">
           {/* BG 1 */}
           <div
             className="absolute inset-0 bg-cover bg-center animate-fade1"
@@ -321,7 +323,7 @@ export default function UsersPage() {
         </div>
 
         {/* ================= OVERLAY ================= */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[0px]" />
 
         {/* ================= CONTENT ================= */}
         <div className="relative z-10 h-full overflow-hidden">

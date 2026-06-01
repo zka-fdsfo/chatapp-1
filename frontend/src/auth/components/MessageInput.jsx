@@ -1,5 +1,7 @@
-import React from "react";
-import { Send } from "lucide-react";
+import React, { useState } from "react";
+
+import { Send, Paperclip, Smile } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
 
 const MessageInput = ({
   messageText,
@@ -49,34 +51,117 @@ const sendMessage = () => {
 
   setMessageText("");
 };
-
+  const [showEmoji, setShowEmoji] = useState(false);
   return (
-    <div className="pb-2  lg:px-5 md:p-4 ">
-      <div className="flex items-center gap-2 rounded-full px-4 py-2">
+//   <div className="p-3 lg:px-20">
+//   <div className="flex items-center bg-[#1f1f1f] rounded-full px-4 py-3 gap-3">
 
-        {/* INPUT */}
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={messageText || ""}   // IMPORTANT FIX
-          onChange={(e) => setMessageText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") sendMessage();
-          }}
-          className="flex-1  outline-none text-white  bg-[#2a2a2a] p-3 rounded-2xl placeholder:text-zinc-400 pl-8"
-        />
-        
-        {/* SEND BUTTON */}
+//     <Smile
+//       size={22}
+//       className="text-zinc-400 cursor-pointer hover:text-white"
+//     />
+
+//     <textarea
+//   rows="1"
+//   value={messageText}
+//   onChange={(e) => {
+//     setMessageText(e.target.value);
+//     e.target.style.height = "auto";
+//     e.target.style.height = `${e.target.scrollHeight}px`;
+//   }}
+//   className="
+//     flex-1
+//     bg-transparent
+//     text-white
+//     outline-none
+//     resize-none
+//     max-h-32
+//     overflow-y-auto
+//   "
+// />
+
+//     <Paperclip
+//       size={22}
+//       className="text-zinc-400 cursor-pointer hover:text-white"
+//     />
+
+//     <button onClick={sendMessage}>
+//       <Send
+//         size={24}
+//         className="text-[#8774e1] hover:text-[#9d8cff]"
+//       />
+//     </button>
+
+//   </div>
+// </div>
+ <div className="p-3 lg:px-20 relative">
+      {/* Emoji Picker */}
+      {showEmoji && (
+        <div className="absolute bottom-20 left-4 z-50">
+          <EmojiPicker
+            onEmojiClick={(emojiData) => {
+              setMessageText((prev) => prev + emojiData.emoji);
+              setShowEmoji(false);
+            }}
+            theme="dark"
+          />
+        </div>
+      )}
+
+      {/* Input Bar */}
+      <div className="flex items-end bg-[#1f1f1f] rounded-full px-4 py-3 gap-3">
+        {/* Emoji Button */}
         <button
-          onClick={sendMessage}
-          className="text-gray-200 hover:text-white bg-indigo-500 p-2.5 rounded-2xl "
+          onClick={() => setShowEmoji((prev) => !prev)}
+          className="text-zinc-400 hover:text-white transition"
         >
-          <Send size={22} />
+          <Smile size={22} />
         </button>
 
+        {/* Text Area */}
+        <textarea
+          rows="1"
+          placeholder="Message"
+          value={messageText || ""}
+          onChange={(e) => {
+            setMessageText(e.target.value);
+
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          className="
+            flex-1
+            bg-transparent
+            text-white
+            placeholder:text-zinc-500
+            outline-none
+            resize-none
+            max-h-32
+            overflow-y-auto
+          "
+        />
+
+        {/* Attachment */}
+        <button className="text-zinc-400 hover:text-white transition">
+          <Paperclip size={22} />
+        </button>
+
+        {/* Send Button */}
+        <button
+          onClick={sendMessage}
+          className="text-[#8774e1] hover:text-[#9d8cff] transition"
+        >
+          <Send size={24} />
+        </button>
       </div>
     </div>
-  );
+);
 };
 
 export default MessageInput;
