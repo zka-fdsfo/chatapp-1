@@ -1,18 +1,12 @@
 // UsersPage.jsx
 
 import { useState, useEffect, useRef } from "react";
-import {
-  Menu,
-  Search,
-  Archive,
-  Send,
-} from "lucide-react";
+import { Menu, Search, Archive, Send } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
 
 export default function UsersPage() {
-  
   const { fetchAllUsers, user } = useAuth();
 
   const [users, setUsers] = useState([]);
@@ -25,33 +19,33 @@ export default function UsersPage() {
 
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
-    // SOCKET.IO
-    // ================= SOCKET =================
+  // SOCKET.IO
+  // ================= SOCKET =================
   useEffect(() => {
-  const socket = createSocket();
-  socketRef.current = socket;
+    const socket = createSocket();
+    socketRef.current = socket;
 
-  socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
 
-    if (user?._id) {
-      socket.emit("online-user", user._id);
-    }
-  });
+      if (user?._id) {
+        socket.emit("online-user", user._id);
+      }
+    });
 
-  socket.on("online-users", (users) => {
-    setOnlineUsers(users);
-  });
+    socket.on("online-users", (users) => {
+      setOnlineUsers(users);
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected");
-  });
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
 
-  return () => {
-    socket.disconnect();
-    socketRef.current = null;
-  };
-}, [user?._id]);
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [user?._id]);
   useEffect(() => {
     if (fetched.current) return;
 
@@ -76,14 +70,12 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
-
   return (
     <div className="h-screen bg-black flex overflow-hidden">
-
       {/* SIDEBAR */}
-     {/* SIDEBAR */}
-<div
-  className={`
+      {/* SIDEBAR */}
+      <div
+        className={`
     absolute md:relative inset-y-0 left-0 z-20
 
     w-full md:w-[350px]
@@ -95,23 +87,17 @@ export default function UsersPage() {
     duration-500
     ease-[cubic-bezier(0.22,1,0.36,1)]
 
-    ${
-      selectedUser
-        ? "-translate-x-full md:translate-x-0"
-        : "translate-x-0"
-    }
-  `}
->
+    ${selectedUser ? "-translate-x-full md:translate-x-0" : "translate-x-0"}
 
+  `}
+      >
         {/* TOP */}
         <div className="p-4 flex items-center gap-4">
-
           <button className="text-zinc-300 hover:text-white">
             <Menu size={24} />
           </button>
 
           <div className="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 flex items-center gap-3">
-
             <Search size={18} className="text-zinc-400" />
 
             <input
@@ -119,7 +105,6 @@ export default function UsersPage() {
               placeholder="Search"
               className="bg-transparent outline-none text-white w-full placeholder:text-zinc-400"
             />
-
           </div>
         </div>
 
@@ -152,14 +137,11 @@ export default function UsersPage() {
 
         {/* LOADING */}
         {loading && (
-          <div className="text-center text-zinc-400 mt-4">
-            Loading users...
-          </div>
+          <div className="text-center text-zinc-400 mt-4">Loading users...</div>
         )}
 
         {/* USER LIST */}
         <div className="flex-1 overflow-y-auto">
-
           {!loading && users.length === 0 && (
             <div className="text-center text-zinc-500 mt-10">
               No users found
@@ -167,7 +149,6 @@ export default function UsersPage() {
           )}
 
           {users.map((userItem) => (
-
             <div
               key={userItem._id}
               onClick={() => setSelectedUser(userItem)}
@@ -182,111 +163,122 @@ export default function UsersPage() {
 
               `}
             >
-
               {/* Avatar */}
-              <img
+              {/* <img
                 src={`https://ui-avatars.com/api/?name=${userItem.name}&background=6366f1&color=fff`}
                 alt={userItem.name}
-                className="w-12 h-12 rounded-full object-cover border-2 border-indigo-500"
-              />
+                className={`w-12 h-12 rounded-full object-cover ${
+                  onlineUsers.includes(userItem._id)
+                    ? "border-[#00d652] border-4"
+                    : "border-[#5e519b] border-2"
+                }`}
+              /> */}
+              <div className="relative">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${userItem.name}&background=6366f1&color=fff`}
+                  alt={userItem.name}
+                  className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
+                  onlineUsers.includes(userItem._id)
+                    ? "border-[#00d652] border-"
+                    : "border-[#5e519b] border-0"
+                } `}
+                />
 
+                {/* ONLINE DOT */}
+                {onlineUsers.includes(userItem._id) && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
+                )}
+                {!onlineUsers.includes(userItem._id) && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#646464]  border-2  rounded-full" />
+                )}
+              </div>
               {/* User Info */}
               <div className="flex-1 min-w-0">
-
                 <div className="flex justify-between items-start">
-
                   <h2 className="text-white font-semibold truncate">
                     {userItem.name}
 
-                    {userItem._id === currentUserId &&
-                      " (You)"}
+                    {userItem._id === currentUserId && " (You)"}
                   </h2>
 
-                 <span
-  className={`text-xs ${
-    onlineUsers.includes(userItem._id)
-      ? "text-green-500"
-      : "text-gray-200"
-  }`}
->
-  {onlineUsers.includes(userItem._id) ? "Online" : "Offline"}
-</span>
-
+                  <span
+                    className={`text-xs ${
+                      onlineUsers.includes(userItem._id)
+                        ? "text-white font-medium"
+                        : "text-[#646464] font-normal"
+                    }`}
+                  >
+                    {onlineUsers.includes(userItem._id) ? "Online" : "Offline"}
+                  </span>
                 </div>
 
                 <p className="text-zinc-400 text-sm truncate">
                   {userItem.email}
                 </p>
-
               </div>
-
             </div>
           ))}
         </div>
       </div>
 
-     {/* RIGHT SIDE */}
-{/* RIGHT SIDE */}
-<div
-  className="
+      {/* RIGHT SIDE */}
+      {/* RIGHT SIDE */}
+      <div
+        className="
     relative
     flex-1
     h-screen
     overflow-hidden
     bg-transparent
   "
->
+      >
+        {/* ================= BACKGROUNDS ================= */}
+        <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/2a/80/d6/2a80d6b14706411e887e26b97064f3ed.jpg')] bg-cover bg-center">
+          {/* BG 1 */}
+          <div
+            className="absolute inset-0 bg-cover bg-center animate-fade1"
+            style={{
+              backgroundImage:
+                "url('https://i.pinimg.com/originals/e1/b2/0d/e1b20d0e294cf31988a2b0430eb0e105.gif')",
+            }}
+          />
 
-  {/* ================= BACKGROUNDS ================= */}
-  <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/2a/80/d6/2a80d6b14706411e887e26b97064f3ed.jpg')] bg-cover bg-center">
+          {/* BG 2 */}
+          <div
+            className="absolute inset-0 bg-cover bg-center animate-fade2"
+            style={{
+              backgroundImage:
+                "url('https://i.pinimg.com/originals/5c/25/73/5c25734971c2c39c85b071e2966e9427.gif')",
+            }}
+          />
 
-    {/* BG 1 */}
-    <div
-      className="absolute inset-0 bg-cover bg-center animate-fade1"
-      style={{
-        backgroundImage:
-          "url('https://i.pinimg.com/originals/e1/b2/0d/e1b20d0e294cf31988a2b0430eb0e105.gif')",
-      }}
-    />
+          {/* BG 3 */}
+          <div
+            className="absolute inset-0 bg-cover bg-center animate-fade3"
+            style={{
+              backgroundImage:
+                "url('https://i.pinimg.com/originals/b2/e4/fc/b2e4fcb625fe5b31fb96eca51e85c416.gif')",
+            }}
+          />
 
-    {/* BG 2 */}
-    <div
-      className="absolute inset-0 bg-cover bg-center animate-fade2"
-      style={{
-        backgroundImage:
-          "url('https://i.pinimg.com/originals/5c/25/73/5c25734971c2c39c85b071e2966e9427.gif')",
-      }}
-    />
+          {/* BG 4 */}
+          <div
+            className="absolute inset-0 bg-cover bg-center animate-fade4"
+            style={{
+              backgroundImage:
+                "url('https://i.pinimg.com/originals/33/49/39/334939188944f723f4b82c22e98b1ff8.gif')",
+            }}
+          />
+        </div>
 
-    {/* BG 3 */}
-    <div
-      className="absolute inset-0 bg-cover bg-center animate-fade3"
-      style={{
-        backgroundImage:
-          "url('https://i.pinimg.com/originals/b2/e4/fc/b2e4fcb625fe5b31fb96eca51e85c416.gif')",
-      }}
-    />
+        {/* ================= OVERLAY ================= */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
 
-    {/* BG 4 */}
-    <div
-      className="absolute inset-0 bg-cover bg-center animate-fade4"
-      style={{
-        backgroundImage:
-          "url('https://i.pinimg.com/originals/55/e8/af/55e8af23ff4e1055efd3605624dceb66.gif')",
-      }}
-    />
-
-  </div>
-
-  {/* ================= OVERLAY ================= */}
-  <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
-
-  {/* ================= CONTENT ================= */}
-  <div className="relative z-10 h-full overflow-hidden">
-
-    {/* ================= CHAT SCREEN ================= */}
-    <div
-      className={`
+        {/* ================= CONTENT ================= */}
+        <div className="relative z-10 h-full overflow-hidden">
+          {/* ================= CHAT SCREEN ================= */}
+          <div
+            className={`
         absolute inset-0 h-full
 
         transition-all
@@ -298,23 +290,22 @@ export default function UsersPage() {
             ? "translate-x-0 opacity-100"
             : "translate-x-full opacity-0 pointer-events-none"
         }
+
       `}
-    >
+          >
+            {selectedUser && (
+              <Chat
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+                setOnlineUsers={setOnlineUsers}
+                onlineUsers={onlineUsers}
+              />
+            )}
+          </div>
 
-      {selectedUser && (
-        <Chat
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-          setOnlineUsers={setOnlineUsers}
-          onlineUsers={onlineUsers}
-        />
-      )}
-
-    </div>
-
-    {/* ================= DEFAULT SCREEN ================= */}
-    <div
-      className={`
+          {/* ================= DEFAULT SCREEN ================= */}
+          <div
+            className={`
         absolute inset-0 h-full
 
         flex items-center justify-center p-6
@@ -328,32 +319,23 @@ export default function UsersPage() {
             ? "-translate-x-full opacity-0"
             : "translate-x-0 opacity-100"
         }
+
       `}
-    >
+          >
+            <div className="text-center">
+              <Send size={70} className="text-blue-500 mx-auto mb-4" />
 
-      <div className="text-center">
+              <h1 className="text-3xl md:text-5xl font-bold text-white">
+                Zello Chat App
+              </h1>
 
-        <Send
-          size={70}
-          className="text-blue-500 mx-auto mb-4"
-        />
-
-        <h1 className="text-3xl md:text-5xl font-bold text-white">
-          Zello Chat App
-        </h1>
-
-        <p className="text-zinc-300 mt-3 text-sm md:text-base">
-          Select a chat to start messaging
-        </p>
-
+              <p className="text-zinc-300 mt-3 text-sm md:text-base">
+                Select a chat to start messaging
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-    </div>
-
-  </div>
-
-</div>
-
     </div>
   );
 }

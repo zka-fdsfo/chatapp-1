@@ -20,12 +20,12 @@ const ChatHeader = ({ selectedUser, setSelectedUser, onlineUsers }) => {
         <img
           src={`https://ui-avatars.com/api/?name=${selectedUser?.name}&background=6366f1&color=fff`}
           alt={selectedUser?.name}
-          className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-indigo-500 object-cover"
+          className="w-11 h-11 md:w-12 md:h-12 rounded-full  border-indigo-500 object-cover"
         />
 
         {/* ONLINE DOT */}
         {isOnline && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1b1b1b] rounded-full" />
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
         )}
       </div>
 
@@ -35,7 +35,7 @@ const ChatHeader = ({ selectedUser, setSelectedUser, onlineUsers }) => {
           {selectedUser?.name}
         </h1>
 
-        <p className={`text-xs md:text-sm ${isOnline ? "text-green-400" : "text-white/50"}`}>
+        <p className={`text-xs md:text-sm ${isOnline ? "text-white font-medium" : "text-white/50"}`}>
           {isOnline ? "Online" : "Offline"}
         </p>
       </div>

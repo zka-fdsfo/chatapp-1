@@ -93,7 +93,7 @@ const Chat = ({
     );
 
     unseen.forEach((msg) => {
-      socketRef.current.emit("message_seen", {
+      socketRef.current.emit("message_seen_update", {
         messageId: msg._id,
         userId: user?._id,
       });
