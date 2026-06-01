@@ -5,13 +5,13 @@ import { Menu, Search, Archive, Send } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
-
+import SidebarPopup from "../components/SidebarPopup.jsx";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  console.log("Current user:", user.name, user._id);
   const [selectedUser, setSelectedUser] = useState(null);
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -71,35 +71,34 @@ export default function UsersPage() {
   }, []);
 
   const avatarColors = {
-  A: "ef4444",
-  B: "f97316",
-  C: "eab308",
-  D: "22c55e",
-  E: "06b6d4",
-  F: "3b82f6",
-  G: "6366f1",
-  H: "8b5cf6",
-  I: "d946ef",
-  J: "ec4899",
-  K: "14b8a6",
-  L: "84cc16",
-  M: "f59e0b",
-  N: "ef4444",
-  O: "10b981",
-  P: "0ea5e9",
-  Q: "8b5cf6",
-  R: "a855f7",
-  S: "f43f5e",
-  T: "f97316",
-  U: "22c55e",
-  V: "06b6d4",
-  W: "3b82f6",
-  X: "6366f1",
-  Y: "8b5cf6",
-  Z: "0092ff",
-};
-const firstLetter = [null, undefined].includes(user?.name) ? "A" : user.name.charAt(0).toUpperCase();
-const bgColor = avatarColors[firstLetter] || "6366f1";
+    A: "ef4444",
+    B: "f97316",
+    C: "eab308",
+    D: "22c55e",
+    E: "06b6d4",
+    F: "3b82f6",
+    G: "6366f1",
+    H: "8b5cf6",
+    I: "d946ef",
+    J: "ec4899",
+    K: "14b8a6",
+    L: "84cc16",
+    M: "f59e0b",
+    N: "ef4444",
+    O: "10b981",
+    P: "0ea5e9",
+    Q: "8b5cf6",
+    R: "a855f7",
+    S: "f43f5e",
+    T: "f97316",
+    U: "22c55e",
+    V: "06b6d4",
+    W: "3b82f6",
+    X: "6366f1",
+    Y: "8b5cf6",
+    Z: "0092ff",
+  };
+  const [showMenu, setShowMenu] = useState(false);
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -123,7 +122,10 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
       >
         {/* TOP */}
         <div className="p-4 flex items-center gap-4">
-          <button className="text-zinc-300 hover:text-white">
+          <button
+            className="text-zinc-300 hover:text-white"
+            onClick={() => setShowMenu(true)}
+          >
             <Menu size={24} />
           </button>
 
@@ -137,7 +139,8 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
             />
           </div>
         </div>
-
+        {/* Outside the button */}
+        <SidebarPopup  open={showMenu} user={user.name} onClose={() => setShowMenu(false)} />
         {/* ARCHIVE */}
         {/* <div className="px-2 pb-2">
 
@@ -178,14 +181,16 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
             </div>
           )}
 
-          {users.map((userItem) => { 
-            const firstLetter = [null, undefined].includes(userItem.name) ? "A" : userItem.name.charAt(0).toUpperCase();
+          {users.map((userItem) => {
+            const firstLetter = [null, undefined].includes(userItem.name)
+              ? "A"
+              : userItem.name.charAt(0).toUpperCase();
             const bgColor = avatarColors[firstLetter] || "6366f1";
             return (
-            <div
-              key={userItem._id}
-              onClick={() => setSelectedUser(userItem)}
-              className={`
+              <div
+                key={userItem._id}
+                onClick={() => setSelectedUser(userItem)}
+                className={`
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
                 ${
@@ -195,9 +200,9 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
                 }
 
               `}
-            >
-              {/* Avatar */}
-              {/* <img
+              >
+                {/* Avatar */}
+                {/* <img
                 src={`https://ui-avatars.com/api/?name=${userItem.name}&background=6366f1&color=fff`}
                 alt={userItem.name}
                 className={`w-12 h-12 rounded-full object-cover ${
@@ -206,49 +211,51 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
                     : "border-[#5e519b] border-2"
                 }`}
               /> */}
-              <div className="relative">
-                <img
-                  src={`https://ui-avatars.com/api/?name=${userItem.name}&background=${bgColor}&color=fff`}
-                  alt={userItem.name}
-                  className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
-                  onlineUsers.includes(userItem._id)
-                    ? "border-[#00d652] border-"
-                    : "border-[#5e519b] border-0"
-                } `}
-                />
-
-                {/* ONLINE DOT */}
-                {onlineUsers.includes(userItem._id) && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
-                )}
-             
-              </div>
-              {/* User Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h2 className="text-white font-semibold truncate">
-                    {userItem.name}
-
-                    {userItem._id === currentUserId && " (You)"}
-                  </h2>
-
-                  <span
-                    className={`text-xs ${
+                <div className="relative">
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${userItem.name}&background=${bgColor}&color=fff`}
+                    alt={userItem.name}
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
                       onlineUsers.includes(userItem._id)
-                        ? "text-white font-medium"
-                        : "text-[#646464] font-normal"
-                    }`}
-                  >
-                    {onlineUsers.includes(userItem._id) ? "Online" : "Offline"}
-                  </span>
-                </div>
+                        ? "border-[#00d652] border-"
+                        : "border-[#5e519b] border-0"
+                    } `}
+                  />
 
-                <p className="text-zinc-400 text-sm truncate">
-                  {userItem.email}
-                </p>
+                  {/* ONLINE DOT */}
+                  {onlineUsers.includes(userItem._id) && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
+                  )}
+                </div>
+                {/* User Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-white font-semibold truncate">
+                      {userItem.name}
+
+                      {userItem._id === currentUserId && " (You)"}
+                    </h2>
+
+                    <span
+                      className={`text-xs ${
+                        onlineUsers.includes(userItem._id)
+                          ? "text-white font-medium"
+                          : "text-[#646464] font-normal"
+                      }`}
+                    >
+                      {onlineUsers.includes(userItem._id)
+                        ? "Online"
+                        : "Offline"}
+                    </span>
+                  </div>
+
+                  <p className="text-zinc-400 text-sm truncate">
+                    {userItem.email}
+                  </p>
+                </div>
               </div>
-            </div>
-)})}
+            );
+          })}
         </div>
       </div>
 

@@ -8,9 +8,36 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-const SidebarPopup = ({ open, onClose }) => {
+const SidebarPopup = ({ open, onClose , user}) => {
   if (!open) return null;
-
+      const avatarColors = {
+    A: "ef4444",
+    B: "f97316",
+    C: "eab308",
+    D: "22c55e",
+    E: "06b6d4",
+    F: "3b82f6",
+    G: "6366f1",
+    H: "8b5cf6",
+    I: "d946ef",
+    J: "ec4899",
+    K: "14b8a6",
+    L: "84cc16",
+    M: "f59e0b",
+    N: "ef4444",
+    O: "10b981",
+    P: "0ea5e9",
+    Q: "8b5cf6",
+    R: "a855f7",
+    S: "f43f5e",
+    T: "f97316",
+    U: "22c55e",
+    V: "06b6d4",
+    W: "3b82f6",
+    X: "6366f1",
+    Y: "8b5cf6",
+    Z: "0092ff",
+  };
   const menuItems = [
     { icon: Plus, text: "Add Account" },
     { icon: User, text: "My Profile" },
@@ -29,18 +56,30 @@ const SidebarPopup = ({ open, onClose }) => {
       />
 
       {/* Menu */}
-      <div className="fixed top-4 left-4 w-[300px] bg-[#1f1f1f]/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl z-50 border border-white/10">
+      <div
+  className=" scale-3d-0 scale-70 animate-scaleIn
+    fixed top-[-15px] left-[-18px]
+    w-[270px]
+    bg-[#181818]/20
+    backdrop-blur-3xl
+    rounded-2xl
+    overflow-hidden
+    shadow-[0_8px_40px_rgba(0,0,0,0.6)]
+    border border-white/5
+    z-50
+  "
+>
 
         {/* Profile Header */}
         <div className="flex items-center gap-3 p-4">
           <img
-            src="https://ui-avatars.com/api/?name=Mullick+Zaid+Khan&background=111827&color=fff"
+            src={`https://ui-avatars.com/api/?name=${user}&background=${avatarColors[user.charAt(0).toUpperCase()] || "6366f1"}&color=fff`}
             alt=""
             className="w-11 h-11 rounded-full"
           />
 
           <h2 className="font-semibold text-white text-lg">
-            Mullick Zaid Khan
+            {user}
           </h2>
         </div>
 
