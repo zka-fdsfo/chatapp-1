@@ -23,7 +23,7 @@ const MessageList = ({
 const validMessages = messages.filter(
   (msg) => msg && (msg.text || msg.message)
 );
-
+  
   // AUTO SCROLL ON NEW MESSAGE
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

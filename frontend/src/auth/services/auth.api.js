@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "http://192.168.99.196:5000/api",
   withCredentials: true,
 });
 
@@ -76,8 +76,7 @@ export const sendMessage = async (receiverId, content) => {
       text: content,
     });
     return response.data.data;
-  }
-    catch (error) {
+  } catch (error) {
       throw new Error(
         error.response?.data?.message || "Failed to send message"
       );
@@ -86,20 +85,16 @@ export const sendMessage = async (receiverId, content) => {
 
 export const markAsSeen = async (senderId) => {
   try {
-
     const response = await api.put(
       "/messages/seen",
       { senderId }
     );
 
     return response.data;
-
   } catch (error) {
-
     throw new Error(
       error.response?.data?.message ||
       "Failed to mark message as seen"
     );
-
   }
 };

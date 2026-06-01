@@ -35,7 +35,7 @@ const Chat = ({
 
   // ================= SOCKET INIT =================
   useEffect(() => {
-    socketRef.current = io("http://localhost:5000", {
+    socketRef.current = io("http://192.168.99.196:5000", {
       withCredentials: true,
     });
 

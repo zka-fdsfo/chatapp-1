@@ -46,28 +46,27 @@ const MessageBubble = ({
                 ? "bg-[#8774e1] text-white rounded-br-md p-3 pb-2"
                 : "bg-[#212121] text-white rounded-bl-md p-3 pb-2"
             }
+
           `}
         >
           {/* MESSAGE TEXT */}
           <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
             {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
-              const isLink = part.match(/https?:\/\/[^\s]+/);
+              const isLink = /https?:\/\/[^\s]+/.test(part);
 
-              if (isLink) {
-                return (
-                  <a
-                    key={i}
-                    href={part}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-black-900 underline break-all"
-                  >
-                    {part}
-                  </a>
-                );
-              }
-
-              return part;
+              return isLink ? (
+                <a
+                  key={`link-${i}`}
+                  href={part}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline break-all"
+                >
+                  {part}
+                </a>
+              ) : (
+                <React.Fragment key={`text-${i}`}>{part}</React.Fragment>
+              );
             })}
           </div>
 
@@ -101,6 +100,7 @@ const MessageBubble = ({
                   ? "-right-[6px] text-[#8774e1] scale-x-[-1] rotate-[329deg] bottom-[-7px]"
                   : "-left-[6px] text-[#212121] rotate-45 bottom-[-7px]"
               }
+
             `}
           >
             <path

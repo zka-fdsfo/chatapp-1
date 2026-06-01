@@ -11,7 +11,6 @@ export default function UsersPage() {
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log("Current user:", user.name, user._id);
   const [selectedUser, setSelectedUser] = useState(null);
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -70,6 +69,8 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
+  console.log("users:", users);
+
   const avatarColors = {
     A: "ef4444",
     B: "f97316",
@@ -99,6 +100,7 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
+  console.log("users:", users);
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -195,8 +197,8 @@ export default function UsersPage() {
                 cursor-pointer transition
                 ${
                   selectedUser?._id === userItem._id
-                    ? "bg-[#5e519b] px-4 py-3 rounded-2xl text-black font-semibold"
-                    : "hover:bg-[#2b2b2b]"
+                    ? "bg-[#5e519b]  px-4 py-3 rounded-2xl text-black font-semibold "
+                    : "hover:bg-[#2f0164]"
                 }
 
               `}
@@ -250,7 +252,7 @@ export default function UsersPage() {
                   </div>
 
                   <p className="text-zinc-400 text-sm truncate">
-                    {userItem.email}
+                    {userItem.lastMessage?.text || `${userItem.name} joined the zollo`.toUpperCase()}
                   </p>
                 </div>
               </div>
@@ -271,7 +273,7 @@ export default function UsersPage() {
   "
       >
         {/* ================= BACKGROUNDS ================= */}
-        <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/2a/80/d6/2a80d6b14706411e887e26b97064f3ed.jpg')] bg-cover bg-center">
+        <div className="absolute inset-0 overflow-hidden bg-[url('https://i.pinimg.com/1200x/30/51/02/305102b782a2a2e82dd55e31ee9cc5cb.jpg')] bg-cover bg-center">
           {/* BG 1 */}
           <div
             className="absolute inset-0 bg-cover bg-center animate-fade1"
