@@ -70,6 +70,36 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
+  const avatarColors = {
+  A: "ef4444",
+  B: "f97316",
+  C: "eab308",
+  D: "22c55e",
+  E: "06b6d4",
+  F: "3b82f6",
+  G: "6366f1",
+  H: "8b5cf6",
+  I: "d946ef",
+  J: "ec4899",
+  K: "14b8a6",
+  L: "84cc16",
+  M: "f59e0b",
+  N: "ef4444",
+  O: "10b981",
+  P: "0ea5e9",
+  Q: "8b5cf6",
+  R: "a855f7",
+  S: "f43f5e",
+  T: "f97316",
+  U: "22c55e",
+  V: "06b6d4",
+  W: "3b82f6",
+  X: "6366f1",
+  Y: "8b5cf6",
+  Z: "0092ff",
+};
+const firstLetter = [null, undefined].includes(user?.name) ? "A" : user.name.charAt(0).toUpperCase();
+const bgColor = avatarColors[firstLetter] || "6366f1";
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -148,7 +178,10 @@ export default function UsersPage() {
             </div>
           )}
 
-          {users.map((userItem) => (
+          {users.map((userItem) => { 
+            const firstLetter = [null, undefined].includes(userItem.name) ? "A" : userItem.name.charAt(0).toUpperCase();
+            const bgColor = avatarColors[firstLetter] || "6366f1";
+            return (
             <div
               key={userItem._id}
               onClick={() => setSelectedUser(userItem)}
@@ -175,7 +208,7 @@ export default function UsersPage() {
               /> */}
               <div className="relative">
                 <img
-                  src={`https://ui-avatars.com/api/?name=${userItem.name}&background=6366f1&color=fff`}
+                  src={`https://ui-avatars.com/api/?name=${userItem.name}&background=${bgColor}&color=fff`}
                   alt={userItem.name}
                   className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
                   onlineUsers.includes(userItem._id)
@@ -188,9 +221,7 @@ export default function UsersPage() {
                 {onlineUsers.includes(userItem._id) && (
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
                 )}
-                {!onlineUsers.includes(userItem._id) && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#646464]  border-2  rounded-full" />
-                )}
+             
               </div>
               {/* User Info */}
               <div className="flex-1 min-w-0">
@@ -217,7 +248,7 @@ export default function UsersPage() {
                 </p>
               </div>
             </div>
-          ))}
+)})}
         </div>
       </div>
 
