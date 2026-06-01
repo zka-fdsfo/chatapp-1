@@ -72,6 +72,7 @@ useEffect(() => {
           h-full
           overflow-y-auto
           px-6 py-4
+          lg:px-25
           space-y-4
           scrollbar-none
         "

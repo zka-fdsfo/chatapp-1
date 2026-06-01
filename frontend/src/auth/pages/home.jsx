@@ -98,7 +98,7 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
-
+  console.log("Users:", users);
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -109,7 +109,7 @@ export default function UsersPage() {
 
     w-full md:w-[350px]
     bg-[#1f1f1f]
-    bg-[url(https://i.pinimg.com/736x/6f/a1/ec/6fa1ec0538d9e2e49a26d85c23b9bbbe.jpg)]
+   
     border-r border-zinc-800
     flex flex-col
     scrollbar-x-hide
@@ -245,21 +245,28 @@ export default function UsersPage() {
                     <span
                       className={`text-xs ${
                         onlineUsers.includes(userItem._id)
-                          ? "text-white font-medium"
-                          : "text-[#646464] font-normal"
+                          ? "text-white font-bold"
+                          : "text-[#dadada] font-normal"
                       }`}
                     >
                       {onlineUsers.includes(userItem._id)
                         ? "Online"
-                        : "Offline"}
+                        : userItem.lastMessage?.createdAt
+                          ? `${new Date(
+                              userItem.lastMessage.createdAt,
+                            ).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })} `
+                          : "Offline"}
                     </span>
                   </div>
 
                   <p
                     className={`text-sm truncate ${
                       userItem.lastMessage?.text
-                        ? "text-white font-semibold"
-                        : "text-zinc-200"
+                        ? "text-white font-bold"
+                        : "text-zinc-200 font-normal "
                     }`}
                   >
                     {userItem.lastMessage?.text ||
@@ -290,7 +297,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade1"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/e1/b2/0d/e1b20d0e294cf31988a2b0430eb0e105.gif')",
+                "url('https://i.pinimg.com/originals/65/b0/59/65b05933ab0776a765ef40a47564fb80.gif')",
             }}
           />
 
@@ -323,7 +330,7 @@ export default function UsersPage() {
         </div>
 
         {/* ================= OVERLAY ================= */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[0px]" />
+        <div className="absolute inset-0 bg-black/30 " />
 
         {/* ================= CONTENT ================= */}
         <div className="relative z-10 h-full overflow-hidden">
