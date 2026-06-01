@@ -76,7 +76,7 @@ const Chat = ({
         return [...prev, msg];
       });
     };
-
+   
     socketRef.current.on("receive_message", handleReceiveMessage);
 
     return () => {
@@ -138,6 +138,7 @@ const Chat = ({
 
       <MessageList
         messages={messages}
+        setuserid={selectedUser?._id}
         setMessages={setMessages}
         currentUserId={currentUserId}
         menuMsg={menuMsg}

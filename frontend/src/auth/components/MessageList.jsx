@@ -11,6 +11,7 @@ const MessageList = ({
   setMenuMsg,
   setEditMsg,
   setEditText,
+  setuserid,
   handleDeleteMessage,
 }) => {
   const containerRef = useRef(null);
@@ -77,7 +78,7 @@ useEffect(() => {
       >
         {/* EMPTY STATE */}
         {validMessages.length === 0 ? (
-  <EmptyChat />
+  <EmptyChat userId={setuserid} />
 ) : (
   validMessages.map((msg) => {
     const senderId =

@@ -69,8 +69,6 @@ export default function UsersPage() {
     loadUsers();
   }, []);
 
-  console.log("users:", users);
-
   const avatarColors = {
     A: "ef4444",
     B: "f97316",
@@ -100,7 +98,7 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
-  console.log("users:", users);
+
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -142,7 +140,11 @@ export default function UsersPage() {
           </div>
         </div>
         {/* Outside the button */}
-        <SidebarPopup  open={showMenu} user={user.name} onClose={() => setShowMenu(false)} />
+        <SidebarPopup
+          open={showMenu}
+          user={user.name}
+          onClose={() => setShowMenu(false)}
+        />
         {/* ARCHIVE */}
         {/* <div className="px-2 pb-2">
 
@@ -251,8 +253,15 @@ export default function UsersPage() {
                     </span>
                   </div>
 
-                  <p className="text-zinc-400 text-sm truncate">
-                    {userItem.lastMessage?.text || `${userItem.name} joined the zollo`.toUpperCase()}
+                  <p
+                    className={`text-sm truncate ${
+                      userItem.lastMessage?.text
+                        ? "text-white font-semibold"
+                        : "text-zinc-400"
+                    }`}
+                  >
+                    {userItem.lastMessage?.text ||
+                      `${userItem.name} joined the zollo`.toUpperCase()}
                   </p>
                 </div>
               </div>

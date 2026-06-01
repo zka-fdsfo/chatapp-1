@@ -54,8 +54,6 @@ export const useAuth = () => {
     try {
       const users = await getallusers();
 
-      console.log("All users:", users);
-
       return users;
     } catch (error) {
       console.error("Failed to fetch users:", error);
