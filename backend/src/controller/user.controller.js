@@ -16,7 +16,7 @@ export const getAllUsers = async (req, res) => {
 
     const users = await User.find({
       _id: { $ne: currentUserId },
-    }).select("name email");
+    }).select("name email avatar");
 
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {

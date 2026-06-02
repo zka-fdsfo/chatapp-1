@@ -123,7 +123,7 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
-  console.log("Users:", users);
+
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
@@ -146,7 +146,7 @@ export default function UsersPage() {
    * This block is informational only — it does not change behavior.
    * =============================================================================
    */
-
+console.log("UsersPage rendered, user:", user);
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -192,9 +192,10 @@ export default function UsersPage() {
         <SidebarPopup
           open={showMenu}
           user={user.name}
+          avatar={user.avatar}
           onClose={() => setShowMenu(false)}
         />
-       
+
         {/* LOADING */}
         {loading && (
           <div className="text-center text-zinc-400 mt-4">Loading users...</div>
@@ -232,7 +233,13 @@ export default function UsersPage() {
                 {/* Avatar */}
                 <div className="relative">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${userItem.name}&background=${bgColor}&color=fff`}
+                    src={
+                      userItem.avatar ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        userItem.name,
+                      )}&background=${bgColor}&color=fff`
+                    }
+
                     alt={userItem.name}
                     className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
                       onlineUsers.includes(userItem._id)

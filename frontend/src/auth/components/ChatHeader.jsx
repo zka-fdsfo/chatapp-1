@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronLeft } from "lucide-react";
 
-const ChatHeader = ({ selectedUser, setSelectedUser, onlineUsers }) => {
+const ChatHeader = ({ selectedUser, setSelectedUser, onlineUsers ,onOpenProfile }) => {
   const isOnline = onlineUsers?.includes(selectedUser?._id);
   const avatarColors = {
   A: "ef4444",
@@ -46,12 +46,18 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
       </button>
 
       {/* USER AVATAR */}
-      <div className="relative">
-        <img
-          src={`https://ui-avatars.com/api/?name=${selectedUser?.name}&background=${bgColor}&color=fff`}
-          alt={selectedUser?.name}
-          className="w-11 h-11 md:w-12 md:h-12 rounded-full  border-indigo-500 object-cover"
-        />
+      <div className="relative cursor-pointer" onClick={onOpenProfile}>
+  <img
+    src={
+      selectedUser.avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        selectedUser.name
+      )}&background=${bgColor}&color=fff`
+    }
+
+    alt={selectedUser.name}
+    className="w-11 h-11 md:w-12 md:h-12 rounded-full border-indigo-500 object-cover"
+  />
 
         {/* ONLINE DOT */}
         {isOnline && (
@@ -61,9 +67,12 @@ const bgColor = avatarColors[firstLetter] || "6366f1";
 
       {/* USER INFO */}
       <div className="flex flex-col">
-        <h1 className="text-white font-semibold text-base md:text-lg">
-          {selectedUser?.name}
-        </h1>
+       <h1
+  onClick={onOpenProfile}
+  className="text-white font-semibold text-base md:text-lg cursor-pointer"
+>
+  {selectedUser?.name}
+</h1>
 
         <p className={`text-xs md:text-sm ${isOnline ? "text-white font-medium" : "text-white/50"}`}>
           {isOnline ? "Online" : "Offline"}

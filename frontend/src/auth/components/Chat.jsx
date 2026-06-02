@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
-
+import ProfilePage from "./ProfilePage.jsx";
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
 
@@ -30,7 +30,7 @@ const Chat = ({
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
-
+  const [showProfile, setShowProfile] = useState(false);
   const currentUserId = user?._id;
 
   // ================= SOCKET INIT =================
@@ -76,7 +76,7 @@ const Chat = ({
         return [...prev, msg];
       });
     };
-   
+
     socketRef.current.on("receive_message", handleReceiveMessage);
 
     return () => {
@@ -89,7 +89,7 @@ const Chat = ({
     if (!socketRef.current || !messages.length) return;
 
     const unseen = messages.filter(
-      (m) => m.receiverId === user?._id && !m.seen
+      (m) => m.receiverId === user?._id && !m.seen,
     );
 
     unseen.forEach((msg) => {
@@ -107,8 +107,8 @@ const Chat = ({
     const handleSeenUpdate = ({ messageId }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, seen: true } : msg
-        )
+          msg._id === messageId ? { ...msg, seen: true } : msg,
+        ),
       );
     };
 
@@ -128,12 +128,32 @@ const Chat = ({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative overflow-hidden">
+     {showProfile && (
+  <div className="absolute inset-0 z-50">
+
+    {/* BACKDROP */}
+    <div
+      onClick={() => setShowProfile(false)}
+      className="profile-backdrop show"
+    />
+
+    {/* PANEL */}
+    <div className="profile-panel open">
+      <ProfilePage
+        user={selectedUser}
+        onClose={() => setShowProfile(false)}
+      />
+    </div>
+
+  </div>
+)}
       <ChatHeader
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         setOnlineUsers={setOnlineUsers}
         onlineUsers={onlineUsers}
+        onOpenProfile={() => setShowProfile(true)}
       />
 
       <MessageList

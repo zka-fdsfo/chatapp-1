@@ -8,9 +8,9 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-const SidebarPopup = ({ open, onClose , user}) => {
+const SidebarPopup = ({ open, onClose, user, avatar }) => {
   if (!open) return null;
-      const avatarColors = {
+  const avatarColors = {
     A: "ef4444",
     B: "f97316",
     C: "eab308",
@@ -46,18 +46,17 @@ const SidebarPopup = ({ open, onClose , user}) => {
     { icon: Settings, text: "Settings" },
     { icon: MoreVertical, text: "More", arrow: true },
   ];
-
+  const firstLetter = user?.charAt(0)?.toUpperCase() || "A";
+  const bgColor = avatarColors[firstLetter] || "6366f1";
+  console.log("SidebarPopup user:", user ,"avatar:", avatar);
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Menu */}
       <div
-  className=" scale-3d-0 scale-70 animate-scaleIn
+        className=" scale-3d-0 scale-70 animate-scaleIn
     fixed top-[-15px] left-[-18px]
     w-[270px]
     bg-[#181818]/20
@@ -68,19 +67,22 @@ const SidebarPopup = ({ open, onClose , user}) => {
     border border-white/5
     z-50
   "
->
-
+      >
         {/* Profile Header */}
         <div className="flex items-center gap-3 p-4">
           <img
-            src={`https://ui-avatars.com/api/?name=${user}&background=${avatarColors[user.charAt(0).toUpperCase()] || "6366f1"}&color=fff`}
-            alt=""
-            className="w-11 h-11 rounded-full"
+            src={
+              avatar ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user|| "User",
+              )}&background=${bgColor}&color=fff`
+            }
+
+            alt={user}
+            className="w-11 h-11 rounded-full object-cover"
           />
 
-          <h2 className="font-semibold text-white text-lg">
-            {user}
-          </h2>
+          <h2 className="font-semibold text-white text-lg">{user}</h2>
         </div>
 
         <div className="h-px bg-white/10" />
@@ -99,9 +101,7 @@ const SidebarPopup = ({ open, onClose , user}) => {
                 <span className="font-medium">{item.text}</span>
               </div>
 
-              {item.arrow && (
-                <span className="text-gray-400 text-xl">›</span>
-              )}
+              {item.arrow && <span className="text-gray-400 text-xl">›</span>}
             </button>
           );
         })}

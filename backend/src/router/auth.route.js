@@ -3,7 +3,8 @@ import express from 'express'
 const Router =express.Router()
 import { registerUser, loginUser ,verifyTokenMiddleware} from '../controller/auth.controller.js'
 import { authMiddleware,refreshTokenMiddleware} from '../middleware/auth.middleware.js'
-Router.post('/register', registerUser)
+import upload from '../middleware/multer.js'
+Router.post('/register', upload.single('avatar'), registerUser)
 Router.post('/login', loginUser)
 Router.get(
   "/refresh-token",

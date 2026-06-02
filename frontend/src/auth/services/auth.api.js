@@ -15,16 +15,12 @@ export const login = async (email, password) => {
   }
 };
 
-export const signup = async (name, email, password) => {
+export const signup = async (formData) => {
   try {
-    const response = await api.post("/auth/register", {
-      name,
-      email,
-      password,
-    });
+    const response = await api.post("/auth/register", formData);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Login failed");
+    throw new Error(error.response?.data?.message || "Signup failed");
   }
 };
 
@@ -33,7 +29,7 @@ export const getallusers = async () => {
     const response = await api.get("/users/allusers");
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Login failed");
+    throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };
 export const verifyaccessToken = async () => {
@@ -64,7 +60,7 @@ export const getallchatusers = async (userId) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch messages"
+      error.response?.data?.message || "Failed to fetch messages",
     );
   }
 };
@@ -77,24 +73,18 @@ export const sendMessage = async (receiverId, content) => {
     });
     return response.data.data;
   } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to send message"
-      );
-    }
+    throw new Error(error.response?.data?.message || "Failed to send message");
+  }
 };
 
 export const markAsSeen = async (senderId) => {
   try {
-    const response = await api.put(
-      "/messages/seen",
-      { senderId }
-    );
+    const response = await api.put("/messages/seen", { senderId });
 
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message ||
-      "Failed to mark message as seen"
+      error.response?.data?.message || "Failed to mark message as seen",
     );
   }
 };

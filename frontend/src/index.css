@@ -3,9 +3,8 @@ body {
   background-image: url('https://i.pinimg.com/736x/65/86/c9/6586c9325be8e3f1889cc27061510e8b.jpg');
   background-size: cover;
   background-position: center;
-  
-  
 }
+
 @keyframes fade1 {
   0% { opacity: 1; }
   20% { opacity: 1; }
@@ -74,4 +73,74 @@ body {
 
 .animate-popup {
   animation: popup 0.18s ease-out;
+}
+
+/* ================================
+   TELEGRAM STYLE PROFILE SLIDE
+   ================================ */
+
+/* BACKDROP */
+.profile-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.3s ease;
+  z-index: 40;
+}
+
+/* hidden backdrop */
+.profile-backdrop.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* visible backdrop */
+.profile-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ================================
+   SLIDE PANEL (PROFILE PAGE)
+   ================================ */
+
+.profile-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 420px;
+  background: #0f0f0f;
+  z-index: 50;
+
+  /* start hidden (off-screen) */
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+}
+
+/* open state */
+.profile-panel.open {
+  transform: translateX(0);
+}
+
+/* ================================
+   MOBILE FULL WIDTH
+   ================================ */
+
+@media (max-width: 768px) {
+  .profile-panel {
+    width: 100%;
+  }
+}
+
+/* ================================
+   OPTIONAL: SMOOTH SCALE FEEL
+   ================================ */
+
+.profile-panel {
+  transform-origin: right center;
 }
