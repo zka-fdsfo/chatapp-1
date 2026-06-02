@@ -71,12 +71,22 @@ export const useAuth = () => {
 
       setUser(userData);
     } catch (error) {
+      try {
+        await verifyrefreshToken();
+        await handleVerifyaccessToken();
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+
+        setUser(null);
+      }
+      finally {
+
       console.error("Token verification failed:", error);
 
       setUser(null);
-    } finally {
       setLoading(false);
-    }
+    }}
+
   };
 
   // REFRESH TOKEN
@@ -90,6 +100,7 @@ export const useAuth = () => {
 
       setUser(null);
     } finally {
+      
       setLoading(false);
     }
   };

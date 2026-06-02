@@ -217,16 +217,15 @@ export default function UsersPage() {
             return (
               <div
                 key={userItem._id}
-                onClick={() => setSelectedUser(userItem) }
+                onClick={() => setSelectedUser(userItem)}
                 className={`
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
                 scrollbar-hide
-                ${
-                  selectedUser?._id === userItem._id
+                ${selectedUser?._id === userItem._id
                     ? "bg-[#8774e1]   px-4 py-3 rounded-2xl m-1 text-black font-semibold "
                     : "hover:bg-[#2f016480] transition   rounded-2xl"
-                }
+                  }
 
               `}
               >
@@ -239,13 +238,11 @@ export default function UsersPage() {
                         userItem.name,
                       )}&background=${bgColor}&color=fff`
                     }
-
                     alt={userItem.name}
-                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
-                      onlineUsers.includes(userItem._id)
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${onlineUsers.includes(userItem._id)
                         ? "border-[#00d652] border-"
                         : "border-[#5e519b] border-0"
-                    } `}
+                      } `}
                   />
 
                   {/* ONLINE DOT */}
@@ -263,31 +260,43 @@ export default function UsersPage() {
                     </h2>
 
                     <span
-                      className={`text-xs ${
-                        onlineUsers.includes(userItem._id)
+                      className={`text-xs ${onlineUsers.includes(userItem._id)
                           ? "text-white font-bold"
                           : "text-[#dadada] font-normal"
-                      }`}
+                        }`}
                     >
                       {onlineUsers.includes(userItem._id)
                         ? "Online"
                         : userItem.lastMessage?.createdAt
-                          ? `${new Date(
+                          ? (() => {
+                            const date = new Date(
                               userItem.lastMessage.createdAt,
-                            ).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })} `
+                            );
+                            const now = new Date();
+
+                            const isToday =
+                              date.toDateString() === now.toDateString();
+
+                            return isToday
+                              ? date.toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                              : date.toLocaleDateString([], {
+                                month: "short",
+                                day: "numeric",
+                              });
+                          })()
                           : "Offline"}
                     </span>
                   </div>
 
                   <p
-                    className={`text-sm truncate ${
-                      userItem.lastMessage?.text
+                    className={`text-sm truncate ${userItem.lastMessage?.text
                         ? "text-white font-bold"
                         : "text-zinc-200 font-normal "
-                    }`}
+                      }`}
                   >
                     {userItem.lastMessage?.text ||
                       `${userItem.name} joined the zollo`.toUpperCase()}
@@ -350,7 +359,7 @@ export default function UsersPage() {
         </div>
 
         {/* ================= OVERLAY ================= */}
-        <div className="absolute inset-0 bg-black/30 " />
+        <div className="absolute inset-0 bg-black/50 " />
 
         {/* ================= CONTENT ================= */}
         <div className="relative z-10 h-full overflow-hidden">
@@ -363,11 +372,10 @@ export default function UsersPage() {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "translate-x-0 opacity-100"
-            : "translate-x-full opacity-0 pointer-events-none"
-        }
+        ${selectedUser
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
+              }
 
       `}
           >
@@ -393,16 +401,15 @@ export default function UsersPage() {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "-translate-x-full opacity-0"
-            : "translate-x-0 opacity-100"
-        }
+        ${selectedUser
+                ? "-translate-x-full opacity-0"
+                : "translate-x-0 opacity-100"
+              }
 
       `}
           >
             <div className="text-center">
-              <Send size={70} className="text-blue-500 mx-auto mb-4" />
+            <img src="./public/Frame 1 (42).png" alt="Welcome" className="w-[20px] md:w-40 mx-auto mb-6" />
 
               <h1 className="text-3xl md:text-5xl font-bold text-white">
                 Zello Chat App

@@ -1,10 +1,35 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://192.168.99.196:5000/api",
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
+api.interceptors.response.use(
+  (response) => response,
 
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Don't intercept refresh-token request itself
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh-token"
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        await api.get("/auth/refresh-token");
+
+        return api(originalRequest);
+      } catch (refreshError) {
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 export const login = async (email, password) => {
   console.log(email, password, "from api");
   try {
@@ -29,6 +54,7 @@ export const getallusers = async () => {
     const response = await api.get("/users/allusers");
     return response.data;
   } catch (error) {
+    
     throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };

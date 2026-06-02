@@ -39,7 +39,7 @@ const Chat = ({
 
   // ================= SOCKET INIT =================
   useEffect(() => {
-    socketRef.current = io("http://192.168.99.196:5000", {
+    socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}`, {
       withCredentials: true,
     });
 

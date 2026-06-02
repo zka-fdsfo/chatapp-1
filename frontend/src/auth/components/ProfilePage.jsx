@@ -47,38 +47,38 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
     Y: "8b5cf6",
     Z: "0092ff",
   };
-  const formatLastSeen = (dateString) => {
-    if (!dateString) return "Offline";
+const formatLastSeen = (dateString) => {
+  if (!dateString) return "Offline";
 
-    const date = new Date(dateString);
-    const now = new Date();
+  const date = new Date(dateString);
+  const now = new Date();
 
-    const isToday = date.toDateString() === now.toDateString();
+  const isToday = date.toDateString() === now.toDateString();
 
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
 
-    const isYesterday = date.toDateString() === yesterday.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
 
-    if (isToday) {
-      return `today at ${date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}`;
-    }
+  const time = date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 
-    if (isYesterday) {
-      return `yesterday at ${date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}`;
-    }
+  if (isToday) {
+    return `today at ${time}`;
+  }
 
-    return date.toLocaleDateString([], {
-      month: "short",
-      day: "numeric",
-    });
-  };
+  if (isYesterday) {
+    return `yesterday at ${time}`;
+  }
+
+  return `${date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+  })} at ${time}`;
+};
   // const firstLetter = user.name.charAt(0).toUpperCase();
   const firstLetter = [null, undefined].includes(selectedUser?.name)
     ? "A"

@@ -21,7 +21,7 @@ const EmptyChat = ({ userId }) => {
     do {
       next = Math.floor(Math.random() * gifs.length);
     } while (next === prev && gifs.length > 1);
-    console.log("GIF INDEX:", next);
+    
     return next;
   });
 }, [userId]);
@@ -44,7 +44,7 @@ const EmptyChat = ({ userId }) => {
         </h2>
 
         {/* SUBTEXT */}
-        <p className="text-zinc-400 text-[0.9vw] mt-2 w-[80%] mx-auto">
+        <p className="text-zinc-400 text-[4vw] w-[60%] lg:text-[1vw] mt-2 lg:w-[70%] mx-auto">
           Start chatting and make the first move 🚀
         </p>
           {/* GIF */}
