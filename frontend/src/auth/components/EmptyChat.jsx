@@ -6,14 +6,13 @@ const EmptyChat = ({ userId }) => {
     "https://preview.redd.it/chat-gifs-v0-xy4lnnveoe3e1.gif?width=256&auto=webp&s=1af2dbdc9974068865e8bd49272ae8b4b71c6936",
     "https://assets-v2.lottiefiles.com/a/7628dc54-c511-11ee-895a-8f05989f2acd/dIjnOyZbMe.gif",
     "https://mir-s3-cdn-cf.behance.net/project_modules/hd/961ddf85291073.5d779f4cbfaec.gif",
-  
     "https://pic.chinesefontdesign.com/uploads/2017/10/chinesefontdesign.com-2017-10-20_13-22-47_796842.gif",
     "https://mir-s3-cdn-cf.behance.net/project_modules/disp/a16d1f73880943.5cf79aac68565.gif",
     "https://images.gr-assets.com/hostedimages/1388771356ra/7925990.gif",
     "https://www.gifcen.com/wp-content/uploads/2022/08/coffee-gif.gif"
   ];
 
-    const [gifIndex, setGifIndex] = useState(0);
+  const [gifIndex, setGifIndex] = useState(0);
 
  useEffect(() => {
   setGifIndex((prev) => {

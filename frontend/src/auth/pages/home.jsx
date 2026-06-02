@@ -146,7 +146,7 @@ export default function UsersPage() {
    * This block is informational only — it does not change behavior.
    * =============================================================================
    */
-console.log("UsersPage rendered, user:", user);
+
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -217,7 +217,7 @@ console.log("UsersPage rendered, user:", user);
             return (
               <div
                 key={userItem._id}
-                onClick={() => setSelectedUser(userItem)}
+                onClick={() => setSelectedUser(userItem) }
                 className={`
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
@@ -377,6 +377,7 @@ console.log("UsersPage rendered, user:", user);
                 setSelectedUser={setSelectedUser}
                 setOnlineUsers={setOnlineUsers}
                 onlineUsers={onlineUsers}
+                lastMessage={selectedUser.lastMessage}
               />
             )}
           </div>

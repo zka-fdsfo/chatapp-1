@@ -10,7 +10,7 @@ import {
   Music,
 } from "lucide-react";
 
-const ProfilePage = ({ user: selectedUser, onClose }) => {
+const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
   const [notifications, setNotifications] = useState(true);
 
   const user = {
@@ -46,6 +46,38 @@ const ProfilePage = ({ user: selectedUser, onClose }) => {
     X: "6366f1",
     Y: "8b5cf6",
     Z: "0092ff",
+  };
+  const formatLastSeen = (dateString) => {
+    if (!dateString) return "Offline";
+
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const isToday = date.toDateString() === now.toDateString();
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    if (isToday) {
+      return `today at ${date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+    }
+
+    if (isYesterday) {
+      return `yesterday at ${date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+    }
+
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
   };
   // const firstLetter = user.name.charAt(0).toUpperCase();
   const firstLetter = [null, undefined].includes(selectedUser?.name)
@@ -91,8 +123,13 @@ const ProfilePage = ({ user: selectedUser, onClose }) => {
           )}
 
           <h1 className="mt-5 text-3xl font-semibold">{user.name}</h1>
-
-          <p className="text-zinc-400 mt-1">{user.lastSeen}</p>
+          <p className="text-zinc-400 mt-1">
+            {selectedUser?.isOnline
+              ? "Online"
+              : lastMessage
+                ? `Last seen ${formatLastSeen(lastMessage)}`
+                : "hay there! I'm using ChatApp."}
+          </p>
         </div>
 
         {/* Contact Card */}
@@ -101,7 +138,6 @@ const ProfilePage = ({ user: selectedUser, onClose }) => {
             {/* Phone */}
             <div className="flex items-center gap-4">
               <Phone size={24} className="text-zinc-400" />
-
               <div>
                 <p className="font-medium text-lg">{user.phone}</p>
                 <span className="text-zinc-500 text-sm">Phone</span>

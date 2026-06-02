@@ -83,7 +83,7 @@ body {
 .profile-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.219);
   backdrop-filter: blur(1px);
   transition: opacity 0.3s ease;
   z-index: 40;
@@ -112,6 +112,7 @@ body {
   height: 100%;
   width: 420px;
   background: #0f0f0f00;
+   backdrop-filter: blur(1px);
   z-index: 50;
 
   /* start hidden (off-screen) */

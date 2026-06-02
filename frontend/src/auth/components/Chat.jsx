@@ -13,6 +13,7 @@ const Chat = ({
   setSelectedUser,
   setOnlineUsers,
   onlineUsers,
+  lastMessage,
 }) => {
   const socketRef = useRef(null);
 
@@ -92,7 +93,7 @@ const Chat = ({
     if (!socketRef.current || !messages.length) return;
 
     const unseen = messages.filter(
-      (m) => m.receiverId === user?._id && !m.seen
+      (m) => m.receiverId === user?._id && !m.seen,
     );
 
     unseen.forEach((msg) => {
@@ -110,8 +111,8 @@ const Chat = ({
     const handleSeenUpdate = ({ messageId }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, seen: true } : msg
-        )
+          msg._id === messageId ? { ...msg, seen: true } : msg,
+        ),
       );
     };
 
@@ -132,25 +133,19 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
-
       {/* ================= PROFILE DRAWER ================= */}
       <div className="absolute inset-0 z-50 pointer-events-none">
         {/* BACKDROP */}
         <div
           onClick={() => setShowProfile(false)}
-          className={`profile-backdrop ${
-            showProfile ? "show" : "hidden"
-          }`}
+          className={`profile-backdrop ${showProfile ? "show" : "hidden"}`}
         />
 
         {/* PANEL */}
-        <div
-          className={`profile-panel ${
-            showProfile ? "open" : ""
-          }`}
-        >
+        <div className={`profile-panel ${showProfile ? "open" : ""}`}>
           <ProfilePage
             user={selectedUser}
+            lastMessage={selectedUser?.lastMessage?.createdAt}
             onClose={() => setShowProfile(false)}
           />
         </div>
@@ -163,6 +158,7 @@ const Chat = ({
         setOnlineUsers={setOnlineUsers}
         onlineUsers={onlineUsers}
         onOpenProfile={() => setShowProfile(true)}
+        lastMessage={lastMessage?.createdAt}
       />
 
       {/* ================= MESSAGE LIST ================= */}

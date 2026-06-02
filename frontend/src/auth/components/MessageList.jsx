@@ -118,7 +118,7 @@ const MessageList = ({
             });
           }}
           className="
-            absolute bottom-5 right-[45%] bg-gray-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg transition z-50 flex items-center justify-center
+          absolute bottom-5 right-[45%] bg-gray-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg transition z-50 flex items-center justify-center
           "
         >
           <ArrowDown size={22} />
