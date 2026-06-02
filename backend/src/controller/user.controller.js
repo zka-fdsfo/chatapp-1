@@ -20,17 +20,10 @@ export const getAllUsers = async (req, res) => {
 
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {
+        // Get only the latest message sent BY this user TO the current user
         const lastMessage = await Message.findOne({
-          $or: [
-            {
-              sender: currentUserId,
-              receiver: user._id,
-            },
-            {
-              sender: user._id,
-              receiver: currentUserId,
-            },
-          ],
+          sender: user._id,
+          receiver: currentUserId,
         })
           .sort({ createdAt: -1 })
           .select("text message createdAt sender receiver seen");
@@ -44,7 +37,8 @@ export const getAllUsers = async (req, res) => {
 
     res.status(200).json(usersWithLastMessage);
   } catch (error) {
-    console.error(error);
+    console.error("Get All Users Error:", error);
+
     res.status(500).json({
       message: "Server error",
     });

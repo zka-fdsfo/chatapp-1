@@ -350,7 +350,7 @@ export default function UsersPage() {
         </div>
 
         {/* ================= OVERLAY ================= */}
-        <div className="absolute inset-0 bg-black/30 " />
+        <div className="absolute inset-0 bg-black/50 " />
 
         {/* ================= CONTENT ================= */}
         <div className="relative z-10 h-full overflow-hidden">
@@ -402,8 +402,7 @@ export default function UsersPage() {
       `}
           >
             <div className="text-center">
-              <Send size={70} className="text-blue-500 mx-auto mb-4" />
-
+             <img src="./public/Frame 1 (2).png" alt="Chat Icon" className="w-24 h-24 mx-auto mb-4" />
               <h1 className="text-3xl md:text-5xl font-bold text-white">
                 Zello Chat App
               </h1>
