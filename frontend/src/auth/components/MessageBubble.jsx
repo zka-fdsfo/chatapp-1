@@ -43,8 +43,8 @@ const MessageBubble = ({
             transition-all duration-200
             ${
               isMe
-                ? "bg-[#8774e1] text-white rounded-br-md p-3 pb-2"
-                : "bg-[#212121] text-white rounded-bl-md p-3 pb-2"
+                ? "bg-[#8774e1] hover:bg-[#a494ff] text-white rounded-br-md p-3 pb-2"
+                : "bg-[#212121] hover:bg-[#414040] text-white rounded-bl-md p-3 pb-2"
             }
 
           `}
@@ -97,7 +97,7 @@ const MessageBubble = ({
               absolute
               ${
                 isMe
-                  ? "-right-[6px] text-[#8774e1] scale-x-[-1] rotate-[329deg] bottom-[-7px]"
+                  ? "-right-[6px] text-[#8774e1]  scale-x-[-1] rotate-[329deg] bottom-[-7px]"
                   : "-left-[6px] text-[#212121] rotate-45 bottom-[-7px]"
               }
 

@@ -7,9 +7,9 @@ import authRouter from "./router/auth.route.js";
 import cookieParser from "cookie-parser";
 import userRouter from "./router/user.route.js";
 import messageRouter from "./router/massage.route.js";
-import cors from 'cors';
+import cors from "cors";
 import { Server } from "socket.io";
-import { createServer } from 'node:http';
+import { createServer } from "node:http";
 
 const app = express();
 app.use(express.json());
@@ -19,9 +19,8 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
-  })
+  }),
 );
-
 
 // ================= SOCKET.IO =================
 const io = new Server(server, {
@@ -30,7 +29,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-const onlineUsers = new Map(); 
+const onlineUsers = new Map();
 // userId -> socketId
 
 // io.on("connection", (socket) => {
@@ -173,7 +172,7 @@ io.on("connection", (socket) => {
   // =========================
   // ONLINE USER
   // =========================
-  
+
   socket.on("online-user", (userId) => {
     if (!userId) return;
 
@@ -255,7 +254,7 @@ io.on("connection", (socket) => {
   });
 });
 
-  console.log(process.env.FRONTEND_URL)
+console.log(process.env.FRONTEND_URL);
 
 app.use(cookieParser());
 app.set("trust proxy", true);
@@ -264,4 +263,4 @@ app.use("/api/auth", authRouter);
 
 app.use("/api/users", userRouter);
 app.use("/api/messages", messageRouter);
-export  {app , io, server };
+export { app, io, server };

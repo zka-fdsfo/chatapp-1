@@ -22,7 +22,7 @@ const EmptyChat = ({ userId }) => {
     do {
       next = Math.floor(Math.random() * gifs.length);
     } while (next === prev && gifs.length > 1);
-
+    console.log("GIF INDEX:", next);
     return next;
   });
 }, [userId]);
@@ -33,7 +33,7 @@ const EmptyChat = ({ userId }) => {
           text-center
           animate-fadeIn
           backdrop-blur-xs
-          bg-[#8a8a8a44]
+          bg-[#1f1f1fc2]
           p-6
           rounded-2xl
         "

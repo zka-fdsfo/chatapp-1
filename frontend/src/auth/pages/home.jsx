@@ -1,5 +1,30 @@
 // UsersPage.jsx
 
+/*
+ * =============================================================================
+ * Home Page / Users Page - Zello Chat App
+ *
+ * Description:
+ *   This file implements the UsersPage component which displays the sidebar
+ *   user list, handles Socket.IO connection for online presence, and renders
+ *   the chat panel for a selected user.
+ *
+ * Key behaviors:
+ *   - Fetches all users once (protected against React Strict Mode double calls)
+ *   - Maintains Socket.IO connection and updates `onlineUsers`
+ *   - Renders user avatars, presence status, last message preview, and the Chat
+ *     component when a user is selected.
+ *
+ * Notes / TODOs:
+ *   - Consider extracting avatar generation to a utility.
+ *   - Improve accessibility: add ARIA labels and keyboard navigation.
+ *   - Replace inline background GIF URLs with optimized static assets.
+ *
+ * Author: (added by Copilot)
+ * Date: 2026-06-02
+ * =============================================================================
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { Menu, Search, Archive, Send } from "lucide-react";
 import Chat from "../components/Chat";
@@ -99,6 +124,29 @@ export default function UsersPage() {
   };
   const [showMenu, setShowMenu] = useState(false);
   console.log("Users:", users);
+  /*
+   * =============================================================================
+   * Layout / Render Notes (Important UI sections)
+   *
+   * - SIDEBAR: Left column contains search, user list, and settings popup. It
+   *   collapses on mobile when a user is selected.
+   * - RIGHT SIDE: Main content area uses layered animated backgrounds with an
+   *   overlay and contains two possible states:
+   *     1) Chat screen - visible when `selectedUser` is set; mounts the `Chat`
+   *        component and wires presence/message props.
+   *     2) Default screen - instructive landing view shown when no chat is
+   *        selected (big icon + message).
+   *
+   * Accessibility & Performance hints:
+   *   - Background GIFs can be heavy; consider optimized static/video assets
+   *     or progressive loading to improve performance on mobile.
+   *   - Add ARIA attributes to interactive elements (user rows, menu button)
+   *     and ensure keyboard focus states are visible.
+   *
+   * This block is informational only — it does not change behavior.
+   * =============================================================================
+   */
+
   return (
     <div className="h-screen bg-black flex overflow-hidden">
       {/* SIDEBAR */}
@@ -146,33 +194,7 @@ export default function UsersPage() {
           user={user.name}
           onClose={() => setShowMenu(false)}
         />
-        {/* ARCHIVE */}
-        {/* <div className="px-2 pb-2">
-
-          <div className="flex items-center gap-4 p-3 rounded-2xl hover:bg-[#2a2a2a] cursor-pointer transition">
-
-            <div className="w-12 h-12 rounded-full bg-zinc-300 flex items-center justify-center">
-              <Archive
-                size={22}
-                className="text-zinc-700"
-              />
-            </div>
-
-            <div>
-
-              <h2 className="text-white font-semibold">
-                Archived Chats
-              </h2>
-
-              <p className="text-zinc-400 text-sm">
-                Telegram Style UI
-              </p>
-
-            </div>
-
-          </div>
-        </div> */}
-
+       
         {/* LOADING */}
         {loading && (
           <div className="text-center text-zinc-400 mt-4">Loading users...</div>
@@ -208,15 +230,6 @@ export default function UsersPage() {
               `}
               >
                 {/* Avatar */}
-                {/* <img
-                src={`https://ui-avatars.com/api/?name=${userItem.name}&background=6366f1&color=fff`}
-                alt={userItem.name}
-                className={`w-12 h-12 rounded-full object-cover ${
-                  onlineUsers.includes(userItem._id)
-                    ? "border-[#00d652] border-4"
-                    : "border-[#5e519b] border-2"
-                }`}
-              /> */}
                 <div className="relative">
                   <img
                     src={`https://ui-avatars.com/api/?name=${userItem.name}&background=${bgColor}&color=fff`}

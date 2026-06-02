@@ -109,7 +109,7 @@ const sendMessage = () => {
       )}
 
       {/* Input Bar */}
-      <div className="flex items-end bg-[#1f1f1f] rounded-full px-4 py-3 gap-3">
+      <div className="flex items-end bg-[#1f1f1fc2] backdrop-blur-xs rounded-full px-4 py-3 gap-3">
         {/* Emoji Button */}
         <button
           onClick={() => setShowEmoji((prev) => !prev)}
