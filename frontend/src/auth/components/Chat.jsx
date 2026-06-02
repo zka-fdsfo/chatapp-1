@@ -30,7 +30,10 @@ const Chat = ({
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
+
+  // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
+
   const currentUserId = user?._id;
 
   // ================= SOCKET INIT =================
@@ -84,12 +87,12 @@ const Chat = ({
     };
   }, [selectedUser?._id]);
 
-  // ================= SEEN / UNSEEN =================
+  // ================= SEEN UPDATE =================
   useEffect(() => {
     if (!socketRef.current || !messages.length) return;
 
     const unseen = messages.filter(
-      (m) => m.receiverId === user?._id && !m.seen,
+      (m) => m.receiverId === user?._id && !m.seen
     );
 
     unseen.forEach((msg) => {
@@ -107,8 +110,8 @@ const Chat = ({
     const handleSeenUpdate = ({ messageId }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, seen: true } : msg,
-        ),
+          msg._id === messageId ? { ...msg, seen: true } : msg
+        )
       );
     };
 
@@ -129,25 +132,31 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
-     {showProfile && (
-  <div className="absolute inset-0 z-50">
 
-    {/* BACKDROP */}
-    <div
-      onClick={() => setShowProfile(false)}
-      className="profile-backdrop show"
-    />
+      {/* ================= PROFILE DRAWER ================= */}
+      <div className="absolute inset-0 z-50 pointer-events-none">
+        {/* BACKDROP */}
+        <div
+          onClick={() => setShowProfile(false)}
+          className={`profile-backdrop ${
+            showProfile ? "show" : "hidden"
+          }`}
+        />
 
-    {/* PANEL */}
-    <div className="profile-panel open">
-      <ProfilePage
-        user={selectedUser}
-        onClose={() => setShowProfile(false)}
-      />
-    </div>
+        {/* PANEL */}
+        <div
+          className={`profile-panel ${
+            showProfile ? "open" : ""
+          }`}
+        >
+          <ProfilePage
+            user={selectedUser}
+            onClose={() => setShowProfile(false)}
+          />
+        </div>
+      </div>
 
-  </div>
-)}
+      {/* ================= CHAT HEADER ================= */}
       <ChatHeader
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
@@ -156,6 +165,7 @@ const Chat = ({
         onOpenProfile={() => setShowProfile(true)}
       />
 
+      {/* ================= MESSAGE LIST ================= */}
       <MessageList
         messages={messages}
         setuserid={selectedUser?._id}
@@ -168,6 +178,7 @@ const Chat = ({
         handleDeleteMessage={handleDeleteMessage}
       />
 
+      {/* ================= INPUT ================= */}
       <MessageInput
         messageText={messageText}
         setMessageText={setMessageText}

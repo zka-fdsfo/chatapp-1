@@ -53,7 +53,7 @@ export const registerUser = async (req, res) => {
       { id: newUser._id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "7d",
       },
     );
 
@@ -65,7 +65,7 @@ export const registerUser = async (req, res) => {
       userId: newUser._id,
       ipAddress: ip,
       userAgent: parser.getUA(),
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
     if (!newSession) {
       return res.status(500).json({ message: "Failed to create session" });
@@ -134,7 +134,7 @@ export const loginUser = async (req, res) => {
       { id: existingUser._id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "7d",
       },
     );
 
@@ -152,7 +152,7 @@ export const loginUser = async (req, res) => {
         userId: existingUser._id,
         ipAddress: ip,
         userAgent: parser.getUA(),
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       });
       if (!newSession) {
         return res.status(500).json({ message: "Failed to create session" });
@@ -172,7 +172,7 @@ export const loginUser = async (req, res) => {
       existingSession.userAgent = new UAParser(
         req.headers["user-agent"],
       ).getUA();
-      existingSession.expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      existingSession.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       existingSession.valid = true;
       await existingSession.save();
       accessToken = await jwt.sign(
