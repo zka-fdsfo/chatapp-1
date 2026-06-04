@@ -57,30 +57,28 @@ io.on("connection", (socket) => {
   // =========================
   // SEND MESSAGE
   // =========================
-  socket.on("send_message", (data) => {
-    const { senderId, receiverId, text } = data;
+ socket.on("send_message", (data) => {
+  const { senderId, receiverId, text } = data;
 
-    if (!senderId || !receiverId || !text?.trim()) {
-      return;
-    }
+  if (!senderId || !receiverId || !text?.trim()) {
+    return;
+  }
 
-    const payload = {
-      _id: Date.now().toString(), // temporary id
-      senderId,
-      receiverId,
-      text: text.trim(),
-      seen: false,
-      createdAt: new Date(),
-    };
+  const payload = {
+    _id: Date.now().toString(),
+    senderId,
+    receiverId,
+    text: text.trim(),
+    seen: true,
+    createdAt: new Date(),
+  };
 
-    // receiver
-    io.to(receiverId).emit("receive_message", payload);
 
-    // sender
-    io.to(senderId).emit("receive_message", payload);
+  // ONLY RECEIVER GETS SOCKET EVENT
+  io.to(receiverId).emit("receive_message", payload);
 
-    console.log(`📩 Message from ${senderId} to ${receiverId}`);
-  });
+  console.log(`📩 Message from ${senderId} to ${receiverId}`);
+});
 
   // =========================
   // TYPING
@@ -104,15 +102,20 @@ io.on("connection", (socket) => {
   // =========================
   // MESSAGE SEEN
   // =========================
-  socket.on("message_seen", ({ messageId, senderId }) => {
-    if (!messageId || !senderId) return;
+socket.on("message_seen", ({ messageId, senderId }) => {
+  if (!messageId || !senderId) return;
 
-    io.to(senderId).emit("message_seen_update", {
-      messageId,
-    });
-
-    console.log(`👁 Message seen: ${messageId}`);
+  console.log("SEEN EVENT", {
+    messageId,
+    senderId,
   });
+
+  io.to(senderId).emit("message_seen_update", {
+    messageId,
+  });
+
+  console.log(`👁 Message seen: ${messageId}`);
+});
 
   // =========================
   // DISCONNECT

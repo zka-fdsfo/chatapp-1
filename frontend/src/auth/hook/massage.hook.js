@@ -38,31 +38,33 @@ export const useMessage = () => {
   };
 
   /* ================= SEND MESSAGE ================= */
-  const handleSendMessage = async (
+const handleSendMessage = async (receiverId, text) => {
+  console.log("Send Message:", {
     receiverId,
-    text
-  ) => {
-    if (!text.trim()) return;
+    text,
+  });
 
-    try {
-      const newMessage =
-        await sendMessage(
-          receiverId,
-          text
-        );
+  if (!text.trim()) return;
 
-      /* ADD NEW MESSAGE */
-      setMessages((prev) => [
-        ...prev,
-        newMessage,
-      ]);
-    } catch (error) {
-      console.error(
-        "Send Message Error:",
-        error.message
-      );
-    }
-  };
+  try {
+    const newMessage = await sendMessage(
+      receiverId,
+      text
+    );
+
+    console.log("API RESPONSE:", newMessage);
+
+    setMessages((prev) => [
+      ...prev,
+      newMessage,
+    ]);
+  } catch (error) {
+    console.error(
+      "Send Message Error:",
+      error
+    );
+  }
+};
 
   return {
     messages,

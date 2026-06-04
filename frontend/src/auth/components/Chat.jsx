@@ -39,7 +39,7 @@ const Chat = ({
 
   // ================= SOCKET INIT =================
   useEffect(() => {
-    socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}`, {
+    socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
       withCredentials: true,
     });
 
@@ -47,84 +47,99 @@ const Chat = ({
       console.log("🟢 Socket connected:", socketRef.current.id);
     });
 
-    return () => socketRef.current.disconnect();
+    return () => {
+      socketRef.current.disconnect();
+    };
   }, []);
 
   // ================= ONLINE USER =================
   useEffect(() => {
     if (!user?._id || !socketRef.current) return;
+
     socketRef.current.emit("online-user", user._id);
   }, [user?._id]);
 
   // ================= FETCH MESSAGES =================
   useEffect(() => {
-    if (selectedUser?._id) {
-      fetchMessages(selectedUser._id);
-    }
+    if (!selectedUser?._id) return;
+
+    fetchMessages(selectedUser._id);
   }, [selectedUser?._id]);
 
   // ================= RECEIVE MESSAGE =================
-  useEffect(() => {
-    if (!socketRef.current){ 
-      console.warn("Socket not initialized yet");
-      return;}
+useEffect(() => {
+  if (!socketRef.current) return;
 
-    const handleReceiveMessage = (msg) => {
-      const isActiveChat =
-        msg.senderId === selectedUser?._id ||
-        msg.receiverId === selectedUser?._id;
+  const handleReceiveMessage = (msg) => {
+    const isActiveChat =
+  (String(msg.senderId) === String(selectedUser?._id) &&
+    String(msg.receiverId) === String(user?._id)) ||
+  (String(msg.senderId) === String(user?._id) &&
+    String(msg.receiverId) === String(selectedUser?._id));
 
-      if (!isActiveChat) return;
+    if (!isActiveChat) return;
 
-      setMessages((prev) => {
-        const exists = prev.some((m) => m._id === msg._id);
-        if (exists) return prev;
-        return [...prev, msg];
-      });
-    };
+    setMessages((prev) => {
+      const exists = prev.some(
+        (m) => String(m._id) === String(msg._id)
+      );
 
-    socketRef.current.on("receive_message", handleReceiveMessage);
+      if (exists) return prev;
 
-    return () => {
-      socketRef.current.off("receive_message", handleReceiveMessage);
-    };
-  }, [selectedUser?._id]);
+      return [...prev, msg];
+    });
+  };
+
+  socketRef.current.on(
+    "receive_message",
+    handleReceiveMessage
+  );
+
+  return () => {
+    socketRef.current.off(
+      "receive_message",
+      handleReceiveMessage
+    );
+  };
+}, [selectedUser?._id]);
 
   // ================= SEEN UPDATE =================
-  useEffect(() => {
-    if (!socketRef.current || !messages.length) return;
+useEffect(() => {
+  if (!socketRef.current || !user?._id || !selectedUser?._id) return;
 
-    const unseen = messages.filter(
-      (m) => m.receiverId === user?._id && !m.seen,
-    );
+  const unseenMessages = messages.filter(
+    (msg) =>
+      String(msg.senderId) === String(selectedUser._id) &&
+      String(msg.receiverId || msg.receiver) === String(user._id) &&
+      !msg.seen
+  );
 
-    unseen.forEach((msg) => {
-      socketRef.current.emit("message_seen_update", {
-        messageId: msg._id,
-        userId: user?._id,
-      });
+  unseenMessages.forEach((msg) => {
+    socketRef.current.emit("message_seen", {
+      messageId: msg._id,
+      senderId: msg.senderId,
     });
-  }, [messages, selectedUser?._id, user?._id]);
+  });
+}, [messages, user?._id, selectedUser?._id]);
+useEffect(() => {
+  if (!socketRef.current) return;
 
-  // ================= LISTEN SEEN UPDATE =================
-  useEffect(() => {
-    if (!socketRef.current) return;
+  const handleSeenUpdate = ({ messageId }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        String(msg._id) === String(messageId)
+          ? { ...msg, seen: true }
+          : msg
+      )
+    );
+  };
 
-    const handleSeenUpdate = ({ messageId }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === messageId ? { ...msg, seen: true } : msg,
-        ),
-      );
-    };
+  socketRef.current.on("message_seen_update", handleSeenUpdate);
 
-    socketRef.current.on("message_seen_update", handleSeenUpdate);
-
-    return () => {
-      socketRef.current.off("message_seen_update", handleSeenUpdate);
-    };
-  }, []);
-
+  return () => {
+    socketRef.current.off("message_seen_update", handleSeenUpdate);
+  };
+}, []);
   if (!selectedUser) {
     return (
       <div className="flex items-center justify-center h-full text-white">

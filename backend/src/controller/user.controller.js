@@ -21,16 +21,8 @@ export const getAllUsers = async (req, res) => {
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {
         const lastMessage = await Message.findOne({
-          $or: [
-            {
-              sender: currentUserId,
-              receiver: user._id,
-            },
-            {
-              sender: user._id,
-              receiver: currentUserId,
-            },
-          ],
+          sender: user._id,
+          receiver: currentUserId,
         })
           .sort({ createdAt: -1 })
           .select("text message createdAt sender receiver seen");

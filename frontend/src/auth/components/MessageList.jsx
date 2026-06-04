@@ -83,7 +83,9 @@ const MessageList = ({
         ) : (
           validMessages.map((msg) => {
             const senderId =
-              typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+              typeof msg.sender === "object"
+                ? msg.sender._id
+                : msg.sender || msg.senderId;
 
             const isMe = senderId === currentUserId;
 
