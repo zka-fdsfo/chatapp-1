@@ -65,7 +65,9 @@ const Chat = ({
 
   // ================= RECEIVE MESSAGE =================
   useEffect(() => {
-    if (!socketRef.current) return;
+    if (!socketRef.current){ 
+      console.warn("Socket not initialized yet");
+      return;}
 
     const handleReceiveMessage = (msg) => {
       const isActiveChat =
