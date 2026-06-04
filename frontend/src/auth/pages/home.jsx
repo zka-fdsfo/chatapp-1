@@ -31,6 +31,7 @@ import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
 import SidebarPopup from "../components/SidebarPopup.jsx";
+import EditProfile from "../components/EditProfile.jsx";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -40,7 +41,8 @@ export default function UsersPage() {
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
   const currentUserId = user?._id || null;
-
+  const [showProfile, setShowProfile] = useState(false);
+  const [closingProfile, setClosingProfile] = useState(false);
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
   // SOCKET.IO
@@ -123,7 +125,24 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
+  const [closingMenu, setClosingMenu] = useState(false);
+  const closeProfile = () => {
+    setClosingProfile(true);
 
+    setTimeout(() => {
+      setShowProfile(false);
+      setClosingProfile(false);
+    }, 350);
+  };
+
+  const closeMenu = () => {
+    setClosingMenu(true);
+
+    setTimeout(() => {
+      setShowMenu(false);
+      setClosingMenu(false);
+    }, 220);
+  };
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
@@ -193,7 +212,15 @@ export default function UsersPage() {
           open={showMenu}
           user={user.name}
           avatar={user.avatar}
-          onClose={() => setShowMenu(false)}
+          onClose={closeMenu}
+          closing={closingMenu}
+          onProfileClick={() => {
+            closeMenu();
+
+            setTimeout(() => {
+              setShowProfile(true);
+            }, 220);
+          }}
         />
 
         {/* LOADING */}
@@ -306,6 +333,27 @@ export default function UsersPage() {
             );
           })}
         </div>
+
+        {/* EDIT PROFILE MODAL */}
+        {showProfile && (
+          <div
+            className={`
+      fixed inset-0 z-[9999]
+      bg-[#0e0f13]
+      overflow-y-auto
+      custom-scrollbar
+      ${closingProfile
+                ? "animate-slide-left-close"
+                : "animate-slide-left"
+              }
+    `}
+          >
+            <EditProfile
+              user={user}
+              onClose={closeProfile}
+            />
+          </div>
+        )}
       </div>
 
       {/* RIGHT SIDE */}
@@ -379,6 +427,7 @@ export default function UsersPage() {
 
       `}
           >
+
             {selectedUser && (
               <Chat
                 selectedUser={selectedUser}
@@ -386,6 +435,7 @@ export default function UsersPage() {
                 setOnlineUsers={setOnlineUsers}
                 onlineUsers={onlineUsers}
                 lastMessage={selectedUser.lastMessage}
+                className="h-full w-full "
               />
             )}
           </div>
@@ -409,7 +459,11 @@ export default function UsersPage() {
       `}
           >
             <div className="text-center">
-            <img src="./public/Frame 1 (42).png" alt="Welcome" className="w-[20px] md:w-40 mx-auto mb-6" />
+              <img
+                src="./public/Frame 1 (42).png"
+                alt="Welcome"
+                className="w-[20px] md:w-40 mx-auto mb-6"
+              />
 
               <h1 className="text-3xl md:text-5xl font-bold text-white">
                 Zello Chat App
@@ -422,6 +476,7 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
