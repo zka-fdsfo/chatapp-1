@@ -32,6 +32,7 @@ import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
 import SidebarPopup from "../components/SidebarPopup.jsx";
 import EditProfile from "../components/EditProfile.jsx";
+import UserSkeleton from "../components/UsersSkeleton.jsx";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -225,11 +226,13 @@ export default function UsersPage() {
 
         {/* LOADING */}
         {loading && (
-          <div className="text-center text-zinc-400 mt-4">Loading users...</div>
+          <div className="flex-1 flex items-center justify-center h-full">
+            <UserSkeleton />
+          </div>
         )}
 
         {/* USER LIST */}
-        <div className="flex-1 overflow-y-auto  ">
+        <div className="flex-1 overflow-y-auto custom-scrollbar ">
           {!loading && users.length === 0 && (
             <div className="text-center text-zinc-500 mt-10">
               No users found
@@ -458,12 +461,42 @@ export default function UsersPage() {
 
       `}
           >
-            <div className="text-center">
-              <img
+            <div className="text-center flex flex-col items-center ">
+              {/* <img
                 src="./public/Frame 1 (42).png"
                 alt="Welcome"
                 className="w-[20px] md:w-40 mx-auto mb-6"
-              />
+              /> */}
+
+               
+<div class="icon-wrap" aria-label="Winking chat bubble icon">
+  <svg width="100%" height="50%" viewBox="0 0 942 942" fill="none" xmlns="http://www.w3.org/2000/svg">
+ 
+
+    <path d="M471 897C706.273 897 897 706.273 897 471C897 235.727 706.273 45 471 45C235.727 45 45 235.727 45 471C45 706.273 235.727 897 471 897Z" fill="#2563EB"/>
+
+    <path d="M556.896 761.455L739.928 725.494C739.928 725.494 734.971 788.6 747.766 826C757.543 854.579 788.338 894.234 788.338 894.234C788.338 894.234 695.773 887.923 647.26 858.273C603.129 831.302 556.896 761.455 556.896 761.455Z" fill="#2563EB"/>
+ 
+
+    <ellipse cx="471.5" cy="471" rx="309.5" ry="310" fill="white"/>
+ 
+
+    <path d="M537 710.449L667.916 685C667.916 685 662.161 729.467 671.312 755.935C678.306 776.161 705 826 705 826C705 826 636.333 799.95 601.634 778.967C570.069 759.88 537 710.449 537 710.449Z" fill="white"/>
+ 
+
+    <path d="M305.002 373.009C347.12 362.75 389.579 388.577 399.838 430.694C410.096 472.812 384.27 515.272 342.152 525.53C300.035 535.789 257.575 509.961 247.316 467.844C237.058 425.726 262.885 383.268 305.002 373.009Z" fill="#2563EB"/>
+    <path d="M308.294 324.219C320.422 323.613 332.559 325.259 344.01 329.063L339.604 340.786C329.791 337.526 319.39 336.115 308.996 336.634C298.602 337.153 288.419 339.592 279.027 343.812C269.636 348.031 261.22 353.948 254.261 361.226C247.302 368.503 241.935 376.997 238.468 386.225L226 382.083C230.046 371.316 236.308 361.404 244.428 352.912C252.548 344.421 262.368 337.516 273.326 332.593C284.284 327.67 296.166 324.824 308.294 324.219Z" fill="#2563EB"/>
+ 
+
+    <g class="wink-group">
+      <path d="M591.162 290.899C598.016 282.593 611.379 279.768 621.008 284.591C630.636 289.414 632.886 300.059 626.032 308.365L564.172 383.338L653.58 421.467C663.486 425.691 666.384 436.178 660.052 444.889C653.719 453.599 640.555 457.235 630.648 453.011L521.97 406.666C516.744 404.437 513.468 400.465 512.47 395.931C511.272 391.445 512.353 386.413 515.969 382.03L591.162 290.899Z" fill="#2563EB"/>
+      <path d="M593.701 255.585C588.793 276.847 575.585 295.607 556.685 308.161C537.785 320.715 514.566 326.151 491.611 323.396L493.253 311.308C512.99 313.677 532.955 309.003 549.206 298.208C565.457 287.413 576.815 271.283 581.035 253L593.701 255.585Z" fill="#2563EB"/>
+    </g>
+
+    <path class="mouth-path" d="M491.02 570.048C526.724 552.564 521.082 467.763 555.668 538.39C590.254 609.016 589.347 680.444 553.643 697.929C517.938 715.413 460.957 672.332 426.371 601.706C391.786 531.08 455.315 587.532 491.02 570.048Z" fill="#2563EB"/>
+ 
+  </svg>
+</div>
 
               <h1 className="text-3xl md:text-5xl font-bold text-white">
                 Zello Chat App

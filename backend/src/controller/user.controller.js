@@ -1,6 +1,7 @@
 import Session from "../model/session.model.js";
 import User from "../model/user.model.js";
 import Message from "../model/message.model.js";
+import imagekit from "../db/imagekit.js";
 // export const getAllUsers = async (req, res) => {
 //     try {
 //         const users = await User.find().select("name email");
@@ -16,7 +17,7 @@ export const getAllUsers = async (req, res) => {
 
     const users = await User.find({
       _id: { $ne: currentUserId },
-    }).select("name email avatar");
+    }).select("name email avatar bio");
 
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {
@@ -42,21 +43,36 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
-
 export const changeCurrentUserinfo = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user;
 
-    const { name, avatar, bio } = req.body;
+    const { name, bio } = req.body;
+    console.log("name 159",name)
+
     const update = {};
-    if(req.body.name!==undefined) {
+    let avatar;
+
+    if (req.file) {
+      const uploadedImage = await imagekit.files.upload({
+        file: req.file.buffer.toString("base64"),
+        fileName: `${Date.now()}-${req.file.originalname}`,
+        folder: "/avatarsTelegramClone",
+      });
+
+      avatar = uploadedImage.url;
+    }
+
+    if (name !== undefined) {
       update.name = name;
     }
-    if(req.body.avatar!==undefined) {
-      update.avatar = avatar;
-    }
-    if(req.body.bio!==undefined) {
+
+    if (bio !== undefined) {
       update.bio = bio;
+    }
+
+    if (avatar) {
+      update.avatar = avatar;
     }
 
     const user = await User.findByIdAndUpdate(

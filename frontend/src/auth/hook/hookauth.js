@@ -7,6 +7,7 @@ import {
   getallusers,
   verifyaccessToken,
   verifyrefreshToken,
+ changeinfocurrentuserApi,
 } from "../services/auth.api.js";
 
 export const useAuth = () => {
@@ -105,6 +106,25 @@ export const useAuth = () => {
     }
   };
 
+const changeinfocurrentuser = async (formData) => {
+  setLoading(true);
+
+  try {
+    const updatedUser = await changeinfocurrentuserApi(formData);
+
+    console.log(updatedUser);
+
+    setUser(updatedUser);
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Failed to update user info:", error);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
+
   return {
     user,
     setUser,
@@ -115,5 +135,6 @@ export const useAuth = () => {
     fetchAllUsers,
     handleVerifyaccessToken,
     refreshUserToken,
+    changeinfocurrentuser,
   };
 };

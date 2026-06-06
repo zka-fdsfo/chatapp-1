@@ -1,13 +1,73 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ArrowLeft,
   Camera,
   Gift,
   Megaphone,
 } from "lucide-react";
+import { useAuth } from '../hook/hookauth.js'
 
 export default function EditProfile({ user, onClose }) {
+  const { changeinfocurrentuser } = useAuth();
 
+   const [formData, setFormData] = useState({
+    name: user?.name || "",
+    bio: user?.bio || "",
+
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+const [avatarFile, setAvatarFile] = useState(null);
+const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "");
+
+// HANDLE IMAGE SELECT
+const handleAvatarChange = (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert("Only JPG and PNG images are allowed");
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    alert("Image must be smaller than 2MB");
+    return;
+  }
+
+  setAvatarFile(file);
+  setAvatarPreview(URL.createObjectURL(file));
+};
+const handleSave = async () => {
+  try {
+    const data = new FormData();
+
+    data.append("name", formData.name);
+    data.append("bio", formData.bio);
+
+    if (avatarFile) {
+      data.append("avatar", avatarFile);
+    }
+
+    await changeinfocurrentuser(data);
+
+    onClose();
+  } catch (err) {
+    console.error(err);
+  }
+};
   const avatarColors = {
     A: "ef4444",
     B: "f97316",
@@ -39,7 +99,7 @@ export default function EditProfile({ user, onClose }) {
   const firstLetter = user?.name?.charAt(0)?.toUpperCase() || "A";
   const bgColor = avatarColors[firstLetter] || "6366f1";
 
-
+console.log(user)
   return (
 <div className="min-h-screen overflow-y-auto bg-[#0e0f13] text-white flex justify-center">
       <div className="w-full max-w-md px-4 py-4">
@@ -53,36 +113,53 @@ export default function EditProfile({ user, onClose }) {
         </div>
 
         {/* Avatar */}
-        <div className="flex justify-center mb-5">
-          <div className="relative w-24 h-24 rounded-full overflow-hidden">
-            <img
-              src={
-                user?.avatar ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  user?.name || "User"
-                )}&background=${bgColor}&color=fff`
-              }
-              alt={user?.name}
-              className="w-full h-full object-cover"
-            />
+     <div className="flex justify-center mb-5">
+  <div className="relative w-24 h-24 rounded-full overflow-hidden">
 
-            <button
-              className="
-                absolute
-                bottom-0
-                left-1/2
-                -translate-x-1/2
-                bg-black/70
-                p-1.5
-                rounded-full
-                border
-                border-zinc-700
-              "
-            >
-              <Camera size={18} />
-            </button>
-          </div>
-        </div>
+    {/* Hidden File Input */}
+    <input
+      type="file"
+      accept="image/*"
+      id="avatar-upload"
+      className="hidden"
+      onChange={handleAvatarChange}
+    />
+
+    {/* Avatar Image */}
+    <img
+      src={
+        avatarPreview ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          user?.name || "User"
+        )}&background=${bgColor}&color=fff`
+      }
+      alt={user?.name}
+      className="w-full h-full object-cover"
+    />
+
+    {/* Camera Button */}
+    <label
+      htmlFor="avatar-upload"
+      className="
+        absolute
+        bottom-0
+        left-1/2
+        -translate-x-1/2
+        bg-black/70
+        p-1.5
+        rounded-full
+        border
+        border-zinc-700
+        cursor-pointer
+        hover:bg-black/90
+        transition
+      "
+    >
+      <Camera size={18} />
+    </label>
+
+  </div>
+</div>
 
         {/* Main Card */}
         <div className="bg-[#1b1d22] rounded-3xl p-4">
@@ -94,7 +171,9 @@ export default function EditProfile({ user, onClose }) {
             </label>
 
             <input
-              defaultValue={user.name}
+              defaultValue={formData.name}
+              onChange={handleChange}
+              name="name"
               className="
                 w-full
                 mt-1
@@ -110,47 +189,29 @@ export default function EditProfile({ user, onClose }) {
             />
           </div>
 
-          {/* Last Name */}
-          <div className="mb-3">
-            <label className="text-[11px] text-zinc-500">
-              Last Name
-            </label>
-
-            <input
-              defaultValue={user.lastName}
-              className="
-                w-full
-                mt-1
-                bg-transparent
-                border
-                border-zinc-800
-                rounded-xl
-                px-3
-                py-2
-                text-sm
-                outline-none
-              "
-            />
-          </div>
+      
 
           {/* Bio */}
-          <div className="mb-4">
-            <input
-              defaultValue={user.bio}
-              placeholder="Bio (optional)"
-              className="
-                w-full
-                bg-transparent
-                border
-                border-zinc-800
-                rounded-xl
-                px-3
-                py-3
-                text-sm
-                outline-none
-              "
-            />
-          </div>
+        <div className="mb-4">
+  <input
+    value={formData.bio || ""}
+    onChange={handleChange}
+    name="bio"
+    placeholder="Bio (optional)"
+    className="
+      w-full
+      bg-transparent
+      border
+      border-zinc-800
+      rounded-xl
+      px-3
+      py-3
+      text-sm
+      outline-none
+    "
+  />
+</div>
+
 
           {/* Birthday */}
           <button
@@ -247,7 +308,19 @@ export default function EditProfile({ user, onClose }) {
         <p className="text-[10px] text-zinc-500 mt-3 px-1">
           Display the channel you message in your profile.
         </p>
-
+      <button
+  onClick={handleSave}
+  className="
+    w-full
+    mt-5
+    bg-[#6f8cff]
+    py-3
+    rounded-xl
+    font-medium
+  "
+>
+  Save Changes
+</button>
       </div>
     </div>
   );

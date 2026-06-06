@@ -12,10 +12,7 @@ const MessageBubble = ({
 }) => {
 
 
-  console.log("Rendering MessageBubble:", {
-    msg,
-   
-  });
+
   // FORMAT TIME
   const formatTime = (date) => {
     if (!date) return "";

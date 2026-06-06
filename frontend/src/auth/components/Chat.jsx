@@ -7,6 +7,8 @@ import MessageInput from "./MessageInput";
 import ProfilePage from "./ProfilePage.jsx";
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
+import MessageListSkeleton from "./MessageListSkeleton";
+import ChatSkeleton from "./ChatSkeleton";
 
 const Chat = ({
   selectedUser,
@@ -26,12 +28,13 @@ const Chat = ({
   } = useMessage();
 
   const { user } = useAuth();
+  console.log("hi sele",selectedUser)
 
   const [messageText, setMessageText] = useState("");
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
-
+  const [loadingMessages, setLoadingMessages] = useState(false);
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
 
@@ -60,11 +63,23 @@ const Chat = ({
   }, [user?._id]);
 
   // ================= FETCH MESSAGES =================
-  useEffect(() => {
+ useEffect(() => {
+  const loadMessages = async () => {
     if (!selectedUser?._id) return;
 
-    fetchMessages(selectedUser._id);
-  }, [selectedUser?._id]);
+    setLoadingMessages(true);
+
+    try {
+      await fetchMessages(selectedUser._id);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  loadMessages();
+}, [selectedUser?._id]);
 
   // ================= RECEIVE MESSAGE =================
 useEffect(() => {
@@ -104,42 +119,48 @@ useEffect(() => {
 }, [selectedUser?._id]);
 
   // ================= SEEN UPDATE =================
-useEffect(() => {
-  if (!socketRef.current || !user?._id || !selectedUser?._id) return;
+  useEffect(() => {
+    if (!socketRef.current || !user?._id) return;
 
-  const unseenMessages = messages.filter(
-    (msg) =>
-      String(msg.senderId) === String(selectedUser._id) &&
-      String(msg.receiverId || msg.receiver) === String(user._id) &&
-      !msg.seen
-  );
+    const unseenMessages = messages.filter(
+  (msg) =>
+    String(msg.receiver || msg.receiverId) === String(user._id) &&
+    !msg.seen
+);
 
-  unseenMessages.forEach((msg) => {
-    socketRef.current.emit("message_seen", {
-      messageId: msg._id,
-      senderId: msg.senderId,
+    unseenMessages.forEach((msg) => {
+      if (!msg._id) return;
+      console.log("SEEN EVENT", {
+        messageId: msg._id,
+        senderId: msg.senderId,
+      });
+     socketRef.current.emit("message_seen", {
+  messageId: msg._id,
+  senderId: msg.sender || msg.senderId,
+});
     });
-  });
-}, [messages, user?._id, selectedUser?._id]);
-useEffect(() => {
-  if (!socketRef.current) return;
+  }, [messages, user?._id]);
 
-  const handleSeenUpdate = ({ messageId }) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        String(msg._id) === String(messageId)
-          ? { ...msg, seen: true }
-          : msg
-      )
+  // ================= LISTEN SEEN UPDATE =================
+  useEffect(() => {
+    if (!socketRef.current || !user?._id) return;
+
+    const unseenMessages = messages.filter(
+      (msg) =>
+        String(msg.receiverId) === String(user._id) &&
+        !msg.seen
     );
-  };
 
-  socketRef.current.on("message_seen_update", handleSeenUpdate);
+    unseenMessages.forEach((msg) => {
+      if (!msg._id) return;
 
-  return () => {
-    socketRef.current.off("message_seen_update", handleSeenUpdate);
-  };
-}, []);
+      socketRef.current.emit("message_seen", {
+        messageId: msg._id,
+        senderId: msg.senderId,
+      });
+    });
+  }, [messages, user?._id]);
+
   if (!selectedUser) {
     return (
       <div className="flex items-center justify-center h-full text-white">

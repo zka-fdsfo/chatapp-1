@@ -47,38 +47,38 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
     Y: "8b5cf6",
     Z: "0092ff",
   };
-const formatLastSeen = (dateString) => {
-  if (!dateString) return "Offline";
+  const formatLastSeen = (dateString) => {
+    if (!dateString) return "Offline";
 
-  const date = new Date(dateString);
-  const now = new Date();
+    const date = new Date(dateString);
+    const now = new Date();
 
-  const isToday = date.toDateString() === now.toDateString();
+    const isToday = date.toDateString() === now.toDateString();
 
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
 
-  const isYesterday = date.toDateString() === yesterday.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
 
-  const time = date.toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+    const time = date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
 
-  if (isToday) {
-    return `today at ${time}`;
-  }
+    if (isToday) {
+      return `today at ${time}`;
+    }
 
-  if (isYesterday) {
-    return `yesterday at ${time}`;
-  }
+    if (isYesterday) {
+      return `yesterday at ${time}`;
+    }
 
-  return `${date.toLocaleDateString([], {
-    month: "short",
-    day: "numeric",
-  })} at ${time}`;
-};
+    return `${date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    })} at ${time}`;
+  };
   // const firstLetter = user.name.charAt(0).toUpperCase();
   const firstLetter = [null, undefined].includes(selectedUser?.name)
     ? "A"
@@ -128,7 +128,11 @@ const formatLastSeen = (dateString) => {
               ? "Online"
               : lastMessage
                 ? `Last seen ${formatLastSeen(lastMessage)}`
-                : "hay there! I'm using ChatApp."}
+                : "Offline"}
+          </p>
+
+          <p className="text-[#fff] text-center mt-2 font-bold px-4">
+            {selectedUser?.bio || "Hey there! I'm using ChatApp."}
           </p>
         </div>
 
@@ -153,14 +157,12 @@ const formatLastSeen = (dateString) => {
 
               <button
                 onClick={() => setNotifications(!notifications)}
-                className={`relative w-14 h-8 rounded-full transition ${
-                  notifications ? "bg-violet-600" : "bg-zinc-700"
-                }`}
+                className={`relative w-14 h-8 rounded-full transition ${notifications ? "bg-violet-600" : "bg-zinc-700"
+                  }`}
               >
                 <span
-                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${
-                    notifications ? "left-7" : "left-1"
-                  }`}
+                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${notifications ? "left-7" : "left-1"
+                    }`}
                 />
               </button>
             </div>

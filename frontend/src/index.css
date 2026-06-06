@@ -229,3 +229,105 @@ body {
 .animate-popup-close {
   animation: popupClose .22s cubic-bezier(.22,1,.36,1) forwards;
 }
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #27272a 25%,
+    #3f3f46 50%,
+    #27272a 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #27272a 25%,
+    #3f3f46 50%,
+    #27272a 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+
+
+
+
+
+ 
+  .icon-wrap {
+    width: 40%;
+    height: 40%;
+    animation: bounceIn 1s cubic-bezier(0.22, 1.6, 0.36, 1) both;
+  }
+ 
+  /* Entrance: slide up from below with elastic overshoot */
+  @keyframes bounceIn {
+    0%   { opacity: 0; transform: translateY(160px) scale(0.75); }
+    55%  { opacity: 1; transform: translateY(-22px) scale(1.05); }
+    72%  { transform: translateY(10px) scale(0.97); }
+    86%  { transform: translateY(-7px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+  }
+ 
+  /* The wink face path group */
+  .wink-group {
+    transform-origin: 591px 383px;
+    animation: winkSquish 2.8s 1.05s infinite ease-in-out;
+  }
+ 
+  /* Mouth subtle tilt every cycle */
+  .mouth-path {
+    transform-origin: 491px 630px;
+    animation: mouthBounce 2.8s 1.05s infinite ease-in-out;
+  }
+ 
+  /* Full icon floating idle bob */
+  .icon-wrap {
+    animation:
+      bounceIn 5s cubic-bezier(0.22, 1.6, 0.36, 1) both,
+      idleBob 3.6s 3s infinite ease-in-out;
+  }
+ 
+  @keyframes idleBob {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+ 
+  @keyframes winkSquish {
+    0%   { transform: scaleY(1); }
+    5%   { transform: scaleY(0.06) scaleX(0.85); }
+    13%  { transform: scaleY(1.18) scaleX(0.96); }
+    22%  { transform: scaleY(1); }
+    100% { transform: scaleY(1); }
+  }
+ 
+  @keyframes mouthBounce {
+    0%   { transform: rotate(0deg); }
+    5%   { transform: rotate(-3deg) scale(1.04); }
+    16%  { transform: rotate(2deg) scale(0.98); }
+    26%  { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(0deg) scale(1); }
+  }

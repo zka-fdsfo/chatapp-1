@@ -109,6 +109,7 @@ socket.on("message_seen", ({ messageId, senderId }) => {
     messageId,
     senderId,
   });
+  console.log("EMIT SEEN:", messageId, senderId);
 
   io.to(senderId).emit("message_seen_update", {
     messageId,

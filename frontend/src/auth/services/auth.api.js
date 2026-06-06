@@ -114,3 +114,14 @@ export const markAsSeen = async (senderId) => {
     );
   }
 };
+
+export const changeinfocurrentuserApi = async (formData) => {
+  try {
+    const response = await api.put("/users/changecurrentuserinfo", formData);
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to update user information",
+    );
+  }
+};
