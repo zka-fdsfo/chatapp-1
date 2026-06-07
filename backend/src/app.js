@@ -8,9 +8,10 @@ import cookieParser from "cookie-parser";
 import userRouter from "./router/user.route.js";
 import messageRouter from "./router/massage.route.js";
 import cors from "cors";
+import Message from "./model/message.model.js";
 import { Server } from "socket.io";
 import { createServer } from "node:http";
-
+import mongoose from "mongoose";
 const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
@@ -57,28 +58,28 @@ io.on("connection", (socket) => {
   // =========================
   // SEND MESSAGE
   // =========================
- socket.on("send_message", (data) => {
-  const { senderId, receiverId, text } = data;
+//  socket.on("send_message", (data) => {
+//   const { senderId, receiverId, text } = data;
 
-  if (!senderId || !receiverId || !text?.trim()) {
-    return;
-  }
+//   if (!senderId || !receiverId || !text?.trim()) {
+//     return;
+//   }
 
-  const payload = {
-    _id: Date.now().toString(),
-    senderId,
-    receiverId,
-    text: text.trim(),
-    seen: true,
-    createdAt: new Date(),
-  };
+//   const payload = {
+//     _id: Date.now().toString(),
+//     senderId,
+//     receiverId,
+//     text: text.trim(),
+//     seen: false,
+//     createdAt: new Date(),
+//   };
 
 
-  // ONLY RECEIVER GETS SOCKET EVENT
-  io.to(receiverId).emit("receive_message", payload);
+//   // ONLY RECEIVER GETS SOCKET EVENT
+//   io.to(receiverId).emit("receive_message", payload);
 
-  console.log(`📩 Message from ${senderId} to ${receiverId}`);
-});
+//   console.log(`📩 Message from ${senderId} to ${receiverId}`);
+// });
 
   // =========================
   // TYPING
@@ -102,20 +103,22 @@ io.on("connection", (socket) => {
   // =========================
   // MESSAGE SEEN
   // =========================
-socket.on("message_seen", ({ messageId, senderId }) => {
-  if (!messageId || !senderId) return;
-
-  console.log("SEEN EVENT", {
+socket.on("message_seen", async ({ messageId, senderId }) => {
+  console.log("👀 MESSAGE SEEN", {
     messageId,
     senderId,
   });
-  console.log("EMIT SEEN:", messageId, senderId);
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    console.log("Invalid ObjectId:", messageId);
+    return;
+  }
+  await Message.findByIdAndUpdate(messageId, {
+    seen: true,
+  });
 
   io.to(senderId).emit("message_seen_update", {
     messageId,
   });
-
-  console.log(`👁 Message seen: ${messageId}`);
 });
 
   // =========================

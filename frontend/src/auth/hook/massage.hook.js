@@ -38,10 +38,11 @@ export const useMessage = () => {
   };
 
   /* ================= SEND MESSAGE ================= */
-const handleSendMessage = async (receiverId, text) => {
+const handleSendMessage = async (receiverId, text ,image) => {
   console.log("Send Message:", {
     receiverId,
     text,
+    image,
   });
 
   if (!text.trim()) return;

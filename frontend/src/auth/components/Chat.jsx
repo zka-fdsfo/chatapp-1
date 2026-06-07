@@ -28,7 +28,7 @@ const Chat = ({
   } = useMessage();
 
   const { user } = useAuth();
-  console.log("hi sele",selectedUser)
+
 
   const [messageText, setMessageText] = useState("");
   const [menuMsg, setMenuMsg] = useState(null);
@@ -118,6 +118,34 @@ useEffect(() => {
   };
 }, [selectedUser?._id]);
 
+
+useEffect(() => {
+  if (!socketRef.current) return;
+
+  const handleSeenUpdate = ({ messageId }) => {
+    console.log("✅ Seen Update:", messageId);
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        String(msg._id) === String(messageId)
+          ? { ...msg, seen: true }
+          : msg
+      )
+    );
+  };
+
+  socketRef.current.on(
+    "message_seen_update",
+    handleSeenUpdate
+  );
+
+  return () => {
+    socketRef.current.off(
+      "message_seen_update",
+      handleSeenUpdate
+    );
+  };
+}, []);
   // ================= SEEN UPDATE =================
   useEffect(() => {
     if (!socketRef.current || !user?._id) return;
@@ -142,24 +170,29 @@ useEffect(() => {
   }, [messages, user?._id]);
 
   // ================= LISTEN SEEN UPDATE =================
-  useEffect(() => {
-    if (!socketRef.current || !user?._id) return;
+  // useEffect(() => {
+  //   if (!socketRef.current || !user?._id) return;
 
-    const unseenMessages = messages.filter(
-      (msg) =>
-        String(msg.receiverId) === String(user._id) &&
-        !msg.seen
-    );
+  //   const unseenMessages = messages.filter(
+  //     (msg) =>
+  //       String(msg.receiverId) === String(user._id) &&
+  //       !msg.seen
+  //   );
 
-    unseenMessages.forEach((msg) => {
-      if (!msg._id) return;
+  //   unseenMessages.forEach((msg) => {
+  //     if (!msg._id) return;
 
-      socketRef.current.emit("message_seen", {
-        messageId: msg._id,
-        senderId: msg.senderId,
-      });
-    });
-  }, [messages, user?._id]);
+  //     socketRef.current.emit("message_seen", {
+  //       messageId: msg._id,
+  //       senderId: msg.senderId,
+  //     });
+  //     console.log("👀 Seen received:", {
+  //   messageId,
+  //   senderId,
+  //   socketId: socket.id,
+  // });
+  //   });
+  // }, [messages, user?._id]);
 
   if (!selectedUser) {
     return (
