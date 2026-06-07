@@ -36,31 +36,26 @@ const MessageInput = ({
   //   }
   // };
   const [image, setImage] = useState(null);
-  const sendMessage = async () => {
-   if (!messageText.trim() && !image) return;
+const sendMessage = async () => {
+  if (!messageText.trim() && !image) return;
 
-    const msg = {
-      senderId: user._id,
-      receiverId: selectedUser._id,
-      text: messageText,
-      image,
-      createdAt: new Date(),
-    };
+  const formData = new FormData();
 
-    await handleSendMessage(
-    selectedUser._id,
-    messageText,
-    image
-  );
-  console.log("masg",msg)
+  formData.append("receiver", selectedUser._id);
 
-  
+  if (messageText.trim()) {
+    formData.append("text", messageText);
+  }
 
-    socketRef.current.emit("send_message", msg);
+  if (image) {
+    formData.append("image", image);
+  }
 
-    setMessageText("");
-    setImage(null);
-  };
+  await handleSendMessage(formData);
+
+  setMessageText("");
+  setImage(null);
+};
   const [showEmoji, setShowEmoji] = useState(false);
   return (
     //   <div className="p-3 lg:px-20">
@@ -117,22 +112,22 @@ const MessageInput = ({
           />
         </div>
       )}
-{image && (
-  <div className="mb-2 relative w-fit">
-    <img
-      src={URL.createObjectURL(image)}
-      alt="preview"
-      className="w-32 h-32 object-cover rounded-lg"
-    />
+      {image && (
+        <div className="mb-2 relative w-fit">
+          <img
+            src={URL.createObjectURL(image)}
+            alt="preview"
+            className="w-32 h-32 object-cover rounded-lg"
+          />
 
-    <button
-      onClick={() => setImage(null)}
-      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
-    >
-      ×
-    </button>
-  </div>
-)}
+          <button
+            onClick={() => setImage(null)}
+            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {/* Input Bar */}
       <div className="flex items-end bg-[#1f1f1fc2] backdrop-blur-xs rounded-full px-4 py-3 gap-3">
         {/* Emoji Button */}

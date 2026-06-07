@@ -23,6 +23,7 @@ const MessageBubble = ({
       hour12: true,
     });
   };
+  console.log(msg)
 
   return (
     <div
@@ -53,7 +54,7 @@ const MessageBubble = ({
           `}
         >
           {/* MESSAGE TEXT */}
-          <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
+          {/* <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
             {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
               const isLink = /https?:\/\/[^\s]+/.test(part);
 
@@ -71,7 +72,50 @@ const MessageBubble = ({
                 <React.Fragment key={`text-${i}`}>{part}</React.Fragment>
               );
             })}
-          </div>
+          </div> */}
+          {/* MESSAGE CONTENT */}
+<div className="flex flex-col gap-2 max-w-full">
+
+  {/* IMAGE */}
+  {msg.image && (
+    <img
+      src={msg.image}
+      alt="message"
+      className="
+        max-w-[280px]
+        max-h-[350px]
+        rounded-xl
+        object-cover
+        cursor-pointer
+      "
+    />
+  )}
+
+  {/* TEXT */}
+  {msg.text && (
+    <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
+      {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
+        const isLink = /https?:\/\/[^\s]+/.test(part);
+
+        return isLink ? (
+          <a
+            key={`link-${i}`}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline break-all"
+          >
+            {part}
+          </a>
+        ) : (
+          <React.Fragment key={`text-${i}`}>
+            {part}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  )}
+</div>
 
           {/* TIME + TICKS */}
           <div

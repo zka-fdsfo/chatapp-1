@@ -7,18 +7,23 @@ import imagekit from "../db/imagekit.js";
  * =========================
  */
 export const sendMessage = async (req, res) => {
+    console.log("BODY:", req.body);
+  console.log("FILE:", req.file);
   try {
     const { receiver, text } = req.body;
+    if (!receiver) {
+  return res.status(400).json({
+    message: "Receiver is required",
+  });
+}
     const sender = req.user._id; // assuming auth middleware sets req.user
-
+    let image="";
     if (!receiver) {
       return res.status(400).json({ message: "Receiver is required" });
     }
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Message cannot be empty" });
-    }
-    let image="";
+
+
      if (req.file) {
           const uploadedImage = await imagekit.files.upload({
             file: req.file.buffer.toString("base64"),
@@ -28,7 +33,11 @@ export const sendMessage = async (req, res) => {
     
           image = uploadedImage.url;
         }
-
+   if (!text?.trim() && !image) {
+  return res.status(400).json({
+    message: "Message cannot be empty",
+  });
+}
     const message = await Message.create({
       sender,
       receiver,

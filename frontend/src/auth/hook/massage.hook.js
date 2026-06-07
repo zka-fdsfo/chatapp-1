@@ -38,22 +38,13 @@ export const useMessage = () => {
   };
 
   /* ================= SEND MESSAGE ================= */
-const handleSendMessage = async (receiverId, text ,image) => {
-  console.log("Send Message:", {
-    receiverId,
-    text,
-    image,
-  });
+const handleSendMessage = async (formData) => {
 
-  if (!text.trim()) return;
+
+
 
   try {
-    const newMessage = await sendMessage(
-      receiverId,
-      text
-    );
-
-    console.log("API RESPONSE:", newMessage);
+    const newMessage = await sendMessage(formData);
 
     setMessages((prev) => [
       ...prev,

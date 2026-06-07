@@ -91,12 +91,12 @@ export const getallchatusers = async (userId) => {
   }
 };
 
-export const sendMessage = async (receiverId, content) => {
+export const sendMessage = async (formData) => {
   try {
-    const response = await api.post("/messages/send", {
-      receiver: receiverId,
-      text: content,
-    });
+    console.log("working")
+    const response = await api.post("/messages/send",
+      formData
+    );
     return response.data.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to send message");

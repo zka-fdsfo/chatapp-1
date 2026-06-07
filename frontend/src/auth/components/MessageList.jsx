@@ -21,9 +21,15 @@ const MessageList = ({
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   // FILTER VALID MESSAGES
-  const validMessages = messages.filter(
-    (msg) => msg && (msg.text || msg.message),
-  );
+const validMessages = messages.filter(
+  (msg) =>
+    msg &&
+    (
+      msg.text ||
+      msg.message ||
+      msg.image
+    )
+);
 
   // AUTO SCROLL ON NEW MESSAGE
   useEffect(() => {
