@@ -23,7 +23,7 @@ const MessageBubble = ({
       hour12: true,
     });
   };
-  console.log(msg)
+
 
   return (
     <div
@@ -88,6 +88,7 @@ const MessageBubble = ({
         object-cover
         cursor-pointer
       "
+      onClick={() => setViewerImage(msg.image)}
     />
   )}
 

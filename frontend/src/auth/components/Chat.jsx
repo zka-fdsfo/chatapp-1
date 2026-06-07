@@ -9,6 +9,7 @@ import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
 import MessageListSkeleton from "./MessageListSkeleton";
 import ChatSkeleton from "./ChatSkeleton";
+import ImageViewer from "./ImageViewer.jsx";
 
 const Chat = ({
   selectedUser,
@@ -37,6 +38,8 @@ const Chat = ({
   const [loadingMessages, setLoadingMessages] = useState(false);
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
+
+  const [viewerImage, setViewerImage] = useState(null);
 
   const currentUserId = user?._id;
 
@@ -221,7 +224,10 @@ useEffect(() => {
           />
         </div>
       </div>
-
+      <ImageViewer
+  image={viewerImage}
+  onClose={() => setViewerImage(null)}
+/>
       {/* ================= CHAT HEADER ================= */}
       <ChatHeader
         selectedUser={selectedUser}
@@ -243,6 +249,7 @@ useEffect(() => {
         setEditMsg={setEditMsg}
         setEditText={setEditText}
         handleDeleteMessage={handleDeleteMessage}
+        setViewerImage={setViewerImage}   
       />
 
       {/* ================= INPUT ================= */}

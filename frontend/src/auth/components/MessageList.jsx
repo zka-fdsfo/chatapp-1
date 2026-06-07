@@ -13,6 +13,7 @@ const MessageList = ({
   setEditText,
   setuserid,
   handleDeleteMessage,
+   setViewerImage,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -108,6 +109,7 @@ const validMessages = messages.filter(
                 setEditMsg={setEditMsg}
                 setEditText={setEditText}
                 handleDeleteMessage={handleDeleteMessage}
+                setViewerImage={setViewerImage}
               />
             );
           })
