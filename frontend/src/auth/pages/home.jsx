@@ -26,7 +26,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Menu, Search, Archive, Send } from "lucide-react";
+import { Menu, Search, Archive, Send,MessageCircle } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
@@ -377,7 +377,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade1"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/65/b0/59/65b05933ab0776a765ef40a47564fb80.gif')",
+                "url('https://i.pinimg.com/736x/81/c1/79/81c1798f090c8090aefca4886ea768d2.jpg')",
             }}
           />
 
@@ -386,7 +386,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade2"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/5c/25/73/5c25734971c2c39c85b071e2966e9427.gif')",
+                "url('https://i.pinimg.com/736x/c6/c5/f1/c6c5f19facf16c2c06c5f2997e5f7193.jpg')",
             }}
           />
 
@@ -455,13 +455,16 @@ export default function UsersPage() {
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
         ${selectedUser
-                ? "-translate-x-full opacity-0"
-                : "translate-x-0 opacity-100"
+                ? "-translate-x-full opacity-0 "
+                : "translate-x-0 opacity-100 bg-cover bg-top"
               }
 
-      `}
+          `
+            
+    }
+    style={selectedUser ? {} : {backgroundImage: "url('https://cdn.dribbble.com/userupload/23419551/file/original-15d275d144c157af21c3a52ee4aa2289.png?resize=1024x768&vertical=center')"}}
           >
-            <div className="text-center flex flex-col items-center ">
+            <div className="text-center flex flex-col items-center bg-[#1d1d1d00] py-20 rounded-2xl ">
               {/* <img
                 src="./public/Frame 1 (42).png"
                 alt="Welcome"
@@ -498,12 +501,13 @@ export default function UsersPage() {
   </svg>
 </div>
 
-              <h1 className="text-3xl md:text-5xl font-bold text-white">
-                Zello Chat App
+              <h1 className="text-3xl md:text-[2.5vw] w-[80%] font-bold text-white capitalize">
+                   Zello Chat App
               </h1>
 
-              <p className="text-zinc-300 mt-3 text-sm md:text-base">
-                Select a chat to start messaging
+              <p className="text-zinc-300 mt-1 text-2xl md:text-base capitalize ">
+              
+                  Select a chat to start messaging
               </p>
             </div>
           </div>
