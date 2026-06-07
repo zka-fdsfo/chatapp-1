@@ -446,7 +446,7 @@ export default function UsersPage() {
             className={`
         absolute inset-0 h-full
 
-        flex items-center justify-center p-6
+        flex items-center justify-center 
 
         transition-all
         duration-500
@@ -455,7 +455,7 @@ export default function UsersPage() {
         ${
           selectedUser
             ? "-translate-x-full opacity-0 "
-            : "translate-x-0 opacity-100 bg-cover bg-top"
+            : "translate-x-0 opacity-100 bg-cover bg-center"
         }
 
           `}
@@ -464,21 +464,21 @@ export default function UsersPage() {
                 ? {}
                 : {
                     backgroundImage:
-                      "url('https://cdn.dribbble.com/userupload/23419551/file/original-15d275d144c157af21c3a52ee4aa2289.png?resize=1024x768&vertical=center')",
+                      "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
                   }
             }
           >
-            <div className="text-center flex flex-col items-center bg-[#1d1d1d00] py-20 rounded-2xl ">
+            <div className="text-center flex flex-col justify-center  items-center bg-[#0000007c] w-full h-full ">
               {/* <img
                 src="./public/Frame 1 (42).png"
                 alt="Welcome"
                 className="w-[20px] md:w-40 mx-auto mb-6"
               /> */}
 
-              <div class="icon-wrap" aria-label="Winking chat bubble icon">
+              <div class="icon-wrap" aria-label="Winking chat bubble icon" className="h-[20%] mb-2">
                 <svg
                   width="100%"
-                  height="50%"
+                  height="100%"
                   viewBox="0 0 942 942"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -534,7 +534,7 @@ export default function UsersPage() {
                 </svg>
               </div>
 
-              <h1 className="text-3xl md:text-[2.5vw] w-[80%] font-bold text-white capitalize">
+              <h1 className="text-4xl md:text-[3.5vw] w-[80%] font-bold text-white capitalize">
                 NexChat
               </h1>
 
