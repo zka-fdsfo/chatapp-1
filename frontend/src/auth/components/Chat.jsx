@@ -9,7 +9,6 @@ import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
 import MessageListSkeleton from "./MessageListSkeleton";
 import ChatSkeleton from "./ChatSkeleton";
-import ImageViewer from "./ImageViewer.jsx";
 
 const Chat = ({
   selectedUser,
@@ -17,6 +16,7 @@ const Chat = ({
   setOnlineUsers,
   onlineUsers,
   lastMessage,
+  setViewerImage,
 }) => {
   const socketRef = useRef(null);
 
@@ -30,7 +30,6 @@ const Chat = ({
 
   const { user } = useAuth();
 
-
   const [messageText, setMessageText] = useState("");
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
@@ -38,8 +37,6 @@ const Chat = ({
   const [loadingMessages, setLoadingMessages] = useState(false);
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
-
-  const [viewerImage, setViewerImage] = useState(null);
 
   const currentUserId = user?._id;
 
@@ -66,98 +63,81 @@ const Chat = ({
   }, [user?._id]);
 
   // ================= FETCH MESSAGES =================
- useEffect(() => {
-  const loadMessages = async () => {
-    if (!selectedUser?._id) return;
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!selectedUser?._id) return;
 
-    setLoadingMessages(true);
+      setLoadingMessages(true);
 
-    try {
-      await fetchMessages(selectedUser._id);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoadingMessages(false);
-    }
-  };
+      try {
+        await fetchMessages(selectedUser._id);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingMessages(false);
+      }
+    };
 
-  loadMessages();
-}, [selectedUser?._id]);
+    loadMessages();
+  }, [selectedUser?._id]);
 
   // ================= RECEIVE MESSAGE =================
-useEffect(() => {
-  if (!socketRef.current) return;
+  useEffect(() => {
+    if (!socketRef.current) return;
 
-  const handleReceiveMessage = (msg) => {
-    const isActiveChat =
-  (String(msg.senderId) === String(selectedUser?._id) &&
-    String(msg.receiverId) === String(user?._id)) ||
-  (String(msg.senderId) === String(user?._id) &&
-    String(msg.receiverId) === String(selectedUser?._id));
+    const handleReceiveMessage = (msg) => {
+      const isActiveChat =
+        (String(msg.senderId) === String(selectedUser?._id) &&
+          String(msg.receiverId) === String(user?._id)) ||
+        (String(msg.senderId) === String(user?._id) &&
+          String(msg.receiverId) === String(selectedUser?._id));
 
-    if (!isActiveChat) return;
+      if (!isActiveChat) return;
 
-    setMessages((prev) => {
-      const exists = prev.some(
-        (m) => String(m._id) === String(msg._id)
+      setMessages((prev) => {
+        const exists = prev.some((m) => String(m._id) === String(msg._id));
+
+        if (exists) return prev;
+
+        return [...prev, msg];
+      });
+    };
+
+    socketRef.current.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socketRef.current.off("receive_message", handleReceiveMessage);
+    };
+  }, [selectedUser?._id]);
+
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    const handleSeenUpdate = ({ messageId }) => {
+      console.log("✅ Seen Update:", messageId);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          String(msg._id) === String(messageId) ? { ...msg, seen: true } : msg,
+        ),
       );
+    };
 
-      if (exists) return prev;
+    socketRef.current.on("message_seen_update", handleSeenUpdate);
 
-      return [...prev, msg];
-    });
-  };
-
-  socketRef.current.on(
-    "receive_message",
-    handleReceiveMessage
-  );
-
-  return () => {
-    socketRef.current.off(
-      "receive_message",
-      handleReceiveMessage
-    );
-  };
-}, [selectedUser?._id]);
-
-
-useEffect(() => {
-  if (!socketRef.current) return;
-
-  const handleSeenUpdate = ({ messageId }) => {
-    console.log("✅ Seen Update:", messageId);
-
-    setMessages((prev) =>
-      prev.map((msg) =>
-        String(msg._id) === String(messageId)
-          ? { ...msg, seen: true }
-          : msg
-      )
-    );
-  };
-
-  socketRef.current.on(
-    "message_seen_update",
-    handleSeenUpdate
-  );
-
-  return () => {
-    socketRef.current.off(
-      "message_seen_update",
-      handleSeenUpdate
-    );
-  };
-}, []);
+    return () => {
+      socketRef.current.off("message_seen_update", handleSeenUpdate);
+    };
+  }, []);
   // ================= SEEN UPDATE =================
   useEffect(() => {
     if (!socketRef.current || !user?._id) return;
 
     const unseenMessages = messages.filter(
-  (msg) =>
-    String(msg.receiver || msg.receiverId) === String(user._id) &&
-    !msg.seen
-);
+      (msg) =>
+        String(msg.receiver || msg.receiverId) === String(user._id) &&
+        !msg.seen,
+    );
 
     unseenMessages.forEach((msg) => {
       if (!msg._id) return;
@@ -165,10 +145,10 @@ useEffect(() => {
         messageId: msg._id,
         senderId: msg.senderId,
       });
-     socketRef.current.emit("message_seen", {
-  messageId: msg._id,
-  senderId: msg.sender || msg.senderId,
-});
+      socketRef.current.emit("message_seen", {
+        messageId: msg._id,
+        senderId: msg.sender || msg.senderId,
+      });
     });
   }, [messages, user?._id]);
 
@@ -224,10 +204,7 @@ useEffect(() => {
           />
         </div>
       </div>
-      <ImageViewer
-  image={viewerImage}
-  onClose={() => setViewerImage(null)}
-/>
+
       {/* ================= CHAT HEADER ================= */}
       <ChatHeader
         selectedUser={selectedUser}
@@ -242,6 +219,10 @@ useEffect(() => {
       <MessageList
         messages={messages}
         setuserid={selectedUser?._id}
+        selectedUser={{
+          name: selectedUser.name,
+          avatar: selectedUser.avatar,
+        }}
         setMessages={setMessages}
         currentUserId={currentUserId}
         menuMsg={menuMsg}
@@ -249,7 +230,7 @@ useEffect(() => {
         setEditMsg={setEditMsg}
         setEditText={setEditText}
         handleDeleteMessage={handleDeleteMessage}
-        setViewerImage={setViewerImage}   
+        setViewerImage={setViewerImage}
       />
 
       {/* ================= INPUT ================= */}

@@ -33,6 +33,7 @@ import { useAuth } from "../hook/hookauth";
 import SidebarPopup from "../components/SidebarPopup.jsx";
 import EditProfile from "../components/EditProfile.jsx";
 import UserSkeleton from "../components/UsersSkeleton.jsx";
+import ImageViewer from "../components/ImageViewer.jsx";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -44,6 +45,7 @@ export default function UsersPage() {
   const currentUserId = user?._id || null;
   const [showProfile, setShowProfile] = useState(false);
   const [closingProfile, setClosingProfile] = useState(false);
+  const [viewerImage, setViewerImage] = useState(null);
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
   // SOCKET.IO
@@ -169,6 +171,10 @@ export default function UsersPage() {
 
   return (
     <div className="h-screen bg-black flex overflow-hidden">
+            <ImageViewer
+  image={viewerImage}
+  onClose={() => setViewerImage(null)}
+/>
       {/* SIDEBAR */}
       {/* SIDEBAR */}
       <div
@@ -436,6 +442,7 @@ export default function UsersPage() {
                 setOnlineUsers={setOnlineUsers}
                 onlineUsers={onlineUsers}
                 lastMessage={selectedUser.lastMessage}
+                setViewerImage={setViewerImage}
                 className="h-full w-full "
               />
             )}

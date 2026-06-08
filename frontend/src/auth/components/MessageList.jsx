@@ -14,6 +14,7 @@ const MessageList = ({
   setuserid,
   handleDeleteMessage,
    setViewerImage,
+   selectedUser,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -110,6 +111,7 @@ const validMessages = messages.filter(
                 setEditText={setEditText}
                 handleDeleteMessage={handleDeleteMessage}
                 setViewerImage={setViewerImage}
+                selectedUser={selectedUser}
               />
             );
           })

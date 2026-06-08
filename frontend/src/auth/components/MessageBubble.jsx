@@ -9,6 +9,8 @@ const MessageBubble = ({
   setEditMsg,
   setEditText,
   handleDeleteMessage,
+  setViewerImage,
+  selectedUser,
 }) => {
 
 
@@ -24,7 +26,7 @@ const MessageBubble = ({
     });
   };
 
-
+ 
   return (
     <div
       className={`flex ${
@@ -49,6 +51,14 @@ const MessageBubble = ({
               isMe
                 ? "bg-[#8774e1] hover:bg-[#a494ff] text-white rounded-br-md p-3 pb-2"
                 : "bg-[#212121] hover:bg-[#414040] text-white rounded-bl-md p-3 pb-2"
+            }
+            ${
+              msg.image ?"flex-col":""
+            }
+            ${
+           msg.image && !msg.text?"px-0":""
+
+              
             }
 
           `}
@@ -88,7 +98,14 @@ const MessageBubble = ({
         object-cover
         cursor-pointer
       "
-      onClick={() => setViewerImage(msg.image)}
+     onClick={() =>
+  setViewerImage({
+    name: selectedUser?.name,
+    avatar: selectedUser?.avatar,
+    image: msg?.image,
+    createdAt: msg?.createdAt,
+  })
+}
     />
   )}
 
