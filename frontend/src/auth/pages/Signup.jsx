@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../hook/hookauth";
 import { useNavigate, Link } from "react-router-dom";
+import AppSkeleton from '../components/AppSkeleton.jsx';
 
 export default function SignupPage() {
   const navigate = useNavigate();

@@ -8,9 +8,10 @@ import cookieParser from "cookie-parser";
 import userRouter from "./router/user.route.js";
 import messageRouter from "./router/massage.route.js";
 import cors from "cors";
+import Message from "./model/message.model.js";
 import { Server } from "socket.io";
 import { createServer } from "node:http";
-
+import mongoose from "mongoose";
 const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
@@ -30,149 +31,14 @@ const io = new Server(server, {
   },
 });
 const onlineUsers = new Map();
-// userId -> socketId
 
-// io.on("connection", (socket) => {
-//   console.log("🟢 user connected:", socket.id);
 
-//   // USER ONLINE
-//   socket.on("online-user", (userId) => {
-//     onlineUsers.set(userId, socket.id);
-
-//     socket.join(userId);
-
-//     io.emit("online-users", Array.from(onlineUsers.keys()));
-
-//     console.log(`User ${userId} is online`);
-//   });
-
-//    // ✅ REAL-TIME MESSAGE HANDLING
-//   socket.on("send_message", (data) => {
-//     // data = { senderId, receiverId, message }
-
-//     const { senderId, receiverId, message } = data;
-
-//     // send to receiver
-//     io.to(senderId).emit("receive_message", {
-//   senderId,
-//   receiverId,
-//   message,
-//   createdAt: new Date(),
-// });
-
-//     // also send back to sender (for UI sync)
-//  // send only to receiver
-// io.to(receiverId).emit("receive_message", {
-//   senderId,
-//   receiverId,
-//   message,
-//   createdAt: new Date(),
-// });
-//   });
-//   // USER DISCONNECT
-//   socket.on("disconnect", () => {
-//     for (let [userId, socketId] of onlineUsers.entries()) {
-//       if (socketId === socket.id) {
-//         onlineUsers.delete(userId);
-//         break;
-//       }
-//     }
-
-//     io.emit("online-users", Array.from(onlineUsers.keys()));
-
-//     console.log("🔴 user disconnected:", socket.id);
-//   });
-// });
-
-//   io.on("connection", (socket) => {
-//     console.log("🟢 user connected:", socket.id);
-
-//     // =========================
-//     // USER GO ONLINE
-//     // =========================
-//     socket.on("online-user", (userId) => {
-//       if (!userId) return;
-
-//       if (!onlineUsers.has(userId)) {
-//         onlineUsers.set(userId, new Set());
-//       }
-
-//       onlineUsers.get(userId).add(socket.id);
-
-//       socket.join(userId);
-
-//       io.emit("online-users", Array.from(onlineUsers.keys()));
-
-//       console.log(`🟢 User ${userId} is online`);
-//     });
-
-//     // =========================
-//     // REAL-TIME MESSAGE
-//     // =========================
-//     socket.on("send_message", (data) => {
-//       const { senderId, receiverId, text } = data;
-
-//       if (!senderId || !receiverId || !text) return;
-
-//       const payload = {
-//         senderId,
-//         receiverId,
-//         text,
-
-//         createdAt: new Date(),
-//       };
-
-//       // send ONLY to receiver
-//       io.to(receiverId).emit("receive_message", payload);
-
-//       console.log(`📩 Message from ${senderId} to ${receiverId}`);
-//     });
-
-//     // =========================
-//     // TYPING (OPTIONAL)
-//     // =========================
-//     socket.on("typing", ({ senderId, receiverId }) => {
-//       io.to(receiverId).emit("typing", { senderId });
-//     });
-
-//     socket.on("stop-typing", ({ senderId, receiverId }) => {
-//       io.to(receiverId).emit("stop-typing", { senderId });
-//     });
-
-//     socket.on("message_seen", async ({ messageId, userId }) => {
-//   // update DB if you want
-//   // await Message.findByIdAndUpdate(messageId, { seen: true });
-
-//   // notify sender
-//   io.emit("message_seen_update", {
-//     messageId,
-//     userId,
-//   });
-// });
-//     // =========================
-//     // DISCONNECT HANDLING
-//     // =========================
-//     socket.on("disconnect", () => {
-//       for (let [userId, socketSet] of onlineUsers.entries()) {
-//         socketSet.delete(socket.id);
-
-//         if (socketSet.size === 0) {
-//           onlineUsers.delete(userId);
-//         }
-//       }
-
-//       io.emit("online-users", Array.from(onlineUsers.keys()));
-
-//       console.log("🔴 user disconnected:", socket.id);
-//     });
-//   });
 io.on("connection", (socket) => {
   console.log("🟢 user connected:", socket.id);
 
   // =========================
-  // ONLINE USER
+  // USER ONLINE
   // =========================
-
   socket.on("online-user", (userId) => {
     if (!userId) return;
 
@@ -192,65 +58,95 @@ io.on("connection", (socket) => {
   // =========================
   // SEND MESSAGE
   // =========================
-  socket.on("send_message", (data) => {
-    const { senderId, receiverId, text } = data;
+//  socket.on("send_message", (data) => {
+//   const { senderId, receiverId, text } = data;
 
-    if (!senderId || !receiverId || !text) return;
+//   if (!senderId || !receiverId || !text?.trim()) {
+//     return;
+//   }
 
-    const payload = {
-      senderId,
-      receiverId,
-      text,
-      seen: true, // IMPORTANT
-      createdAt: new Date(),
-    };
+//   const payload = {
+//     _id: Date.now().toString(),
+//     senderId,
+//     receiverId,
+//     text: text.trim(),
+//     seen: false,
+//     createdAt: new Date(),
+//   };
 
-    // send ONLY to receiver
-    io.to(receiverId).emit("receive_message", payload);
 
-    console.log(`📩 Message from ${senderId} to ${receiverId}`);
-  });
+//   // ONLY RECEIVER GETS SOCKET EVENT
+//   io.to(receiverId).emit("receive_message", payload);
+
+//   console.log(`📩 Message from ${senderId} to ${receiverId}`);
+// });
 
   // =========================
   // TYPING
   // =========================
   socket.on("typing", ({ senderId, receiverId }) => {
-    io.to(receiverId).emit("typing", { senderId });
+    if (!senderId || !receiverId) return;
+
+    io.to(receiverId).emit("typing", {
+      senderId,
+    });
   });
 
   socket.on("stop-typing", ({ senderId, receiverId }) => {
-    io.to(receiverId).emit("stop-typing", { senderId });
-  });
+    if (!senderId || !receiverId) return;
 
-  // =========================
-  // MESSAGE SEEN (BLUE TICK FIX)
-  // =========================
-  socket.on("message_seen", ({ messageId, senderId }) => {
-    if (!messageId || !senderId) return;
-
-    // send update ONLY to original sender
-    io.to(senderId).emit("message_seen_update", {
-      messageId,
+    io.to(receiverId).emit("stop-typing", {
+      senderId,
     });
-
-    console.log("👁 message seen:", messageId);
   });
+
+  // =========================
+  // MESSAGE SEEN
+  // =========================
+socket.on("message_seen", async ({ messageId, senderId }) => {
+  console.log("👀 MESSAGE SEEN", {
+    messageId,
+    senderId,
+  });
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    console.log("Invalid ObjectId:", messageId);
+    return;
+  }
+  await Message.findByIdAndUpdate(messageId, {
+    seen: true,
+  });
+
+  io.to(senderId).emit("message_seen_update", {
+    messageId,
+  });
+});
 
   // =========================
   // DISCONNECT
   // =========================
   socket.on("disconnect", () => {
-    for (let [userId, socketSet] of onlineUsers.entries()) {
-      socketSet.delete(socket.id);
+    let userWentOffline = false;
 
-      if (socketSet.size === 0) {
-        onlineUsers.delete(userId);
+    for (const [userId, socketSet] of onlineUsers.entries()) {
+      if (socketSet.has(socket.id)) {
+        socketSet.delete(socket.id);
+
+        if (socketSet.size === 0) {
+          onlineUsers.delete(userId);
+          userWentOffline = true;
+
+          console.log(`🔴 User ${userId} is offline`);
+        }
+
+        break;
       }
     }
 
-    io.emit("online-users", Array.from(onlineUsers.keys()));
+    if (userWentOffline) {
+      io.emit("online-users", Array.from(onlineUsers.keys()));
+    }
 
-    console.log("🔴 user disconnected:", socket.id);
+    console.log("🔴 socket disconnected:", socket.id);
   });
 });
 

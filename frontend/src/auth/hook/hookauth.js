@@ -7,6 +7,7 @@ import {
   getallusers,
   verifyaccessToken,
   verifyrefreshToken,
+  changeinfocurrentuserApi,
 } from "../services/auth.api.js";
 
 export const useAuth = () => {
@@ -17,8 +18,12 @@ export const useAuth = () => {
     setUser,
     loading,
     setLoading,
-  } = AuthContextValue;
 
+  } = AuthContextValue;
+const currentusernameimg = {
+  name: user?.name,
+  avatar: user?.avatar,
+};
   // LOGIN
   const handleLogin = async (email, password) => {
     setLoading(true);
@@ -71,12 +76,22 @@ export const useAuth = () => {
 
       setUser(userData);
     } catch (error) {
+      try {
+        await verifyrefreshToken();
+        await handleVerifyaccessToken();
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+
+        setUser(null);
+      }
+      finally {
+
       console.error("Token verification failed:", error);
 
       setUser(null);
-    } finally {
       setLoading(false);
-    }
+    }}
+
   };
 
   // REFRESH TOKEN
@@ -90,12 +105,33 @@ export const useAuth = () => {
 
       setUser(null);
     } finally {
+      
       setLoading(false);
     }
   };
 
+const changeinfocurrentuser = async (formData) => {
+  setLoading(true);
+
+  try {
+    const updatedUser = await changeinfocurrentuserApi(formData);
+
+    console.log(updatedUser);
+
+    setUser(updatedUser);
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Failed to update user info:", error);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
+
   return {
     user,
+    currentusernameimg,
     setUser,
     loading,
     setLoading,
@@ -104,5 +140,6 @@ export const useAuth = () => {
     fetchAllUsers,
     handleVerifyaccessToken,
     refreshUserToken,
+    changeinfocurrentuser,
   };
 };

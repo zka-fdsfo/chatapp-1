@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hook/hookauth';
 import { useNavigate, Link } from "react-router-dom";
-
+import AppSkeleton from '../components/AppSkeleton.jsx';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loading, handleLogin } = useAuth();
@@ -16,8 +16,8 @@ export default function LoginPage() {
   }
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="h-full  bg-zinc-950 p-2">
+        <AppSkeleton />
       </div>
     );
   }

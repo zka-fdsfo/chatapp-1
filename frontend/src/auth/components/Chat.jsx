@@ -7,6 +7,8 @@ import MessageInput from "./MessageInput";
 import ProfilePage from "./ProfilePage.jsx";
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
+import MessageListSkeleton from "./MessageListSkeleton";
+import ChatSkeleton from "./ChatSkeleton";
 
 const Chat = ({
   selectedUser,
@@ -14,6 +16,7 @@ const Chat = ({
   setOnlineUsers,
   onlineUsers,
   lastMessage,
+  setViewerImage,
 }) => {
   const socketRef = useRef(null);
 
@@ -31,7 +34,7 @@ const Chat = ({
   const [menuMsg, setMenuMsg] = useState(null);
   const [editMsg, setEditMsg] = useState(null);
   const [editText, setEditText] = useState("");
-
+  const [loadingMessages, setLoadingMessages] = useState(false);
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
 
@@ -39,7 +42,7 @@ const Chat = ({
 
   // ================= SOCKET INIT =================
   useEffect(() => {
-    socketRef.current = io("http://192.168.99.196:5000", {
+    socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
       withCredentials: true,
     });
 
@@ -47,20 +50,35 @@ const Chat = ({
       console.log("🟢 Socket connected:", socketRef.current.id);
     });
 
-    return () => socketRef.current.disconnect();
+    return () => {
+      socketRef.current.disconnect();
+    };
   }, []);
 
   // ================= ONLINE USER =================
   useEffect(() => {
     if (!user?._id || !socketRef.current) return;
+
     socketRef.current.emit("online-user", user._id);
   }, [user?._id]);
 
   // ================= FETCH MESSAGES =================
   useEffect(() => {
-    if (selectedUser?._id) {
-      fetchMessages(selectedUser._id);
-    }
+    const loadMessages = async () => {
+      if (!selectedUser?._id) return;
+
+      setLoadingMessages(true);
+
+      try {
+        await fetchMessages(selectedUser._id);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingMessages(false);
+      }
+    };
+
+    loadMessages();
   }, [selectedUser?._id]);
 
   // ================= RECEIVE MESSAGE =================
@@ -69,14 +87,18 @@ const Chat = ({
 
     const handleReceiveMessage = (msg) => {
       const isActiveChat =
-        msg.senderId === selectedUser?._id ||
-        msg.receiverId === selectedUser?._id;
+        (String(msg.senderId) === String(selectedUser?._id) &&
+          String(msg.receiverId) === String(user?._id)) ||
+        (String(msg.senderId) === String(user?._id) &&
+          String(msg.receiverId) === String(selectedUser?._id));
 
       if (!isActiveChat) return;
 
       setMessages((prev) => {
-        const exists = prev.some((m) => m._id === msg._id);
+        const exists = prev.some((m) => String(m._id) === String(msg._id));
+
         if (exists) return prev;
+
         return [...prev, msg];
       });
     };
@@ -88,30 +110,15 @@ const Chat = ({
     };
   }, [selectedUser?._id]);
 
-  // ================= SEEN UPDATE =================
-  useEffect(() => {
-    if (!socketRef.current || !messages.length) return;
-
-    const unseen = messages.filter(
-      (m) => m.receiverId === user?._id && !m.seen,
-    );
-
-    unseen.forEach((msg) => {
-      socketRef.current.emit("message_seen_update", {
-        messageId: msg._id,
-        userId: user?._id,
-      });
-    });
-  }, [messages, selectedUser?._id, user?._id]);
-
-  // ================= LISTEN SEEN UPDATE =================
   useEffect(() => {
     if (!socketRef.current) return;
 
     const handleSeenUpdate = ({ messageId }) => {
+      console.log("✅ Seen Update:", messageId);
+
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, seen: true } : msg,
+          String(msg._id) === String(messageId) ? { ...msg, seen: true } : msg,
         ),
       );
     };
@@ -122,6 +129,53 @@ const Chat = ({
       socketRef.current.off("message_seen_update", handleSeenUpdate);
     };
   }, []);
+  // ================= SEEN UPDATE =================
+  useEffect(() => {
+    if (!socketRef.current || !user?._id) return;
+
+    const unseenMessages = messages.filter(
+      (msg) =>
+        String(msg.receiver || msg.receiverId) === String(user._id) &&
+        !msg.seen,
+    );
+
+    unseenMessages.forEach((msg) => {
+      if (!msg._id) return;
+      console.log("SEEN EVENT", {
+        messageId: msg._id,
+        senderId: msg.senderId,
+      });
+      socketRef.current.emit("message_seen", {
+        messageId: msg._id,
+        senderId: msg.sender || msg.senderId,
+      });
+    });
+  }, [messages, user?._id]);
+
+  // ================= LISTEN SEEN UPDATE =================
+  // useEffect(() => {
+  //   if (!socketRef.current || !user?._id) return;
+
+  //   const unseenMessages = messages.filter(
+  //     (msg) =>
+  //       String(msg.receiverId) === String(user._id) &&
+  //       !msg.seen
+  //   );
+
+  //   unseenMessages.forEach((msg) => {
+  //     if (!msg._id) return;
+
+  //     socketRef.current.emit("message_seen", {
+  //       messageId: msg._id,
+  //       senderId: msg.senderId,
+  //     });
+  //     console.log("👀 Seen received:", {
+  //   messageId,
+  //   senderId,
+  //   socketId: socket.id,
+  // });
+  //   });
+  // }, [messages, user?._id]);
 
   if (!selectedUser) {
     return (
@@ -165,6 +219,10 @@ const Chat = ({
       <MessageList
         messages={messages}
         setuserid={selectedUser?._id}
+        selectedUser={{
+          name: selectedUser.name,
+          avatar: selectedUser.avatar,
+        }}
         setMessages={setMessages}
         currentUserId={currentUserId}
         menuMsg={menuMsg}
@@ -172,6 +230,7 @@ const Chat = ({
         setEditMsg={setEditMsg}
         setEditText={setEditText}
         handleDeleteMessage={handleDeleteMessage}
+        setViewerImage={setViewerImage}
       />
 
       {/* ================= INPUT ================= */}

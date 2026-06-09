@@ -1,10 +1,79 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://192.168.99.196:5000/api",
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
+let isRefreshing = false;
+let failedQueue = [];
 
+const processQueue = (error) => {
+  failedQueue.forEach((prom) => {
+    error ? prom.reject(error) : prom.resolve();
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    // Skip auth endpoints
+    const isAuthRoute =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
+      originalRequest.url?.includes("/auth/refresh-token") ||
+      originalRequest.url?.includes("/auth/verify-token");
+
+    if (isAuthRoute) {
+      return Promise.reject(error);
+    }
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await api.get("/auth/refresh-token");
+
+        processQueue(null);
+
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError);
+
+        // clear local state if needed
+        localStorage.clear();
+
+        if (window.location.pathname !== "/login") {
+          window.location.replace("/login");
+        }
+
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 export const login = async (email, password) => {
   console.log(email, password, "from api");
   try {
@@ -29,6 +98,7 @@ export const getallusers = async () => {
     const response = await api.get("/users/allusers");
     return response.data;
   } catch (error) {
+    
     throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };
@@ -65,12 +135,12 @@ export const getallchatusers = async (userId) => {
   }
 };
 
-export const sendMessage = async (receiverId, content) => {
+export const sendMessage = async (formData) => {
   try {
-    const response = await api.post("/messages/send", {
-      receiver: receiverId,
-      text: content,
-    });
+    console.log("working")
+    const response = await api.post("/messages/send",
+      formData
+    );
     return response.data.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to send message");
@@ -85,6 +155,17 @@ export const markAsSeen = async (senderId) => {
   } catch (error) {
     throw new Error(
       error.response?.data?.message || "Failed to mark message as seen",
+    );
+  }
+};
+
+export const changeinfocurrentuserApi = async (formData) => {
+  try {
+    const response = await api.put("/users/changecurrentuserinfo", formData);
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to update user information",
     );
   }
 };

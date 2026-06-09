@@ -145,3 +145,189 @@ body {
 .profile-panel {
   transform-origin: right center;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #02020200;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #5a5a5a;
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7a7a7a;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #5a5a5ac2 #00000000;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-popup {
+  animation: popup .18s cubic-bezier(.22,1,.36,1);
+  transform-origin: top left;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slideLeft .35s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes slideLeftClose {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-slide-left-close {
+  animation: slideLeftClose .35s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+@keyframes popupClose {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(.92);
+  }
+}
+
+.animate-popup-close {
+  animation: popupClose .22s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #27272a 25%,
+    #3f3f46 50%,
+    #27272a 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #27272a 25%,
+    #3f3f46 50%,
+    #27272a 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+
+
+
+
+
+ 
+  .icon-wrap {
+    width: 40%;
+    height: 0%;
+    animation: bounceIn 1s cubic-bezier(0.22, 1.6, 0.36, 1) both;
+  }
+ 
+  /* Entrance: slide up from below with elastic overshoot */
+  @keyframes bounceIn {
+    0%   { opacity: 0; transform: translateY(40px) scale(0.75); }
+    55%  { opacity: 1; transform: translateY(-12px) scale(1.05); }
+    72%  { transform: translateY(10px) scale(0.97); }
+    86%  { transform: translateY(-7px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+  }
+ 
+  /* The wink face path group */
+  .wink-group {
+    transform-origin: 591px 383px;
+    animation: winkSquish 2.8s 1.05s infinite ease-in-out;
+  }
+ 
+  /* Mouth subtle tilt every cycle */
+  .mouth-path {
+    transform-origin: 491px 630px;
+    animation: mouthBounce 2.8s 1.05s infinite ease-in-out;
+  }
+ 
+  /* Full icon floating idle bob */
+  .icon-wrap {
+    animation:
+      bounceIn 5s cubic-bezier(0.22, 1.6, 0.36, 1) both,
+      idleBob 3.6s 3s infinite ease-in-out;
+  }
+ 
+  @keyframes idleBob {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-5px); }
+  }
+ 
+  @keyframes winkSquish {
+    0%   { transform: scaleY(1); }
+    5%   { transform: scaleY(0.06) scaleX(0.85); }
+    13%  { transform: scaleY(1.18) scaleX(0.96); }
+    22%  { transform: scaleY(1); }
+    100% { transform: scaleY(1); }
+  }
+ 
+  @keyframes mouthBounce {
+    0%   { transform: rotate(0deg); }
+    5%   { transform: rotate(-3deg) scale(1.04); }
+    16%  { transform: rotate(2deg) scale(0.98); }
+    26%  { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(0deg) scale(1); }
+  }

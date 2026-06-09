@@ -1,30 +1,56 @@
 import Message from "../model/message.model.js";
-
+import { io } from "../app.js";
+import imagekit from "../db/imagekit.js";
 /**
  * =========================
  * SEND MESSAGE
  * =========================
  */
 export const sendMessage = async (req, res) => {
+    console.log("BODY:", req.body);
+  console.log("FILE:", req.file);
   try {
-    const { receiver, text, image } = req.body;
+    const { receiver, text } = req.body;
+    if (!receiver) {
+  return res.status(400).json({
+    message: "Receiver is required",
+  });
+}
     const sender = req.user._id; // assuming auth middleware sets req.user
-
+    let image="";
     if (!receiver) {
       return res.status(400).json({ message: "Receiver is required" });
     }
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Message cannot be empty" });
-    }
 
+
+     if (req.file) {
+          const uploadedImage = await imagekit.files.upload({
+            file: req.file.buffer.toString("base64"),
+            fileName: `${Date.now()}-${req.file.originalname}`,
+            folder: "/avatarsTelegramClone",
+          });
+    
+          image = uploadedImage.url;
+        }
+   if (!text?.trim() && !image) {
+  return res.status(400).json({
+    message: "Message cannot be empty",
+  });
+}
     const message = await Message.create({
       sender,
       receiver,
       text: text || "",
       image: image || "",
     });
+    console.log("massage",message)
 
+    io.to(receiver.toString()).emit("receive_message", {
+      ...message.toObject(),
+      senderId: sender,
+      receiverId: receiver,
+    });
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
@@ -75,7 +101,11 @@ export const markAsSeen = async (req, res) => {
   try {
     const { senderId } = req.body;
     const myId = req.user._id;
-
+     const messages = await Message.find({
+      sender: senderId,
+      receiver: myId,
+      seen: false,
+    });
     await Message.updateMany(
       {
         sender: senderId,
@@ -86,7 +116,12 @@ export const markAsSeen = async (req, res) => {
         $set: { seen: true },
       }
     );
-
+      // Notify sender that messages were seen
+    messages.forEach((msg) => {
+      io.to(senderId.toString()).emit("message_seen_update", {
+        messageId: msg._id,
+      });
+    });
     return res.status(200).json({
       message: "Messages marked as seen",
     });

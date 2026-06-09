@@ -60,24 +60,24 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
 
     const isYesterday = date.toDateString() === yesterday.toDateString();
 
+    const time = date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
     if (isToday) {
-      return `today at ${date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}`;
+      return `today at ${time}`;
     }
 
     if (isYesterday) {
-      return `yesterday at ${date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}`;
+      return `yesterday at ${time}`;
     }
 
-    return date.toLocaleDateString([], {
+    return `${date.toLocaleDateString([], {
       month: "short",
       day: "numeric",
-    });
+    })} at ${time}`;
   };
   // const firstLetter = user.name.charAt(0).toUpperCase();
   const firstLetter = [null, undefined].includes(selectedUser?.name)
@@ -128,7 +128,11 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
               ? "Online"
               : lastMessage
                 ? `Last seen ${formatLastSeen(lastMessage)}`
-                : "hay there! I'm using ChatApp."}
+                : "Offline"}
+          </p>
+
+          <p className="text-[#fff] text-center mt-2 font-bold px-4">
+            {selectedUser?.bio || "Hey there! I'm using ChatApp."}
           </p>
         </div>
 
@@ -153,14 +157,12 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
 
               <button
                 onClick={() => setNotifications(!notifications)}
-                className={`relative w-14 h-8 rounded-full transition ${
-                  notifications ? "bg-violet-600" : "bg-zinc-700"
-                }`}
+                className={`relative w-14 h-8 rounded-full transition ${notifications ? "bg-violet-600" : "bg-zinc-700"
+                  }`}
               >
                 <span
-                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${
-                    notifications ? "left-7" : "left-1"
-                  }`}
+                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${notifications ? "left-7" : "left-1"
+                    }`}
                 />
               </button>
             </div>

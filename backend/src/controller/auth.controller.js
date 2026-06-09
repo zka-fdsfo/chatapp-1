@@ -202,6 +202,8 @@ export const loginUser = async (req, res) => {
       name: existingUser.name,
       email: existingUser.email,
       avatar: existingUser.avatar,
+    
+      bio:existingUser.bio,
     };
     res.status(200).json({ message: "Login successful", user: safeUser });
   } catch (error) {
@@ -227,6 +229,7 @@ export const verifyTokenMiddleware = async (req, res) => {
       name: user.name,
       email: user.email,
       avatar: user.avatar,
+      bio:user.bio,
     };  
     res.status(200).json({ user: safeUser });
   } catch (error) {

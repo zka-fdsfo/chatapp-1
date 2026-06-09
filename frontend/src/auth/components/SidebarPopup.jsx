@@ -8,7 +8,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-const SidebarPopup = ({ open, onClose, user, avatar }) => {
+const SidebarPopup = ({ open, onClose, user, avatar, onProfileClick,closing }) => {
   if (!open) return null;
   const avatarColors = {
     A: "ef4444",
@@ -48,7 +48,7 @@ const SidebarPopup = ({ open, onClose, user, avatar }) => {
   ];
   const firstLetter = user?.charAt(0)?.toUpperCase() || "A";
   const bgColor = avatarColors[firstLetter] || "6366f1";
-  console.log("SidebarPopup user:", user ,"avatar:", avatar);
+  console.log("SidebarPopup user:", user, "avatar:", avatar);
   return (
     <>
       {/* Backdrop */}
@@ -56,25 +56,33 @@ const SidebarPopup = ({ open, onClose, user, avatar }) => {
 
       {/* Menu */}
       <div
-        className=" scale-3d-0 scale-70 animate-scaleIn
-    fixed top-[-15px] left-[-18px]
+        className={` scale-3d-0 scale-70 animate-scaleIn
+    fixed top-[48px] left-[18px]
     w-[270px]
     bg-[#181818]/20
     backdrop-blur-3xl
     rounded-2xl
     overflow-hidden
-   
+   animate-popup
     border border-white/5
     z-50
-  "
+    ${
+    closing
+      ? "animate-popup-close"
+      : "animate-popup"
+  }
+  `}
       >
         {/* Profile Header */}
-        <div className="flex items-center gap-3 p-4">
+        <div
+          onClick={onProfileClick}
+          className="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/5 transition"
+        >
           <img
             src={
               avatar ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                user|| "User",
+                user || "User",
               )}&background=${bgColor}&color=fff`
             }
 

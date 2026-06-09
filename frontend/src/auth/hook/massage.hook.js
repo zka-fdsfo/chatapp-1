@@ -38,31 +38,25 @@ export const useMessage = () => {
   };
 
   /* ================= SEND MESSAGE ================= */
-  const handleSendMessage = async (
-    receiverId,
-    text
-  ) => {
-    if (!text.trim()) return;
+const handleSendMessage = async (formData) => {
 
-    try {
-      const newMessage =
-        await sendMessage(
-          receiverId,
-          text
-        );
 
-      /* ADD NEW MESSAGE */
-      setMessages((prev) => [
-        ...prev,
-        newMessage,
-      ]);
-    } catch (error) {
-      console.error(
-        "Send Message Error:",
-        error.message
-      );
-    }
-  };
+
+
+  try {
+    const newMessage = await sendMessage(formData);
+
+    setMessages((prev) => [
+      ...prev,
+      newMessage,
+    ]);
+  } catch (error) {
+    console.error(
+      "Send Message Error:",
+      error
+    );
+  }
+};
 
   return {
     messages,

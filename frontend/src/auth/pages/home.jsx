@@ -26,11 +26,15 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Menu, Search, Archive, Send } from "lucide-react";
+import { Menu, Search, Archive, Send, MessageCircle } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
 import { useAuth } from "../hook/hookauth";
 import SidebarPopup from "../components/SidebarPopup.jsx";
+import EditProfile from "../components/EditProfile.jsx";
+import UserSkeleton from "../components/UsersSkeleton.jsx";
+import ImageViewer from "../components/ImageViewer.jsx";
+import { Image as ImageIcon } from "lucide-react";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -40,7 +44,9 @@ export default function UsersPage() {
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
   const currentUserId = user?._id || null;
-
+  const [showProfile, setShowProfile] = useState(false);
+  const [closingProfile, setClosingProfile] = useState(false);
+  const [viewerImage, setViewerImage] = useState(null);
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
   // SOCKET.IO
@@ -123,7 +129,24 @@ export default function UsersPage() {
     Z: "0092ff",
   };
   const [showMenu, setShowMenu] = useState(false);
+  const [closingMenu, setClosingMenu] = useState(false);
+  const closeProfile = () => {
+    setClosingProfile(true);
 
+    setTimeout(() => {
+      setShowProfile(false);
+      setClosingProfile(false);
+    }, 350);
+  };
+
+  const closeMenu = () => {
+    setClosingMenu(true);
+
+    setTimeout(() => {
+      setShowMenu(false);
+      setClosingMenu(false);
+    }, 220);
+  };
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
@@ -146,9 +169,13 @@ export default function UsersPage() {
    * This block is informational only — it does not change behavior.
    * =============================================================================
    */
-
+  console.log("users", users)
   return (
     <div className="h-screen bg-black flex overflow-hidden">
+      <ImageViewer
+        image={viewerImage}
+        onClose={() => setViewerImage(null)}
+      />
       {/* SIDEBAR */}
       {/* SIDEBAR */}
       <div
@@ -193,16 +220,26 @@ export default function UsersPage() {
           open={showMenu}
           user={user.name}
           avatar={user.avatar}
-          onClose={() => setShowMenu(false)}
+          onClose={closeMenu}
+          closing={closingMenu}
+          onProfileClick={() => {
+            closeMenu();
+
+            setTimeout(() => {
+              setShowProfile(true);
+            }, 220);
+          }}
         />
 
         {/* LOADING */}
         {loading && (
-          <div className="text-center text-zinc-400 mt-4">Loading users...</div>
+          <div className="flex-1 flex items-center justify-center h-full">
+            <UserSkeleton />
+          </div>
         )}
 
         {/* USER LIST */}
-        <div className="flex-1 overflow-y-auto  ">
+        <div className="flex-1 overflow-y-auto custom-scrollbar ">
           {!loading && users.length === 0 && (
             <div className="text-center text-zinc-500 mt-10">
               No users found
@@ -217,16 +254,15 @@ export default function UsersPage() {
             return (
               <div
                 key={userItem._id}
-                onClick={() => setSelectedUser(userItem) }
+                onClick={() => setSelectedUser(userItem)}
                 className={`
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
                 scrollbar-hide
-                ${
-                  selectedUser?._id === userItem._id
+                ${selectedUser?._id === userItem._id
                     ? "bg-[#8774e1]   px-4 py-3 rounded-2xl m-1 text-black font-semibold "
                     : "hover:bg-[#2f016480] transition   rounded-2xl"
-                }
+                  }
 
               `}
               >
@@ -239,13 +275,11 @@ export default function UsersPage() {
                         userItem.name,
                       )}&background=${bgColor}&color=fff`
                     }
-
                     alt={userItem.name}
-                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
-                      onlineUsers.includes(userItem._id)
-                        ? "border-[#00d652] border-"
-                        : "border-[#5e519b] border-0"
-                    } `}
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${onlineUsers.includes(userItem._id)
+                      ? "border-[#00d652] border-"
+                      : "border-[#5e519b] border-0"
+                      } `}
                   />
 
                   {/* ONLINE DOT */}
@@ -263,40 +297,82 @@ export default function UsersPage() {
                     </h2>
 
                     <span
-                      className={`text-xs ${
-                        onlineUsers.includes(userItem._id)
-                          ? "text-white font-bold"
-                          : "text-[#dadada] font-normal"
-                      }`}
+                      className={`text-xs ${onlineUsers.includes(userItem._id)
+                        ? "text-white font-bold"
+                        : "text-[#dadada] font-normal"
+                        }`}
                     >
                       {onlineUsers.includes(userItem._id)
                         ? "Online"
                         : userItem.lastMessage?.createdAt
-                          ? `${new Date(
+                          ? (() => {
+                            const date = new Date(
                               userItem.lastMessage.createdAt,
-                            ).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })} `
+                            );
+                            const now = new Date();
+
+                            const isToday =
+                              date.toDateString() === now.toDateString();
+
+                            return isToday
+                              ? date.toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                              : date.toLocaleDateString([], {
+                                month: "short",
+                                day: "numeric",
+                              });
+                          })()
                           : "Offline"}
                     </span>
                   </div>
 
                   <p
-                    className={`text-sm truncate ${
-                      userItem.lastMessage?.text
-                        ? "text-white font-bold"
-                        : "text-zinc-200 font-normal "
-                    }`}
+                    className={`text-sm truncate ${userItem.lastMessage?.text
+                      ? "text-white font-bold"
+                      : "text-zinc-400 font-normal  "
+                      }`}
                   >
-                    {userItem.lastMessage?.text ||
-                      `${userItem.name} joined the zollo`.toUpperCase()}
+                    {
+                      userItem.lastMessage?.text ? (
+                        userItem.lastMessage.text
+                      ) : userItem.lastMessage?.image ? (
+                        <span
+                          className={`flex items-center gap-1 ${selectedUser?._id === userItem._id
+                              ? "text-white"
+                              : "text-indigo-400"
+                            }`}
+                        >
+                          <ImageIcon size={14} />
+                          Photo
+                        </span>
+                      ) : (
+                        `${userItem.name} joined the zollo`.toUpperCase()
+                      )
+                    }
                   </p>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* EDIT PROFILE MODAL */}
+        {showProfile && (
+          <div
+            className={`
+      fixed inset-0 z-[9999]
+      bg-[#0e0f13]
+      overflow-y-auto
+      custom-scrollbar
+      ${closingProfile ? "animate-slide-left-close" : "animate-slide-left"}
+    `}
+          >
+            <EditProfile user={user} onClose={closeProfile} />
+          </div>
+        )}
       </div>
 
       {/* RIGHT SIDE */}
@@ -317,7 +393,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade1"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/65/b0/59/65b05933ab0776a765ef40a47564fb80.gif')",
+                "url('https://i.pinimg.com/736x/81/c1/79/81c1798f090c8090aefca4886ea768d2.jpg')",
             }}
           />
 
@@ -326,7 +402,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade2"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/5c/25/73/5c25734971c2c39c85b071e2966e9427.gif')",
+                "url('https://i.pinimg.com/736x/c6/c5/f1/c6c5f19facf16c2c06c5f2997e5f7193.jpg')",
             }}
           />
 
@@ -363,11 +439,10 @@ export default function UsersPage() {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "translate-x-0 opacity-100"
-            : "translate-x-full opacity-0 pointer-events-none"
-        }
+        ${selectedUser
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
+              }
 
       `}
           >
@@ -378,6 +453,8 @@ export default function UsersPage() {
                 setOnlineUsers={setOnlineUsers}
                 onlineUsers={onlineUsers}
                 lastMessage={selectedUser.lastMessage}
+                setViewerImage={setViewerImage}
+                className="h-full w-full "
               />
             )}
           </div>
@@ -387,27 +464,111 @@ export default function UsersPage() {
             className={`
         absolute inset-0 h-full
 
-        flex items-center justify-center p-6
+        flex items-center justify-center 
 
         transition-all
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "-translate-x-full opacity-0"
-            : "translate-x-0 opacity-100"
-        }
+        ${selectedUser
+                ? "-translate-x-full opacity-0 "
+                : "translate-x-0 opacity-100 bg-cover bg-center"
+              }
 
-      `}
+          `}
+            style={
+              selectedUser
+                ? {}
+                : {
+                  backgroundImage:
+                    "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
+                }
+            }
           >
+<<<<<<< ours
             <div className="text-center">
              <img src="./public/Frame 1 (2).png" alt="Chat Icon" className="w-24 h-24 mx-auto mb-4" />
               <h1 className="text-3xl md:text-5xl font-bold text-white">
                 Zello Chat App
+||||||| base
+            <div className="text-center">
+              <Send size={70} className="text-blue-500 mx-auto mb-4" />
+
+              <h1 className="text-3xl md:text-5xl font-bold text-white">
+                Zello Chat App
+=======
+            <div className="text-center flex flex-col justify-center  items-center bg-[#0000007c] w-full h-full ">
+              {/* <img
+                src="./public/Frame 1 (42).png"
+                alt="Welcome"
+                className="w-[20px] md:w-40 mx-auto mb-6"
+              /> */}
+
+              <div class="icon-wrap" aria-label="Winking chat bubble icon" className="h-[20%] mb-2">
+                <svg
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 942 942"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M471 897C706.273 897 897 706.273 897 471C897 235.727 706.273 45 471 45C235.727 45 45 235.727 45 471C45 706.273 235.727 897 471 897Z"
+                    fill="#2563EB"
+                  />
+
+                  <path
+                    d="M556.896 761.455L739.928 725.494C739.928 725.494 734.971 788.6 747.766 826C757.543 854.579 788.338 894.234 788.338 894.234C788.338 894.234 695.773 887.923 647.26 858.273C603.129 831.302 556.896 761.455 556.896 761.455Z"
+                    fill="#2563EB"
+                  />
+
+                  <ellipse
+                    cx="471.5"
+                    cy="471"
+                    rx="309.5"
+                    ry="310"
+                    fill="white"
+                  />
+
+                  <path
+                    d="M537 710.449L667.916 685C667.916 685 662.161 729.467 671.312 755.935C678.306 776.161 705 826 705 826C705 826 636.333 799.95 601.634 778.967C570.069 759.88 537 710.449 537 710.449Z"
+                    fill="white"
+                  />
+
+                  <path
+                    d="M305.002 373.009C347.12 362.75 389.579 388.577 399.838 430.694C410.096 472.812 384.27 515.272 342.152 525.53C300.035 535.789 257.575 509.961 247.316 467.844C237.058 425.726 262.885 383.268 305.002 373.009Z"
+                    fill="#2563EB"
+                  />
+                  <path
+                    d="M308.294 324.219C320.422 323.613 332.559 325.259 344.01 329.063L339.604 340.786C329.791 337.526 319.39 336.115 308.996 336.634C298.602 337.153 288.419 339.592 279.027 343.812C269.636 348.031 261.22 353.948 254.261 361.226C247.302 368.503 241.935 376.997 238.468 386.225L226 382.083C230.046 371.316 236.308 361.404 244.428 352.912C252.548 344.421 262.368 337.516 273.326 332.593C284.284 327.67 296.166 324.824 308.294 324.219Z"
+                    fill="#2563EB"
+                  />
+
+                  <g class="wink-group">
+                    <path
+                      d="M591.162 290.899C598.016 282.593 611.379 279.768 621.008 284.591C630.636 289.414 632.886 300.059 626.032 308.365L564.172 383.338L653.58 421.467C663.486 425.691 666.384 436.178 660.052 444.889C653.719 453.599 640.555 457.235 630.648 453.011L521.97 406.666C516.744 404.437 513.468 400.465 512.47 395.931C511.272 391.445 512.353 386.413 515.969 382.03L591.162 290.899Z"
+                      fill="#2563EB"
+                    />
+                    <path
+                      d="M593.701 255.585C588.793 276.847 575.585 295.607 556.685 308.161C537.785 320.715 514.566 326.151 491.611 323.396L493.253 311.308C512.99 313.677 532.955 309.003 549.206 298.208C565.457 287.413 576.815 271.283 581.035 253L593.701 255.585Z"
+                      fill="#2563EB"
+                    />
+                  </g>
+
+                  <path
+                    class="mouth-path"
+                    d="M491.02 570.048C526.724 552.564 521.082 467.763 555.668 538.39C590.254 609.016 589.347 680.444 553.643 697.929C517.938 715.413 460.957 672.332 426.371 601.706C391.786 531.08 455.315 587.532 491.02 570.048Z"
+                    fill="#2563EB"
+                  />
+                </svg>
+              </div>
+
+              <h1 className="text-4xl md:text-[3.5vw] w-[80%] font-bold text-white capitalize">
+                NexChat
+>>>>>>> theirs
               </h1>
 
-              <p className="text-zinc-300 mt-3 text-sm md:text-base">
+              <p className="text-zinc-300 mt-1 text-2xl md:text-base capitalize ">
                 Select a chat to start messaging
               </p>
             </div>

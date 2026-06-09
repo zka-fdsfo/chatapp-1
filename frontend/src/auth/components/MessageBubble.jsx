@@ -1,6 +1,7 @@
 import React from "react";
 import { Reply, Pencil, Copy, Trash2, Check, CheckCheck } from "lucide-react";
 import * as Linkify from "react-linkify";
+import { useAuth } from "../hook/hookauth";
 const MessageBubble = ({
   msg,
   isMe,
@@ -9,7 +10,11 @@ const MessageBubble = ({
   setEditMsg,
   setEditText,
   handleDeleteMessage,
+  setViewerImage,
+  selectedUser,
 }) => {
+  const { currentusernameimg } = useAuth();
+
   // FORMAT TIME
   const formatTime = (date) => {
     if (!date) return "";
@@ -28,7 +33,10 @@ const MessageBubble = ({
       } relative mb-1 px-2`}
     >
       {/* MESSAGE WRAPPER */}
-      <div className="relative max-w-[82%] md:max-w-[430px] mb-7">
+
+      <div
+        className={`relative max-w-[82%] md:max-w-[430px] ${msg.image && !msg.text ? "mb-2" : "mb-7"}`}
+      >
         {/* MESSAGE BUBBLE */}
         <div
           onClick={(e) => {
@@ -37,20 +45,22 @@ const MessageBubble = ({
             setMenuMsg(menuMsg === msg._id ? null : msg._id);
           }}
           className={`
-            relative px-3 pt-2 pb-1
+            relative 
             rounded-2xl flex gap-2
             cursor-pointer
             transition-all duration-200
             ${
               isMe
-                ? "bg-[#8774e1] hover:bg-[#a494ff] text-white rounded-br-md p-3 pb-2"
-                : "bg-[#212121] hover:bg-[#414040] text-white rounded-bl-md p-3 pb-2"
+                ? "bg-[#8774e1] hover:bg-[#a494ff] text-white rounded-br-md"
+                : "bg-[#212121] hover:bg-[#414040] text-white rounded-bl-md "
             }
+            ${msg.image ? "flex-col" : ""}
+            ${msg.image && !msg.text ? "p-[0.4vw] " : "px-3 pt-2 pb-1 p-3 pb-2"}
 
           `}
         >
           {/* MESSAGE TEXT */}
-          <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
+          {/* <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
             {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
               const isLink = /https?:\/\/[^\s]+/.test(part);
 
@@ -68,17 +78,74 @@ const MessageBubble = ({
                 <React.Fragment key={`text-${i}`}>{part}</React.Fragment>
               );
             })}
+          </div> */}
+          {/* MESSAGE CONTENT */}
+          <div className="flex flex-col gap-2 max-w-full">
+            {/* IMAGE */}
+            {msg.image && (
+              <img
+                src={msg.image}
+                alt="message"
+                className="
+        max-w-[280px]
+        max-h-[350px]
+        rounded-xl
+        object-cover
+        cursor-pointer
+      "
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent menu opening
+
+                  setViewerImage({
+                    name: isMe ? currentusernameimg?.name : selectedUser?.name,
+                    avatar: isMe
+                      ? currentusernameimg?.avatar
+                      : selectedUser?.avatar,
+                    image: msg?.image,
+                    createdAt: msg?.createdAt,
+                  });
+                }}
+              />
+            )}
+
+            {/* TEXT */}
+            {msg.text && (
+              <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
+                {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
+                  const isLink = /https?:\/\/[^\s]+/.test(part);
+
+                  return isLink ? (
+                    <a
+                      key={`link-${i}`}
+                      href={part}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline break-all"
+                    >
+                      {part}
+                    </a>
+                  ) : (
+                    <React.Fragment key={`text-${i}`}>{part}</React.Fragment>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* TIME + TICKS */}
           <div
             className={`
-              flex items-end gap-1
-              text-[11px]
-              self-end
-              whitespace-nowrap
-              ${isMe ? "text-white/70" : "text-zinc-400"}
-            `}
+    flex items-end gap-1
+    text-[11px]
+    self-end
+    whitespace-nowrap
+    text-white
+    ${
+      msg.image && !msg.text
+        ? "absolute bottom-3 right-3 bg-[#00000063] px-3 py-1 rounded-[20px]"
+        : ""
+    }
+  `}
           >
             <span>{formatTime(msg.createdAt)}</span>
             {isMe && (
@@ -93,8 +160,10 @@ const MessageBubble = ({
             viewBox="0 0 11 20"
             width="11"
             height="20"
+
             className={`
               absolute
+              -z-10
               ${
                 isMe
                   ? "-right-[6px] text-[#8774e1]  scale-x-[-1] rotate-[329deg] bottom-[-7px]"
@@ -163,32 +232,32 @@ const MessageBubble = ({
             )}
 
             {/* COPY */}
-           <button
-  onClick={async () => {
-    try {
-      await navigator.clipboard.writeText(msg.text);
-    } catch {
-      const textArea = document.createElement("textarea");
-      textArea.value = msg.text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-    }
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(msg.text);
+                } catch {
+                  const textArea = document.createElement("textarea");
+                  textArea.value = msg.text;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(textArea);
+                }
 
-    setMenuMsg(null);
-  }}
-  className="
+                setMenuMsg(null);
+              }}
+              className="
     w-full flex items-center gap-4
     px-4 py-3
     hover:bg-[#2b2b2b]
     text-white text-sm
     transition
   "
->
-  <Copy size={18} strokeWidth={2.2} />
-  Copy
-</button>
+            >
+              <Copy size={18} strokeWidth={2.2} />
+              Copy
+            </button>
 
             {/* DELETE */}
             {isMe && (

@@ -13,6 +13,8 @@ const MessageList = ({
   setEditText,
   setuserid,
   handleDeleteMessage,
+  setViewerImage,
+  selectedUser,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -22,7 +24,13 @@ const MessageList = ({
 
   // FILTER VALID MESSAGES
   const validMessages = messages.filter(
-    (msg) => msg && (msg.text || msg.message),
+    (msg) =>
+      msg &&
+      (
+        msg.text ||
+        msg.message ||
+        msg.image
+      )
   );
 
   // AUTO SCROLL ON NEW MESSAGE
@@ -83,7 +91,9 @@ const MessageList = ({
         ) : (
           validMessages.map((msg) => {
             const senderId =
-              typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+              typeof msg.sender === "object"
+                ? msg.sender._id
+                : msg.sender || msg.senderId;
 
             const isMe = senderId === currentUserId;
 
@@ -100,6 +110,8 @@ const MessageList = ({
                 setEditMsg={setEditMsg}
                 setEditText={setEditText}
                 handleDeleteMessage={handleDeleteMessage}
+                setViewerImage={setViewerImage}
+                selectedUser={selectedUser}
               />
             );
           })
