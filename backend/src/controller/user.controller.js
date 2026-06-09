@@ -26,7 +26,7 @@ export const getAllUsers = async (req, res) => {
           receiver: currentUserId,
         })
           .sort({ createdAt: -1 })
-          .select("text message createdAt sender receiver seen");
+          .select("text image message createdAt sender receiver seen");
 
         return {
           ...user.toObject(),

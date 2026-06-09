@@ -7,7 +7,7 @@ import {
   getallusers,
   verifyaccessToken,
   verifyrefreshToken,
- changeinfocurrentuserApi,
+  changeinfocurrentuserApi,
 } from "../services/auth.api.js";
 
 export const useAuth = () => {
@@ -18,8 +18,12 @@ export const useAuth = () => {
     setUser,
     loading,
     setLoading,
-  } = AuthContextValue;
 
+  } = AuthContextValue;
+const currentusernameimg = {
+  name: user?.name,
+  avatar: user?.avatar,
+};
   // LOGIN
   const handleLogin = async (email, password) => {
     setLoading(true);
@@ -127,6 +131,7 @@ const changeinfocurrentuser = async (formData) => {
 
   return {
     user,
+    currentusernameimg,
     setUser,
     loading,
     setLoading,

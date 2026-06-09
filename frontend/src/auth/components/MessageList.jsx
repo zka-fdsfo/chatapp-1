@@ -13,8 +13,8 @@ const MessageList = ({
   setEditText,
   setuserid,
   handleDeleteMessage,
-   setViewerImage,
-   selectedUser,
+  setViewerImage,
+  selectedUser,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -23,15 +23,15 @@ const MessageList = ({
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   // FILTER VALID MESSAGES
-const validMessages = messages.filter(
-  (msg) =>
-    msg &&
-    (
-      msg.text ||
-      msg.message ||
-      msg.image
-    )
-);
+  const validMessages = messages.filter(
+    (msg) =>
+      msg &&
+      (
+        msg.text ||
+        msg.message ||
+        msg.image
+      )
+  );
 
   // AUTO SCROLL ON NEW MESSAGE
   useEffect(() => {

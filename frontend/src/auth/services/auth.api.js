@@ -4,26 +4,70 @@ const api = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error) => {
+  failedQueue.forEach((prom) => {
+    error ? prom.reject(error) : prom.resolve();
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
-
   async (error) => {
     const originalRequest = error.config;
 
-    // Don't intercept refresh-token request itself
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    // Skip auth endpoints
+    const isAuthRoute =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
+      originalRequest.url?.includes("/auth/refresh-token") ||
+      originalRequest.url?.includes("/auth/verify-token");
+
+    if (isAuthRoute) {
+      return Promise.reject(error);
+    }
+
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&
-      originalRequest.url !== "/auth/refresh-token"
+      !originalRequest._retry
     ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         await api.get("/auth/refresh-token");
 
+        processQueue(null);
+
         return api(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError);
+
+        // clear local state if needed
+        localStorage.clear();
+
+        if (window.location.pathname !== "/login") {
+          window.location.replace("/login");
+        }
+
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 

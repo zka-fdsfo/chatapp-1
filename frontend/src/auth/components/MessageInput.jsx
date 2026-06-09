@@ -36,26 +36,36 @@ const MessageInput = ({
   //   }
   // };
   const [image, setImage] = useState(null);
-const sendMessage = async () => {
-  if (!messageText.trim() && !image) return;
+  const [sending, setSending] = useState(false);
 
-  const formData = new FormData();
+  const sendMessage = async () => {
+    if (sending) return; // prevent double click
+    if (!messageText.trim() && !image) return;
 
-  formData.append("receiver", selectedUser._id);
+    try {
+      setSending(true);
 
-  if (messageText.trim()) {
-    formData.append("text", messageText);
-  }
+      const formData = new FormData();
+      formData.append("receiver", selectedUser._id);
 
-  if (image) {
-    formData.append("image", image);
-  }
+      if (messageText.trim()) {
+        formData.append("text", messageText);
+      }
 
-  await handleSendMessage(formData);
+      if (image) {
+        formData.append("image", image);
+      }
 
-  setMessageText("");
-  setImage(null);
-};
+      await handleSendMessage(formData);
+
+      setMessageText("");
+      setImage(null);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setSending(false);
+    }
+  };
   const [showEmoji, setShowEmoji] = useState(false);
   return (
     //   <div className="p-3 lg:px-20">
@@ -202,7 +212,11 @@ const sendMessage = async () => {
         {/* Send Button */}
         <button
           onClick={sendMessage}
-          className="text-[#8774e1] hover:text-[#9d8cff] transition"
+          disabled={sending}
+          className={`text-[#8774e1] transition ${sending
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:text-[#9d8cff]"
+            }`}
         >
           <Send size={24} />
         </button>

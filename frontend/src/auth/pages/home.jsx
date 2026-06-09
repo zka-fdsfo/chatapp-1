@@ -34,6 +34,7 @@ import SidebarPopup from "../components/SidebarPopup.jsx";
 import EditProfile from "../components/EditProfile.jsx";
 import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
+import { Image as ImageIcon } from "lucide-react";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -168,13 +169,13 @@ export default function UsersPage() {
    * This block is informational only — it does not change behavior.
    * =============================================================================
    */
-
+  console.log("users", users)
   return (
     <div className="h-screen bg-black flex overflow-hidden">
-            <ImageViewer
-  image={viewerImage}
-  onClose={() => setViewerImage(null)}
-/>
+      <ImageViewer
+        image={viewerImage}
+        onClose={() => setViewerImage(null)}
+      />
       {/* SIDEBAR */}
       {/* SIDEBAR */}
       <div
@@ -258,11 +259,10 @@ export default function UsersPage() {
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
                 scrollbar-hide
-                ${
-                  selectedUser?._id === userItem._id
+                ${selectedUser?._id === userItem._id
                     ? "bg-[#8774e1]   px-4 py-3 rounded-2xl m-1 text-black font-semibold "
                     : "hover:bg-[#2f016480] transition   rounded-2xl"
-                }
+                  }
 
               `}
               >
@@ -276,11 +276,10 @@ export default function UsersPage() {
                       )}&background=${bgColor}&color=fff`
                     }
                     alt={userItem.name}
-                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
-                      onlineUsers.includes(userItem._id)
-                        ? "border-[#00d652] border-"
-                        : "border-[#5e519b] border-0"
-                    } `}
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${onlineUsers.includes(userItem._id)
+                      ? "border-[#00d652] border-"
+                      : "border-[#5e519b] border-0"
+                      } `}
                   />
 
                   {/* ONLINE DOT */}
@@ -298,48 +297,61 @@ export default function UsersPage() {
                     </h2>
 
                     <span
-                      className={`text-xs ${
-                        onlineUsers.includes(userItem._id)
-                          ? "text-white font-bold"
-                          : "text-[#dadada] font-normal"
-                      }`}
+                      className={`text-xs ${onlineUsers.includes(userItem._id)
+                        ? "text-white font-bold"
+                        : "text-[#dadada] font-normal"
+                        }`}
                     >
                       {onlineUsers.includes(userItem._id)
                         ? "Online"
                         : userItem.lastMessage?.createdAt
                           ? (() => {
-                              const date = new Date(
-                                userItem.lastMessage.createdAt,
-                              );
-                              const now = new Date();
+                            const date = new Date(
+                              userItem.lastMessage.createdAt,
+                            );
+                            const now = new Date();
 
-                              const isToday =
-                                date.toDateString() === now.toDateString();
+                            const isToday =
+                              date.toDateString() === now.toDateString();
 
-                              return isToday
-                                ? date.toLocaleTimeString([], {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })
-                                : date.toLocaleDateString([], {
-                                    month: "short",
-                                    day: "numeric",
-                                  });
-                            })()
+                            return isToday
+                              ? date.toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                              : date.toLocaleDateString([], {
+                                month: "short",
+                                day: "numeric",
+                              });
+                          })()
                           : "Offline"}
                     </span>
                   </div>
 
                   <p
-                    className={`text-sm truncate ${
-                      userItem.lastMessage?.text
-                        ? "text-white font-bold"
-                        : "text-indigo-200 font-normal  "
-                    }`}
+                    className={`text-sm truncate ${userItem.lastMessage?.text
+                      ? "text-white font-bold"
+                      : "text-zinc-400 font-normal  "
+                      }`}
                   >
-                    {userItem.lastMessage?.text ||
-                      `${userItem.name} joined the zollo`.toUpperCase()}
+                    {
+                      userItem.lastMessage?.text ? (
+                        userItem.lastMessage.text
+                      ) : userItem.lastMessage?.image ? (
+                        <span
+                          className={`flex items-center gap-1 ${selectedUser?._id === userItem._id
+                              ? "text-white"
+                              : "text-indigo-400"
+                            }`}
+                        >
+                          <ImageIcon size={14} />
+                          Photo
+                        </span>
+                      ) : (
+                        `${userItem.name} joined the zollo`.toUpperCase()
+                      )
+                    }
                   </p>
                 </div>
               </div>
@@ -427,11 +439,10 @@ export default function UsersPage() {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "translate-x-0 opacity-100"
-            : "translate-x-full opacity-0 pointer-events-none"
-        }
+        ${selectedUser
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
+              }
 
       `}
           >
@@ -459,20 +470,19 @@ export default function UsersPage() {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${
-          selectedUser
-            ? "-translate-x-full opacity-0 "
-            : "translate-x-0 opacity-100 bg-cover bg-center"
-        }
+        ${selectedUser
+                ? "-translate-x-full opacity-0 "
+                : "translate-x-0 opacity-100 bg-cover bg-center"
+              }
 
           `}
             style={
               selectedUser
                 ? {}
                 : {
-                    backgroundImage:
-                      "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
-                  }
+                  backgroundImage:
+                    "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
+                }
             }
           >
             <div className="text-center flex flex-col justify-center  items-center bg-[#0000007c] w-full h-full ">
