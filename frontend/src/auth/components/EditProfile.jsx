@@ -238,7 +238,7 @@ console.log(user)
         </p>
 
         {/* Username Section */}
-        <div className="bg-[#1b1d22] rounded-3xl p-4 mt-4">
+        {/* <div className="bg-[#1b1d22] rounded-3xl p-4 mt-4">
 
           <h2 className="text-[#6f8cff] text-sm font-medium mb-3">
             Username
@@ -280,7 +280,7 @@ console.log(user)
           <p className="text-[10px] text-zinc-500 mt-1">
             Minimum length is 5 characters.
           </p>
-        </div>
+        </div> */}
 
         {/* Channel */}
         <div className="bg-[#1b1d22] rounded-3xl p-4 mt-4">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Pencil,
@@ -9,8 +9,9 @@ import {
   Link2,
   Music,
 } from "lucide-react";
-
-const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
+import { useMessage } from "../hook/massage.hook.js";
+import { useAuth } from "../hook/hookauth.js";
+const ProfilePage = ({ user: selectedUser, onClose, lastMessage,setViewerImage ,currentUserId}) => {
   const [notifications, setNotifications] = useState(true);
 
   const user = {
@@ -19,6 +20,8 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
     lastSeen: selectedUser?.lastSeen || "last seen 2 hours ago",
     avatar: selectedUser?.avatar || null,
   };
+const { currentusernameimg } = useAuth();
+
   const avatarColors = {
     A: "ef4444",
     B: "f97316",
@@ -47,6 +50,14 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
     Y: "8b5cf6",
     Z: "0092ff",
   };
+  const { imageMessages, fetchImageMessages, loadingImages} = useMessage();
+
+  useEffect(() => {
+    if (selectedUser?._id) {
+      fetchImageMessages(selectedUser._id);
+    }
+  }, [selectedUser?._id]);
+ 
   const formatLastSeen = (dateString) => {
     if (!dateString) return "Offline";
 
@@ -85,8 +96,8 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
     : selectedUser.name.charAt(0).toUpperCase();
   const bgColor = avatarColors[firstLetter] || "6366f1";
   return (
-    <div className="w-full h-full bg-[#0f0f0f00] text-white overflow-y-auto">
-      <div className="w-full h-full  relative  bg-[#0f0f0f] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800">
+    <div className="w-full h-screen bg-[#0f0f0f00] text-white overflow-y-auto custom-scrollbar">
+      <div className=" relative min-h-screen bg-[#0f0f0f] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 custom-scrollbar">
         {/* Header */}
         <div className="flex items-center justify-between p-5">
           <button onClick={onClose}>
@@ -96,10 +107,7 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
           <h2 className="text-xl font-bold">User Info</h2>
 
           <button>
-            <Pencil
-              size={20}
-              className="text-zinc-400 hover:text-white transition"
-            />
+      
           </button>
         </div>
 
@@ -157,12 +165,14 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
 
               <button
                 onClick={() => setNotifications(!notifications)}
-                className={`relative w-14 h-8 rounded-full transition ${notifications ? "bg-violet-600" : "bg-zinc-700"
-                  }`}
+                className={`relative w-14 h-8 rounded-full transition ${
+                  notifications ? "bg-violet-600" : "bg-zinc-700"
+                }`}
               >
                 <span
-                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${notifications ? "left-7" : "left-1"
-                    }`}
+                  className={`absolute top-1 w-6 h-6 rounded-full bg-white transition ${
+                    notifications ? "left-7" : "left-1"
+                  }`}
                 />
               </button>
             </div>
@@ -195,23 +205,44 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage }) => {
         </div> */}
 
         {/* Gallery */}
-        {/* <div className="grid grid-cols-3 gap-1 p-2">
-          {[
-            "https://picsum.photos/300?1",
-            "https://picsum.photos/300?2",
-            "https://picsum.photos/300?3",
-            "https://picsum.photos/300?4",
-            "https://picsum.photos/300?5",
-            "https://picsum.photos/300?6",
-          ].map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt=""
-              className="w-full h-28 md:h-36 object-cover rounded-xl hover:scale-105 transition"
-            />
-          ))}
-        </div> */}
+
+        <div className="px-4 pb-4">
+          <h3 className="text-lg flex gap-3.5 justify-center-safe font-semibold mb-3">Media<Image /></h3>
+
+         <div className="grid grid-cols-3 gap-2">
+  {imageMessages?.length > 0 ? (
+    imageMessages.map((msg) => {
+      const isMe =
+        String(msg.sender || msg.senderId) === String(currentUserId);
+
+      return (
+        <img
+          key={msg._id}
+          src={msg.image}
+          alt=""
+          onClick={() => {
+            console.log(msg);
+
+            setViewerImage({
+              name: isMe ? "You" : selectedUser?.name,
+              avatar: isMe
+                ? currentusernameimg.avatar || selectedUser?.avatar
+                : selectedUser?.avatar,
+              image: msg.image,
+              createdAt: msg.createdAt,
+            });
+          }}
+          className="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-90 transition hover:scale-100 duration-300"
+        />
+      );
+    })
+  ) : (
+    <p className="col-span-3 text-zinc-500 text-center py-4">
+      No media files yet
+    </p>
+  )}
+</div>
+        </div>
       </div>
     </div>
   );

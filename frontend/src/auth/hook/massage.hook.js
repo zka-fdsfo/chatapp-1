@@ -7,6 +7,7 @@ import {
 import {
   sendMessage,
   markAsSeen,
+  getImageMessagesApi,
 } from "../services/auth.api.js";
 
 export const useMessage = () => {
@@ -14,7 +15,8 @@ export const useMessage = () => {
 
   const [loadingMessages, setLoadingMessages] =
     useState(false);
-
+  const [imageMessages, setImageMessages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
   /* ================= FETCH MESSAGES ================= */
   const fetchMessages = async (userId) => {
     try {
@@ -39,10 +41,6 @@ export const useMessage = () => {
 
   /* ================= SEND MESSAGE ================= */
 const handleSendMessage = async (formData) => {
-
-
-
-
   try {
     const newMessage = await sendMessage(formData);
 
@@ -58,6 +56,23 @@ const handleSendMessage = async (formData) => {
   }
 };
 
+  /* ================= FETCH IMAGE MESSAGES ================= */
+  const fetchImageMessages = async (selectedUserId) => {
+    try {
+      setLoadingImages(true);
+    
+      const response = await getImageMessagesApi(selectedUserId);
+
+      setImageMessages(response.messages || []);
+
+      return response.messages;
+    } catch (error) {
+      console.error("Fetch Image Messages Error:", error);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
   return {
     messages,
 
@@ -68,5 +83,8 @@ const handleSendMessage = async (formData) => {
     fetchMessages,
 
     handleSendMessage,
+    imageMessages,
+    loadingImages,
+    fetchImageMessages,
   };
 };

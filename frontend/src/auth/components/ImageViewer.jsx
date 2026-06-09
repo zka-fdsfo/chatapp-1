@@ -4,15 +4,19 @@ import {
   Download,
   ZoomIn,
   ZoomOut,
-  RotateCcw,
 } from "lucide-react";
 
 const ImageViewer = ({ image, onClose }) => {
   const [scale, setScale] = useState(1);
-  const [visible, setVisible] = useState(false); // animation state
+  const [visible, setVisible] = useState(false);
+
+  // Drag states
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [start, setStart] = useState({ x: 0, y: 0 });
+
   const imgRef = useRef(null);
 
-  // Trigger open animation on mount
   useEffect(() => {
     if (image) {
       requestAnimationFrame(() => setVisible(true));
@@ -32,20 +36,23 @@ const ImageViewer = ({ image, onClose }) => {
     });
   };
 
-  // Close with animation
   const handleClose = () => {
     setVisible(false);
+
     setTimeout(() => {
-      onClose();
       setScale(1);
-    }, 250); // match transition duration
+      setPosition({ x: 0, y: 0 });
+      onClose();
+    }, 250);
   };
 
   const handleDownload = (e) => {
     e.stopPropagation();
+
     const link = document.createElement("a");
     link.href = imgUrl;
     link.download = "image.jpg";
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -58,26 +65,65 @@ const ImageViewer = ({ image, onClose }) => {
 
   const zoomOut = (e) => {
     e.stopPropagation();
-    setScale((prev) => Math.max(prev - 0.2, 0.5));
-  };
 
-  const resetZoom = (e) => {
-    e.stopPropagation();
-    setScale(1);
+    setScale((prev) => {
+      const next = Math.max(prev - 0.2, 0.5);
+
+      if (next <= 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+
+      return next;
+    });
   };
 
   const handleWheel = (e) => {
     e.preventDefault();
-    if (e.deltaY < 0) {
-      setScale((prev) => Math.min(prev + 0.1, 5));
-    } else {
-      setScale((prev) => Math.max(prev - 0.1, 0.5));
-    }
+
+    setScale((prev) => {
+      const next =
+        e.deltaY < 0
+          ? Math.min(prev + 0.1, 5)
+          : Math.max(prev - 0.1, 0.5);
+
+      if (next <= 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+
+      return next;
+    });
   };
 
   const handleDoubleClick = (e) => {
     e.stopPropagation();
     setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Drag functionality
+  const handleMouseDown = (e) => {
+    if (scale <= 1) return;
+
+    e.preventDefault();
+
+    setIsDragging(true);
+    setStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+
+    setPosition({
+      x: e.clientX - start.x,
+      y: e.clientY - start.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -99,53 +145,77 @@ const ImageViewer = ({ image, onClose }) => {
           transition: "opacity 0.25s ease, transform 0.25s ease",
         }}
       >
-        {/* LEFT */}
         <div className="flex items-center gap-3">
           <img
             src={avatar}
             alt="avatar"
             className="w-10 h-10 rounded-full object-cover"
           />
+
           <div>
             <h3 className="text-white text-sm font-medium leading-none">
               {name}
             </h3>
+
             <p className="text-gray-400 text-xs mt-1">
               {formatTime(createdAt)}
             </p>
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-4 text-white">
-          <button onClick={handleDownload}><Download size={20} /></button>
-          <button onClick={zoomOut}><ZoomOut size={20} /></button>
-          <button onClick={resetZoom}><RotateCcw size={20} /></button>
-          <button onClick={zoomIn}><ZoomIn size={20} /></button>
-          <button onClick={handleClose}><X size={22} /></button>
+          <button onClick={handleDownload}>
+            <Download size={20} />
+          </button>
+
+          <button onClick={zoomOut}>
+            <ZoomOut size={20} />
+          </button>
+
+          <button onClick={zoomIn}>
+            <ZoomIn size={20} />
+          </button>
+
+          <button onClick={handleClose}>
+            <X size={22} />
+          </button>
         </div>
       </div>
 
-      {/* IMAGE */}
+      {/* IMAGE AREA */}
       <div
         className="flex-1 flex items-center justify-center overflow-hidden bg-black/70"
         onWheel={handleWheel}
         onDoubleClick={handleDoubleClick}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         <img
           ref={imgRef}
           src={imgUrl}
           alt="preview"
           draggable={false}
+          onMouseDown={handleMouseDown}
+          onClick={(e) => e.stopPropagation()}
           className="object-contain select-none"
           style={{
-            transform: `scale(${visible ? scale : 0.85})`,
-            opacity: visible ? 1 : 0,
             maxWidth: "75vw",
             maxHeight: "78vh",
-            transition: visible
-              ? "opacity 0.25s ease, transform 0.25s ease"
-              : "opacity 0.2s ease, transform 0.2s ease",
+            opacity: visible ? 1 : 0,
+            transform: `
+              translate(${position.x}px, ${position.y}px)
+              scale(${visible ? scale : 0.85})
+            `,
+            cursor:
+              scale > 1
+                ? isDragging
+                  ? "grabbing"
+                  : "grab"
+                : "default",
+            transition: isDragging
+              ? "none"
+              : "opacity 0.25s ease, transform 0.25s ease",
           }}
         />
       </div>

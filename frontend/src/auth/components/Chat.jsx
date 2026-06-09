@@ -188,7 +188,11 @@ const Chat = ({
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
       {/* ================= PROFILE DRAWER ================= */}
-      <div className="absolute inset-0 z-50 pointer-events-none">
+      <div
+  className={`absolute inset-0 z-50  ${
+    showProfile ? "pointer-events-auto" : "pointer-events-none"
+  }`}
+>
         {/* BACKDROP */}
         <div
           onClick={() => setShowProfile(false)}
@@ -196,9 +200,11 @@ const Chat = ({
         />
 
         {/* PANEL */}
-        <div className={`profile-panel ${showProfile ? "open" : ""}`}>
+        <div className={`profile-panel .custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}>
           <ProfilePage
             user={selectedUser}
+            currentUserId={currentUserId}
+            setViewerImage={setViewerImage}
             lastMessage={selectedUser?.lastMessage?.createdAt}
             onClose={() => setShowProfile(false)}
           />

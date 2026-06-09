@@ -98,7 +98,6 @@ export const getallusers = async () => {
     const response = await api.get("/users/allusers");
     return response.data;
   } catch (error) {
-    
     throw new Error(error.response?.data?.message || "Failed to fetch users");
   }
 };
@@ -166,6 +165,22 @@ export const changeinfocurrentuserApi = async (formData) => {
   } catch (error) {
     throw new Error(
       error.response?.data?.message || "Failed to update user information",
+    );
+  }
+};
+
+export const getImageMessagesApi = async (selectedUserId) => {
+  try {
+    const response = await api.get("/messages/image-messages", {
+      params: {
+        selectedUserId,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch image messages",
     );
   }
 };

@@ -275,6 +275,7 @@ export default function UsersPage() {
                         userItem.name,
                       )}&background=${bgColor}&color=fff`
                     }
+
                     alt={userItem.name}
                     className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${onlineUsers.includes(userItem._id)
                       ? "border-[#00d652] border-"
@@ -484,19 +485,8 @@ export default function UsersPage() {
                     "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
                 }
             }
-          >
-<<<<<<< ours
-            <div className="text-center">
-             <img src="./public/Frame 1 (2).png" alt="Chat Icon" className="w-24 h-24 mx-auto mb-4" />
-              <h1 className="text-3xl md:text-5xl font-bold text-white">
-                Zello Chat App
-||||||| base
-            <div className="text-center">
-              <Send size={70} className="text-blue-500 mx-auto mb-4" />
 
-              <h1 className="text-3xl md:text-5xl font-bold text-white">
-                Zello Chat App
-=======
+          >
             <div className="text-center flex flex-col justify-center  items-center bg-[#0000007c] w-full h-full ">
               {/* <img
                 src="./public/Frame 1 (42).png"
@@ -565,7 +555,6 @@ export default function UsersPage() {
 
               <h1 className="text-4xl md:text-[3.5vw] w-[80%] font-bold text-white capitalize">
                 NexChat
->>>>>>> theirs
               </h1>
 
               <p className="text-zinc-300 mt-1 text-2xl md:text-base capitalize ">

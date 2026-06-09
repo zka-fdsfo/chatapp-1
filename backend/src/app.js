@@ -32,7 +32,6 @@ const io = new Server(server, {
 });
 const onlineUsers = new Map();
 
-
 io.on("connection", (socket) => {
   console.log("🟢 user connected:", socket.id);
 
@@ -74,7 +73,6 @@ io.on("connection", (socket) => {
 //     createdAt: new Date(),
 //   };
 
-
 //   // ONLY RECEIVER GETS SOCKET EVENT
 //   io.to(receiverId).emit("receive_message", payload);
 
@@ -112,6 +110,7 @@ socket.on("message_seen", async ({ messageId, senderId }) => {
     console.log("Invalid ObjectId:", messageId);
     return;
   }
+
   await Message.findByIdAndUpdate(messageId, {
     seen: true,
   });

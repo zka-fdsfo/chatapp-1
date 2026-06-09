@@ -7,7 +7,7 @@ import imagekit from "../db/imagekit.js";
  * =========================
  */
 export const sendMessage = async (req, res) => {
-    console.log("BODY:", req.body);
+  console.log("BODY:", req.body);
   console.log("FILE:", req.file);
   try {
     const { receiver, text } = req.body;
@@ -16,13 +16,12 @@ export const sendMessage = async (req, res) => {
     message: "Receiver is required",
   });
 }
+
     const sender = req.user._id; // assuming auth middleware sets req.user
     let image="";
     if (!receiver) {
       return res.status(400).json({ message: "Receiver is required" });
     }
-
-
 
      if (req.file) {
           const uploadedImage = await imagekit.files.upload({
@@ -33,11 +32,13 @@ export const sendMessage = async (req, res) => {
     
           image = uploadedImage.url;
         }
+
    if (!text?.trim() && !image) {
   return res.status(400).json({
     message: "Message cannot be empty",
   });
 }
+
     const message = await Message.create({
       sender,
       receiver,
@@ -161,5 +162,36 @@ export const deleteMessage = async (req, res) => {
   } catch (error) {
     console.error("Delete Message Error:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getImageMessages = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const { selectedUserId } = req.query;
+
+    const messages = await Message.find({
+      $or: [
+        { sender: myId, receiver: selectedUserId },
+        { sender: selectedUserId, receiver: myId },
+      ],
+      deleted: false,
+      image: {
+        $exists: true,
+        $nin: [null, ""],
+      },
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      messages,
+    });
+  } catch (error) {
+    console.error("Get Image Messages Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

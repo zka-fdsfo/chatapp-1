@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Send, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
-
+import {ImagePlus } from 'lucide-react';
 const MessageInput = ({
   messageText,
   setMessageText,
@@ -179,7 +179,7 @@ const MessageInput = ({
 
         {/* Attachment */}
         <label className="text-zinc-400 hover:text-white transition cursor-pointer">
-          <Paperclip size={22} />
+          <ImagePlus size={22} />
           <input
             type="file"
             accept="image/png,image/jpeg,image/jpg"

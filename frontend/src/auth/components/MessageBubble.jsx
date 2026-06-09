@@ -45,18 +45,19 @@ const MessageBubble = ({
             setMenuMsg(menuMsg === msg._id ? null : msg._id);
           }}
           className={`
-            relative 
+            relative group
             rounded-2xl flex gap-2
             cursor-pointer
             transition-all duration-200
             ${
               isMe
-                ? "bg-[#8774e1] hover:bg-[#a494ff] text-white rounded-br-md"
-                : "bg-[#212121] hover:bg-[#414040] text-white rounded-bl-md "
+                ? "bg-[#6457a5] hover:bg-[#a494ff] text-white rounded-br-md pl-2"
+                : "bg-[#212121] hover:bg-[#181818] text-white rounded-bl-md pr-2"
             }
-            ${msg.image ? "flex-col" : ""}
-            ${msg.image && !msg.text ? "p-[0.4vw] " : "px-3 pt-2 pb-1 p-3 pb-2"}
 
+           ${msg.image ? "flex-col" : ""}
+  ${msg.image && msg.text ? "p-2" : msg.image ? "p-[0.4vw]" : "px-3 pt-2 pb-2"}
+           
           `}
         >
           {/* MESSAGE TEXT */}
@@ -110,7 +111,7 @@ const MessageBubble = ({
 
             {/* TEXT */}
             {msg.text && (
-              <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
+              <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full ml-2">
                 {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
                   const isLink = /https?:\/\/[^\s]+/.test(part);
 
@@ -145,6 +146,7 @@ const MessageBubble = ({
         ? "absolute bottom-3 right-3 bg-[#00000063] px-3 py-1 rounded-[20px]"
         : ""
     }
+
   `}
           >
             <span>{formatTime(msg.createdAt)}</span>
@@ -160,14 +162,14 @@ const MessageBubble = ({
             viewBox="0 0 11 20"
             width="11"
             height="20"
-
             className={`
               absolute
-              -z-10
+              -z-10  transition-colors duration-150
+  will-change-transform
               ${
                 isMe
-                  ? "-right-[6px] text-[#8774e1]  scale-x-[-1] rotate-[329deg] bottom-[-7px]"
-                  : "-left-[6px] text-[#212121] rotate-45 bottom-[-7px]"
+                  ? "-right-[6px] text-[#6457a5] group-hover:text-[#a494ff] scale-x-[-1] rotate-[329deg] bottom-[-7px]"
+                  : "-left-[6px] text-[#212121] group-hover:text-[#181818] rotate-45 bottom-[-7px]"
               }
 
             `}
