@@ -55,7 +55,12 @@ export const refreshTokenMiddleware = async (req, res, next) => {
         }   
 
         const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-        const session = await Session.findOne({ userId: decoded.id, valid: true });
+        // ✅ Match the actual token stored in DB
+const session = await Session.findOne({ 
+  userId: decoded.id, 
+  refreshToken: refreshToken, // ADD THIS
+  valid: true 
+});
 
         if (!session || !session.valid) {
             return res.status(401).json({ message: "Session expired" });
