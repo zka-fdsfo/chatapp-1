@@ -33,10 +33,12 @@ const currentusernameimg = {
 
       setUser(userData.user);
     } catch (error) {
-      console.error("Login failed:", error);
-    } finally {
-      setLoading(false);
-    }
+    console.error("Login failed:", error);
+
+    throw error; // <-- IMPORTANT
+  } finally {
+    setLoading(false);
+  }
   };
 
   // SIGNUP

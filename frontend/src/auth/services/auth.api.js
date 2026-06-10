@@ -75,12 +75,21 @@ api.interceptors.response.use(
   }
 );
 export const login = async (email, password) => {
-  console.log(email, password, "from api");
   try {
-    const response = await api.post("/auth/login", { email, password });
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+    });
+
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || "Login failed");
+ } catch (error) {
+    console.log("API ERROR:", error.response?.status);
+
+    throw {
+      status: error.response?.status,
+      message:
+        error.response?.data?.message || "Login failed",
+    };
   }
 };
 

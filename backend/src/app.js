@@ -12,6 +12,7 @@ import Message from "./model/message.model.js";
 import { Server } from "socket.io";
 import { createServer } from "node:http";
 import mongoose from "mongoose";
+import rateLimit from "express-rate-limit";
 const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
@@ -31,6 +32,15 @@ const io = new Server(server, {
   },
 });
 const onlineUsers = new Map();
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 20 requests per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many requests. Please try again later.",
+  },
+});
 
 io.on("connection", (socket) => {
   console.log("🟢 user connected:", socket.id);
@@ -154,7 +164,7 @@ console.log(process.env.FRONTEND_URL);
 app.use(cookieParser());
 app.set("trust proxy", true);
 
-app.use("/api/auth", authRouter);
+app.use("/api/auth", authLimiter,authRouter);
 
 app.use("/api/users", userRouter);
 app.use("/api/messages", messageRouter);

@@ -7,13 +7,32 @@ export default function LoginPage() {
   const { loading, handleLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
   
   const handleLoginsumit = async (e) => {
-    e.preventDefault(); 
-    await handleLogin(email, password );
+      e.preventDefault();
+
+  try {
+    setError("");
+
+    await handleLogin(email, password);
+
+    // navigate to chat page
     navigate("/");
+  } catch (err) {
+  console.log("LOGIN PAGE ERROR:", err);
+
+  if (err.status === 429) {
+    navigate("/rate-limit");
+    return;
+  }
+
+  setError(err.message);
+}
    
   }
+  
   if (loading) {
     return (
       <div className="h-full  bg-zinc-950 p-2">
@@ -142,6 +161,11 @@ export default function LoginPage() {
 
             
             </div>
+              {error && (
+    <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg mb-3">
+      {error}
+    </div>
+  )}
 
             {/* Footer */}
             <p className="text-center text-zinc-500 mt-8 text-sm">
