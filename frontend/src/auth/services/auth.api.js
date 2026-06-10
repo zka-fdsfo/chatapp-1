@@ -29,6 +29,7 @@ api.interceptors.response.use(
       originalRequest.url?.includes("/auth/register") ||
       originalRequest.url?.includes("/auth/refresh-token") ||
       originalRequest.url?.includes("/auth/verify-token");
+      
 
     if (isAuthRoute) {
       return Promise.reject(error);

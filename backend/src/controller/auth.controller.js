@@ -96,7 +96,6 @@ export const registerUser = async (req, res) => {
     const safeUser = {
       _id: newUser._id,
       name: newUser.name,
-      email: newUser.email,
       avatar: newUser.avatar,
     };
     console.log("Registered user:", safeUser);
@@ -200,7 +199,6 @@ export const loginUser = async (req, res) => {
     const safeUser = {
       _id: existingUser._id,
       name: existingUser.name,
-      email: existingUser.email,
       avatar: existingUser.avatar,
     
       bio:existingUser.bio,

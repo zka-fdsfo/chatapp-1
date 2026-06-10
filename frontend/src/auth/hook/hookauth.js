@@ -18,7 +18,7 @@ export const useAuth = () => {
     setUser,
     loading,
     setLoading,
-
+    authReady,
   } = AuthContextValue;
 const currentusernameimg = {
   name: user?.name,
@@ -70,31 +70,54 @@ const currentusernameimg = {
   };
 
   // VERIFY ACCESS TOKEN
-  const handleVerifyaccessToken = async () => {
-    setLoading(true);
+  // const handleVerifyaccessToken = async () => {
+  //   setLoading(true);
 
+  //   try {
+  //     const userData = await verifyaccessToken();
+
+  //     setUser(userData);
+  //   } catch (error) {
+  //     try {
+  //       await verifyrefreshToken();
+  //       await handleVerifyaccessToken();
+  //     } catch (refreshError) {
+  //       console.error("Token refresh failed:", refreshError);
+
+  //       setUser(null);
+  //     }
+  //     finally {
+
+  //     console.error("Token verification failed:", error);
+
+  //     setUser(null);
+  //     setLoading(false);
+  //   }}
+
+  // };
+  const handleVerifyaccessToken = async () => {
+  setLoading(true);
+
+  try {
+    const userData = await verifyaccessToken();
+
+    setUser(userData.user);
+  } catch (error) {
     try {
+      await verifyrefreshToken();
+
       const userData = await verifyaccessToken();
 
-      setUser(userData);
-    } catch (error) {
-      try {
-        await verifyrefreshToken();
-        await handleVerifyaccessToken();
-      } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
-
-        setUser(null);
-      }
-      finally {
-
-      console.error("Token verification failed:", error);
+      setUser(userData.user);
+    } catch (refreshError) {
+      console.error("Token refresh failed:", refreshError);
 
       setUser(null);
-      setLoading(false);
-    }}
-
-  };
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   // REFRESH TOKEN
   const refreshUserToken = async () => {
@@ -137,6 +160,7 @@ const changeinfocurrentuser = async (formData) => {
     setUser,
     loading,
     setLoading,
+    authReady,
     handleLogin,
     handleSignup,
     fetchAllUsers,
