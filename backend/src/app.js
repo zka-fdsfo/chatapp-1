@@ -34,7 +34,7 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 20 requests per IP
+  max: 20, // 20 requests per IP
   standardHeaders: true,
   legacyHeaders: false,
   message: {
