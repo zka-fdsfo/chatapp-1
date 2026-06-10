@@ -2,11 +2,13 @@ import jwt from "jsonwebtoken";
 import Session from "../model/session.model.js";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import admin from "../db/firebase-admin.js";
+import { getAuth } from "firebase-admin/auth";
 dotenv.config();
 export const authMiddleware = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
-    
+    console.log("COOKIE ACCESS TOKEN:", accessToken);
     if (!accessToken) {
       return res.status(401).json({
         message: "Unauthorized",
@@ -18,12 +20,13 @@ export const authMiddleware = async (req, res, next) => {
       accessToken,
       process.env.JWT_SECRET
     );
+console.log("DECODED:", decoded);
 
     // Check session
     const session = await Session.findById(
       decoded.session
     ).populate("userId");
-
+console.log("SESSION:", session);
     if (!session || !session.valid) {
       return res.status(401).json({
         message: "Session expired",
@@ -99,3 +102,23 @@ const session = await Session.findOne({
         return res.status(401).json({ message: "Invalid refresh token" });
     }
 }
+
+export const verifyGoogleToken = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+
+    console.log("TOKEN RECEIVED:", !!idToken);
+
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+
+    req.googleUser = decodedToken;
+
+    next();
+  } catch (error) {
+    console.error("GOOGLE AUTH ERROR:", error);
+
+    return res.status(401).json({
+      message: error.message,
+    });
+  }
+};

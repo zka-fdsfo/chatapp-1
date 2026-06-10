@@ -194,3 +194,15 @@ export const getImageMessagesApi = async (selectedUserId) => {
     );
   }
 };
+
+export const googleAuthApi = async (idToken) => {
+  const response = await api.post(
+    "/auth/google",
+    { idToken },
+    {
+      withCredentials: true,
+    }
+  );
+
+  return response.data;
+};

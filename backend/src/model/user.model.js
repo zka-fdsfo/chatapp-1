@@ -20,6 +20,15 @@ const Schemauser = new mongoose.Schema({
     bio: {
     type: String,
     },
+    firebaseUid: {
+  type: String,
+  default: null,
+},
+
+isGoogleUser: {
+  type: Boolean,
+  default: false,
+},
 },{ timestamps: true });
 
 const User = mongoose.model("User", Schemauser);

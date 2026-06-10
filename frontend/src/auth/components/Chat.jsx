@@ -141,10 +141,10 @@ const Chat = ({
 
     unseenMessages.forEach((msg) => {
       if (!msg._id) return;
-      console.log("SEEN EVENT", {
-        messageId: msg._id,
-        senderId: msg.senderId,
-      });
+      // console.log("SEEN EVENT", {
+      //   messageId: msg._id,
+      //   senderId: msg.senderId,
+      // });
       socketRef.current.emit("message_seen", {
         messageId: msg._id,
         senderId: msg.sender || msg.senderId,

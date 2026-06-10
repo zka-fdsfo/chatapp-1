@@ -5,7 +5,7 @@ import AppSkeleton from '../components/AppSkeleton.jsx';
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { loading, handleSignup } = useAuth();
+  const { loading, handleSignup ,loginWithGoogle } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,6 +14,20 @@ export default function SignupPage() {
 
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState("");
+
+
+  const handleGoogleLogin = async () => {
+    try {
+      const data = await loginWithGoogle();
+
+      console.log(data);
+
+      // setUser(data.user)
+      // navigate("/chat")
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -207,7 +221,7 @@ export default function SignupPage() {
             {/* Google */}
             <div className="grid">
               <button
-                type="button"
+                type="button" onClick={handleGoogleLogin} 
                 className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-2xl transition font-medium"
               >
                 Google

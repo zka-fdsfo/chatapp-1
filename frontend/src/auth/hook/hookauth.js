@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../auth.context.jsx";
-
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase";
 import {
   login,
   signup,
@@ -8,6 +9,7 @@ import {
   verifyaccessToken,
   verifyrefreshToken,
   changeinfocurrentuserApi,
+  googleAuthApi ,
 } from "../services/auth.api.js";
 
 export const useAuth = () => {
@@ -154,10 +156,36 @@ const changeinfocurrentuser = async (formData) => {
   }
 };
 
+
+  const loginWithGoogle = async () => {
+    try {
+      // Open Google popup
+      const result = await signInWithPopup(
+        auth,
+        googleProvider
+      );
+
+      // Firebase token
+      const idToken = await result.user.getIdToken();
+console.log(idToken);
+      // Send to backend
+      const data = await googleAuthApi(idToken);
+      setUser(data.user)
+      return data;
+    } catch (error) {
+      console.error("GOOGLE AUTH ERROR:", error);
+      console.error(error);
+      throw error;
+    }
+  };
+
+
+
   return {
     user,
     currentusernameimg,
     setUser,
+     loginWithGoogle,
     loading,
     setLoading,
     authReady,

@@ -6,7 +6,7 @@ import { UAParser } from "ua-parser-js";
 import dotenv from "dotenv";
 import Session from "../model/session.model.js";
 import imagekit from "../db/imagekit.js";
-
+import admin from "../db/firebase-admin.js";
 dotenv.config();
 
 // registerUser handles new user creation. It validates the request payload,
@@ -232,5 +232,89 @@ export const verifyTokenMiddleware = async (req, res) => {
     res.status(200).json({ user: safeUser });
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized function" });
+  }
+};
+
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { email, name, picture, uid } = req.googleUser;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const randomPassword = await bcrypt.hash(
+        uid + Date.now(),
+        10
+      );
+
+      user = await User.create({
+        name,
+        email,
+        password: randomPassword,
+        avatar: picture,
+        firebaseUid: uid,
+        isGoogleUser: true,
+      });
+    }
+
+    // Generate refresh token
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Create session
+    const session = await Session.create({
+  refreshToken,
+  userId: user._id,
+  ipAddress:
+    req.headers["x-forwarded-for"] ||
+    req.socket.remoteAddress,
+  userAgent: req.headers["user-agent"],
+  expiresAt: new Date(
+    Date.now() + 7 * 24 * 60 * 60 * 1000
+  ),
+  valid: true, // ADD THIS
+});
+
+    // Generate access token
+    const accessToken = jwt.sign(
+      { id: user._id, session: session._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      avatar: user.avatar,
+      bio: user.bio,
+    };
+
+    return res.status(200).json({
+      message: "Google login successful",
+      user: safeUser,
+    });
+  } catch (error) {
+    console.error("GOOGLE AUTH ERROR:", error);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };

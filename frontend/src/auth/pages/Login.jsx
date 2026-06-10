@@ -2,12 +2,26 @@ import React, { useState } from 'react';
 import { useAuth } from '../hook/hookauth';
 import { useNavigate, Link } from "react-router-dom";
 import AppSkeleton from '../components/AppSkeleton.jsx';
+
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { loading, handleLogin } = useAuth();
+  const { loading, handleLogin,loginWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const handleGoogleLogin = async () => {
+    try {
+      const data = await loginWithGoogle();
+
+      console.log(data);
+
+      // setUser(data.user)
+      navigate("/")
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   
   const handleLoginsumit = async (e) => {
@@ -155,7 +169,7 @@ export default function LoginPage() {
 
             {/* Social Buttons */}
             <div className="grid ">
-              <button className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-2xl transition font-medium">
+              <button onClick={handleGoogleLogin} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-2xl transition font-medium">
                 Google
               </button>
 
