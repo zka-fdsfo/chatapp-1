@@ -82,16 +82,16 @@ export const registerUser = async (req, res) => {
     // Store the JWT access token and refresh token in HTTP-only cookies.
     // These cookies are used by the client for subsequent authenticated requests.
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      //secure: process.env.NODE_ENV === "production",
-     secure: false,
-sameSite: "lax",
+        httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 15 * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
-    secure: false,
-sameSite: "lax",
+     httpOnly: true,
+ secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     const safeUser = {
       _id: newUser._id,
@@ -186,16 +186,16 @@ export const loginUser = async (req, res) => {
 
     // Set token in cookie
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      //secure: process.env.NODE_ENV === "production",
-      secure: false,
-sameSite: "lax",
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 15 * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
-      secure: false,
-sameSite: "lax",
+     httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     const safeUser = {
       _id: existingUser._id,

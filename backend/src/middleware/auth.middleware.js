@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import Session from "../model/session.model.js";
 import crypto from "crypto";
+import dotenv from "dotenv";
+dotenv.config();
 export const authMiddleware = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
@@ -74,15 +76,17 @@ export const refreshTokenMiddleware = async (req, res, next) => {
             { expiresIn: "15m" }
         );
         res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+               httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("accessToken", newAccessToken, { 
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 15 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 15 * 60 * 1000,
         });
         req.user = session.userId;
         next();
