@@ -76,11 +76,13 @@ export const refreshTokenMiddleware = async (req, res, next) => {
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.cookie("accessToken", newAccessToken, { 
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            maxAge: 15 * 60 * 1000,
         });
         req.user = session.userId;
         next();

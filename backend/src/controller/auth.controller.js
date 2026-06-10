@@ -84,14 +84,14 @@ export const registerUser = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       //secure: process.env.NODE_ENV === "production",
-     secure: true,
-  sameSite: "none",
+     secure: false,
+sameSite: "lax",
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
-    secure: true,
-  sameSite: "none",
+    secure: false,
+sameSite: "lax",
     });
     const safeUser = {
       _id: newUser._id,
@@ -188,14 +188,14 @@ export const loginUser = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       //secure: process.env.NODE_ENV === "production",
-      secure: true,
-  sameSite: "none",
+      secure: false,
+sameSite: "lax",
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
-      secure: true,
-  sameSite: "none",
+      secure: false,
+sameSite: "lax",
     });
     const safeUser = {
       _id: existingUser._id,
