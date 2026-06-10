@@ -6,10 +6,9 @@ import { authMiddleware,refreshTokenMiddleware} from '../middleware/auth.middlew
 import upload from '../middleware/multer.js'
 Router.post('/register', upload.single('avatar'), registerUser)
 Router.post('/login', loginUser)
-Router.get(
-  "/refresh-token",
-  refreshTokenMiddleware
-);
+Router.get("/refresh-token", refreshTokenMiddleware, (req, res) => {
+  res.status(200).json({ message: "Token refreshed" });
+});
 
 Router.get("/verify-token", authMiddleware, verifyTokenMiddleware);
 

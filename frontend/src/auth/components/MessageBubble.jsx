@@ -52,7 +52,7 @@ const MessageBubble = ({
             ${
               isMe
                 ? "bg-[#6457a5] hover:bg-[#a494ff] text-white rounded-br-md pl-2"
-                : "bg-[#212121] hover:bg-[#181818] text-white rounded-bl-md pr-2"
+                : "bg-[#313030] hover:bg-[#181818] text-white rounded-bl-md pr-2"
             }
 
            ${msg.image ? "flex-col" : ""}
@@ -169,7 +169,7 @@ const MessageBubble = ({
               ${
                 isMe
                   ? "-right-[6px] text-[#6457a5] group-hover:text-[#a494ff] scale-x-[-1] rotate-[329deg] bottom-[-7px]"
-                  : "-left-[6px] text-[#212121] group-hover:text-[#181818] rotate-45 bottom-[-7px]"
+                  : "-left-[6px] text-[#313030] group-hover:text-[#181818] rotate-45 bottom-[-7px]"
               }
 
             `}
