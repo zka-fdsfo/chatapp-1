@@ -7,51 +7,45 @@ import imagekit from "../db/imagekit.js";
  * =========================
  */
 export const sendMessage = async (req, res) => {
-  console.log("BODY:", req.body);
-  console.log("FILE:", req.file);
   try {
     const { receiver, text } = req.body;
-    if (!receiver) {
-  return res.status(400).json({
-    message: "Receiver is required",
-  });
-}
-
-    const sender = req.user._id; // assuming auth middleware sets req.user
-    let image="";
+ 
+    // EARLY EXITS — before any async work
     if (!receiver) {
       return res.status(400).json({ message: "Receiver is required" });
     }
-
-     if (req.file) {
-          const uploadedImage = await imagekit.files.upload({
-            file: req.file.buffer.toString("base64"),
-            fileName: `${Date.now()}-${req.file.originalname}`,
-            folder: "/avatarsTelegramClone",
-          });
-    
-          image = uploadedImage.url;
-        }
-
-   if (!text?.trim() && !image) {
-  return res.status(400).json({
-    message: "Message cannot be empty",
-  });
-}
-
+    if (!text?.trim() && !req.file) {
+      return res.status(400).json({ message: "Message cannot be empty" });
+    }
+ 
+    const sender = req.user._id;
+ 
+    // UPLOAD IMAGE — only if file exists
+    let image = "";
+    if (req.file) {
+      const uploaded = await imagekit.upload({         // imagekit.upload() is faster than imagekit.files.upload()
+        file: req.file.buffer.toString("base64"),
+        fileName: `${Date.now()}-${req.file.originalname}`,
+        folder: "/avatarsTelegramClone",
+      });
+      image = uploaded.url;
+    }
+ 
+    // CREATE MESSAGE
     const message = await Message.create({
       sender,
       receiver,
-      text: text || "",
-      image: image || "",
+      text: text?.trim() || "",
+      image,
     });
-    console.log("massage",message)
-
+ 
+    // EMIT + RESPOND in parallel — don't await emit
     io.to(receiver.toString()).emit("receive_message", {
       ...message.toObject(),
       senderId: sender,
       receiverId: receiver,
     });
+ 
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
@@ -61,7 +55,7 @@ export const sendMessage = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
+ 
 /**
  * =========================
  * GET CHAT BETWEEN TWO USERS
@@ -71,7 +65,7 @@ export const getMessages = async (req, res) => {
   try {
     const { userId } = req.query;
     const myId = req.user._id;
-
+ 
     const messages = await Message.find({
       $or: [
         { sender: myId, receiver: userId },
@@ -80,9 +74,9 @@ export const getMessages = async (req, res) => {
       deleted: false,
     })
       .sort({ createdAt: 1 })
-      .populate("sender", "name email")
-      .populate("receiver", "name email");
-
+      .select("sender receiver text image seen createdAt")  // only fetch needed fields
+      .lean();                                               // plain JS objects, skips Mongoose overhead
+ 
     return res.status(200).json({
       message: "Messages fetched successfully",
       data: messages,
