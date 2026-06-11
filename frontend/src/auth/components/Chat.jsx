@@ -66,7 +66,7 @@ const Chat = ({
   useEffect(() => {
     const loadMessages = async () => {
       if (!selectedUser?._id) return;
-
+      setMessages([]); // clear old chat
       setLoadingMessages(true);
 
       try {
@@ -74,7 +74,7 @@ const Chat = ({
       } catch (error) {
         console.error(error);
       } finally {
-        setLoadingMessages(false);
+        setLoadingMessages(true);
       }
     };
 
@@ -235,6 +235,7 @@ const Chat = ({
         setMenuMsg={setMenuMsg}
         setEditMsg={setEditMsg}
         setEditText={setEditText}
+        loadingMessages={loadingMessages}
         handleDeleteMessage={handleDeleteMessage}
         setViewerImage={setViewerImage}
       />

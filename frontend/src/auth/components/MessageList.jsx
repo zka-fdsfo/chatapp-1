@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import EmptyChat from "./EmptyChat";
 import { ArrowDown } from "lucide-react";
-
+import MessageSkeleton from "./MessageSkeleton"
+import MessageListSkeleton from "./MessageListSkeleton";
 const MessageList = ({
   messages,
   currentUserId,
@@ -15,6 +16,7 @@ const MessageList = ({
   handleDeleteMessage,
   setViewerImage,
   selectedUser,
+  loadingMessages,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -86,7 +88,9 @@ const MessageList = ({
         "
       >
         {/* EMPTY STATE */}
-        {validMessages.length === 0 ? (
+        {loadingMessages ? (
+          <MessageSkeleton />
+        ) : validMessages.length === 0 ? (
           <EmptyChat userId={setuserid} />
         ) : (
           validMessages.map((msg) => {

@@ -332,3 +332,31 @@ body {
     26%  { transform: rotate(0deg) scale(1); }
     100% { transform: rotate(0deg) scale(1); }
   }
+
+  @keyframes shimmer {
+  0% {
+    transform: translateX(-150%);
+  }
+
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.animate-shimmer {
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  animation: shimmer 1.3s linear infinite;
+}
