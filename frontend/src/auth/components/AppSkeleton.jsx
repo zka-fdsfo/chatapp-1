@@ -1,6 +1,72 @@
+import React, { useEffect, useRef, useState } from "react";
+
 export default function AppSkeleton() {
+  const [step, setStep] = useState(0);
+  const [showMessage, setShowMessage] = useState(false);
+
+  useEffect(() => {
+    const first = setTimeout(() => {
+      setShowMessage(true);
+      setStep(1);
+    }, 1000);
+
+    const second = setTimeout(() => setStep(2), 2000);
+    const third = setTimeout(() => setStep(3), 4000);
+    const fourth = setTimeout(() => setStep(4), 6000);
+    const fift = setTimeout(() => setStep(5), 7000);
+
+    return () => {
+      clearTimeout(first);
+      clearTimeout(second);
+      clearTimeout(third);
+      clearTimeout(fourth);
+      clearTimeout(fift);
+    };
+  }, []);
   return (
     <div className="h-screen bg-[#181818] animate-pulse overflow-hidden">
+{showMessage && (
+  <div className="absolute inset-0 flex items-center justify-center z-50 px-4">
+    
+    {/* Glass Card */}
+    <div className="max-w-md w-full rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 p-6 shadow-xl">
+      
+      <div className="flex flex-col items-center text-center space-y-2">
+
+  {step >= 1 && (
+    <p className="fade-in text-indigo-300 text-sm md:text-base leading-relaxed">
+     You might face loading issues
+    </p>
+  )}
+
+  {step >= 2 && (
+    <p className="fade-in text-zinc-300 text-sm md:text-base leading-relaxed">
+      because I, the developer, couldn’t afford.
+    </p>
+  )}
+
+  {step >= 3 && (
+    <p className="fade-in text-zinc-400 text-sm md:text-base leading-relaxed">
+      a good server due to a low budget…
+    </p>
+  )}
+
+  {step >= 4 && (
+    <p className="fade-in text-zinc-500 text-sm md:text-base leading-relaxed">
+     so it’s running on struggle and
+    </p>
+  )}
+
+  {step >= 5 && (
+    <p className="fade-in text-red-400 font-medium text-sm md:text-base leading-relaxed">
+       hope 😭 sorry from my side.”
+    </p>
+  )}
+
+</div>
+    </div>
+  </div>
+)}
       {/* MOBILE */}
       <div className="md:hidden h-full flex flex-col">
         {/* Top */}
