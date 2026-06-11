@@ -74,7 +74,7 @@ const Chat = ({
       } catch (error) {
         console.error(error);
       } finally {
-        setLoadingMessages(true);
+        setLoadingMessages(false);
       }
     };
 
