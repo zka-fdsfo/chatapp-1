@@ -23,7 +23,7 @@ export const sendMessage = async (req, res) => {
     // UPLOAD IMAGE — only if file exists
     let image = "";
     if (req.file) {
-      const uploaded = await imagekit.upload({         // imagekit.upload() is faster than imagekit.files.upload()
+      const uploaded = await imagekit.files.upload({         // imagekit.upload() is faster than imagekit.files.upload()
         file: req.file.buffer.toString("base64"),
         fileName: `${Date.now()}-${req.file.originalname}`,
         folder: "/avatarsTelegramClone",

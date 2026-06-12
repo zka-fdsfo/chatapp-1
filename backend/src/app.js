@@ -34,7 +34,7 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200000000, // 20 requests per IP
+  max: 30, // 30 requests per IP
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -163,9 +163,7 @@ console.log(process.env.FRONTEND_URL);
 
 app.use(cookieParser());
 app.set("trust proxy", true);
-
 app.use("/api/auth", authLimiter,authRouter);
-
 app.use("/api/users", userRouter);
 app.use("/api/messages", messageRouter);
 export { app, io, server };
