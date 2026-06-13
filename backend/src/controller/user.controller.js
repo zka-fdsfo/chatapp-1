@@ -11,6 +11,13 @@ import imagekit from "../db/imagekit.js";
 //     }
 // }
 
+/**
+ * Get all users except the current user and include the latest message
+ * sent by each user to the current user.
+ *
+ * Usage: GET /api/users (protected)
+ * Response: Array of users with `lastMessage` field (latest message sent TO current user).
+ */
 export const getAllUsers = async (req, res) => {
   try {
     const currentUserId = req.user;
@@ -45,6 +52,13 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+/**
+ * Update the current user's profile information (name, bio, and avatar).
+ *
+ * Usage: PUT /api/users/me (protected)
+ * Body: { name?, bio? } and optionally a file upload for avatar (multipart/form-data).
+ * Response: Updated user object with fields `name`, `email`, `avatar`, `bio`.
+ */
 export const changeCurrentUserinfo = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user;
@@ -98,6 +112,35 @@ export const changeCurrentUserinfo = async (req, res) => {
 
     return res.status(500).json({
       message: "Server error",
+    });
+  }
+};
+
+/**
+ * Save or update the FCM (Firebase Cloud Messaging) token for the authenticated user.
+ *
+ * Usage: POST /api/users/fcm-token (protected)
+ * Body: { token: string }
+ * Purpose: Store token so the backend can send push notifications to this user.
+ */
+export const saveFcmToken = async (req, res) => {
+  try {
+    const userId = req.user.id; // from auth middleware
+    const { token } = req.body;
+
+    await User.findByIdAndUpdate(userId, {
+      fcmToken: token,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "FCM token saved",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to save token",
     });
   }
 };

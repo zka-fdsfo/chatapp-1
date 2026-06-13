@@ -8,7 +8,7 @@ dotenv.config();
 export const authMiddleware = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
-    console.log("COOKIE ACCESS TOKEN:", accessToken);
+  //  console.log("COOKIE ACCESS TOKEN:", accessToken);
     if (!accessToken) {
       return res.status(401).json({
         message: "Unauthorized",
@@ -20,13 +20,13 @@ export const authMiddleware = async (req, res, next) => {
       accessToken,
       process.env.JWT_SECRET
     );
-console.log("DECODED:", decoded);
+
 
     // Check session
     const session = await Session.findById(
       decoded.session
     ).populate("userId");
-console.log("SESSION:", session);
+
     if (!session || !session.valid) {
       return res.status(401).json({
         message: "Session expired",

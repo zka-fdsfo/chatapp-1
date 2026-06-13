@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hook/hookauth';
 import { useNavigate, Link } from "react-router-dom";
 import AppSkeleton from '../components/AppSkeleton.jsx';
-import { getFcmToken } from "../services/getFcmToken.js";
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loading, handleLogin,loginWithGoogle } = useAuth();
@@ -12,9 +12,8 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
-       const fcmToken = await getFcmToken();
-       console.log("FCM Token:", fcmToken);
-      const data = await loginWithGoogle(fcmToken);
+
+      const data = await loginWithGoogle();
 
       console.log(data);
 
@@ -29,28 +28,35 @@ export default function LoginPage() {
   const handleLoginsumit = async (e) => {
       e.preventDefault();
 
-  try {
+ try {
     setError("");
-    const fcmToken = await getFcmToken();
 
-       console.log("FCM Token:", fcmToken);
+    await handleLogin(email, password);
 
-    await handleLogin(email, password, fcmToken);
-
-    // navigate to chat page
     navigate("/");
   } catch (err) {
-  console.log("LOGIN PAGE ERROR:", err);
+    console.log("LOGIN PAGE ERROR:", err);
 
-  if (err.status === 429) {
-    navigate("/rate-limit");
-    return;
+    if (err.status === 429) {
+      navigate("/rate-limit");
+      return;
+    }
+
+    if (err.status === 401) {
+      setError("Incorrect email or password");
+      return;
+    }
+
+    if (err.status === 404) {
+      setError("Account not found");
+      return;
+    }
+
+    setError("Something went wrong. Please try again.");
   }
-
-  setError(err.message);
 }
    
-  }
+
   
   if (loading) {
     return (

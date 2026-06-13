@@ -29,7 +29,7 @@ import { useState, useEffect, useRef } from "react";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "../firebase.js";
 import toast from "react-hot-toast";
-
+import { Toaster } from "react-hot-toast";
 import { Menu, Search, Archive, Send, MessageCircle } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
@@ -39,6 +39,7 @@ import EditProfile from "../components/EditProfile.jsx";
 import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
 import { Image as ImageIcon } from "lucide-react";
+import {Notificationpermission} from "../util/Notificationpermission.js"
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -51,8 +52,17 @@ export default function UsersPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [closingProfile, setClosingProfile] = useState(false);
   const [viewerImage, setViewerImage] = useState(null);
+  
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
+
+  // Request notification permission ONCE when component mounts
+useEffect(() => {
+  console.log("Permission:", Notification.permission);
+
+  Notificationpermission();
+}, []);
+
   // SOCKET.IO
   // ================= SOCKET =================
   useEffect(() => {
@@ -60,7 +70,7 @@ export default function UsersPage() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
+      // console.log("Socket connected:", socket.id);
 
       if (user?._id) {
         socket.emit("online-user", user._id);
@@ -72,7 +82,7 @@ export default function UsersPage() {
     });
 
     socket.on("disconnect", () => {
-      console.log("Socket disconnected");
+      // console.log("Socket disconnected");
     });
 
     return () => {
@@ -132,22 +142,47 @@ export default function UsersPage() {
     Y: "8b5cf6",
     Z: "0092ff",
   };
+useEffect(() => {
+  const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
 
-  useEffect(() => {
-  const audio = new Audio("../public/sound/mixkit-software-interface-start-2574.wav");
+  let isSubscribed = true;
 
   const unsubscribe = onMessage(messaging, (payload) => {
-    console.log(payload);
+    if (!isSubscribed) return;
 
-    audio.play().catch(err => console.log(err));
+    console.log("🔥 FCM MESSAGE RECEIVED:", payload);
 
-    toast.success(
-      `${payload.notification?.title}: ${payload.notification?.body}`
-    );
+    const title = payload.notification?.title || "New Message";
+    const body = payload.notification?.body || "";
+    const senderAvatar = payload.data?.senderAvatar || "";
+
+    if (document.visibilityState !== "visible") {
+      audio.currentTime = 0; // IMPORTANT fix double sound overlap
+      audio.play().catch(() => {});
+    }
+
+    toast.custom(() => (
+      <div className="bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 w-[320px] border border-white/10">
+        <img
+          src={senderAvatar || "/default-avatar.png"}
+          className="w-12 h-12 rounded-full object-cover"
+          alt=""
+        />
+
+        <div>
+          <p className="font-semibold text-white">{title}</p>
+          <p className="text-gray-300 text-sm">{body}</p>
+        </div>
+      </div>
+    ));
   });
 
-  return unsubscribe;
+  return () => {
+    isSubscribed = false;
+    unsubscribe();
+  };
 }, []);
+
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
   const closeProfile = () => {
@@ -189,9 +224,19 @@ export default function UsersPage() {
    * This block is informational only — it does not change behavior.
    * =============================================================================
    */
-  console.log("users", users)
   return (
     <div className="h-screen bg-black flex overflow-hidden">
+  <Toaster
+  position="top-center"
+  
+  toastOptions={{
+    duration: 4000,
+    style: {
+      zIndex: 999999,
+    },
+  }}
+ 
+/>
       <ImageViewer
         image={viewerImage}
         onClose={() => setViewerImage(null)}

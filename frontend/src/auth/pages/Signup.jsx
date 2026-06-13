@@ -20,8 +20,8 @@ export default function SignupPage() {
 
   const handleGoogleLogin = async () => {
     try {
-       const fcmToken = await getFcmToken();
-      const data = await loginWithGoogle(fcmToken);
+
+      const data = await loginWithGoogle();
 
       console.log(data);
 
@@ -53,13 +53,13 @@ export default function SignupPage() {
       alert("Passwords do not match");
       return;
     }
-      const fcmToken = await getFcmToken();
+
     const formData = new FormData();
 
     formData.append("name", name);
     formData.append("email", email);
     formData.append("password", password);
-    formData.append("fcmToken",fcmToken)
+
 
     if (avatar) {
       formData.append("avatar", avatar);

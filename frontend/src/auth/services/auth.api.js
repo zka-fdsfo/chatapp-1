@@ -207,3 +207,11 @@ export const googleAuthApi = async (idToken) => {
 
   return response.data;
 };
+
+export const Fcmtokenget = async (token) => {
+  const response = await api.put("/users/getFcmToken", {
+    token,
+  });
+
+  return response;
+};

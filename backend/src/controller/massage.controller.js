@@ -61,6 +61,7 @@ if (receiverUser?.fcmToken) {
       data: {
         senderId: sender.toString(),
         receiverId: receiver.toString(),
+        senderAvatar: senderUser?.avatar || "",
       },
     });
 
