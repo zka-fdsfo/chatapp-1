@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useAuth } from "../hook/hookauth";
 import { useNavigate, Link } from "react-router-dom";
 import AppSkeleton from '../components/AppSkeleton.jsx';
+import { getFcmToken } from "../services/getFcmToken.js";
+
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -18,7 +20,8 @@ export default function SignupPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      const data = await loginWithGoogle();
+       const fcmToken = await getFcmToken();
+      const data = await loginWithGoogle(fcmToken);
 
       console.log(data);
 
@@ -50,12 +53,13 @@ export default function SignupPage() {
       alert("Passwords do not match");
       return;
     }
-
+      const fcmToken = await getFcmToken();
     const formData = new FormData();
 
     formData.append("name", name);
     formData.append("email", email);
     formData.append("password", password);
+    formData.append("fcmToken",fcmToken)
 
     if (avatar) {
       formData.append("avatar", avatar);

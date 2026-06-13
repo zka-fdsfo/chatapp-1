@@ -14,7 +14,7 @@ dotenv.config();
 // issues JWT access and refresh tokens, and stores them as secure cookies.
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password ,fcmToken} = req.body;
     let session;
 
     // Validate whether this email is already taken before creating a new user.
@@ -46,6 +46,7 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       avatar: avatarUrl,
+      fcmToken,
     });
 
     //  Generate JWT token
@@ -113,9 +114,9 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   console.log(req.body);
   try {
-    const { email, password } = req.body;
+    const { email, password ,fcmToken} = req.body;
     let session;
-
+    console.log("fcmToken",fcmToken)
     // Verify that the provided email belongs to a registered user.
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
@@ -127,7 +128,10 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-
+if (fcmToken) {
+  existingUser.fcmToken = fcmToken;
+  await existingUser.save();
+}
     // Generate JWT token
     const refreshToken = await jwt.sign(
       { id: existingUser._id },
@@ -238,7 +242,7 @@ export const verifyTokenMiddleware = async (req, res) => {
 
 export const googleAuth = async (req, res) => {
   try {
-    const { email, name, picture, uid } = req.googleUser;
+    const { email, name, picture, uid, fcmToken } = req.googleUser;
 
     let user = await User.findOne({ email });
 
@@ -255,8 +259,16 @@ export const googleAuth = async (req, res) => {
         avatar: picture,
         firebaseUid: uid,
         isGoogleUser: true,
+         fcmToken,
       });
     }
+    else {
+  if (fcmToken) {
+    user.fcmToken = fcmToken;
+    await user.save();
+  }
+
+}
 
     // Generate refresh token
     const refreshToken = jwt.sign(

@@ -27,11 +27,11 @@ const currentusernameimg = {
   avatar: user?.avatar,
 };
   // LOGIN
-  const handleLogin = async (email, password) => {
+  const handleLogin = async (email, password ,fcmToken) => {
     setLoading(true);
 
     try {
-      const userData = await login(email, password);
+      const userData = await login(email, password,fcmToken);
 
       setUser(userData.user);
     } catch (error) {

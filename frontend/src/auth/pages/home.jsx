@@ -26,6 +26,10 @@
  */
 
 import { useState, useEffect, useRef } from "react";
+import { onMessage } from "firebase/messaging";
+import { messaging } from "../firebase.js";
+import toast from "react-hot-toast";
+
 import { Menu, Search, Archive, Send, MessageCircle } from "lucide-react";
 import Chat from "../components/Chat";
 import { createSocket } from "../Socket.IO/Socket.Io.js";
@@ -128,6 +132,22 @@ export default function UsersPage() {
     Y: "8b5cf6",
     Z: "0092ff",
   };
+
+  useEffect(() => {
+  const audio = new Audio("../public/sound/mixkit-software-interface-start-2574.wav");
+
+  const unsubscribe = onMessage(messaging, (payload) => {
+    console.log(payload);
+
+    audio.play().catch(err => console.log(err));
+
+    toast.success(
+      `${payload.notification?.title}: ${payload.notification?.body}`
+    );
+  });
+
+  return unsubscribe;
+}, []);
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
   const closeProfile = () => {

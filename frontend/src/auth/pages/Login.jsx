@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hook/hookauth';
 import { useNavigate, Link } from "react-router-dom";
 import AppSkeleton from '../components/AppSkeleton.jsx';
-
+import { getFcmToken } from "../services/getFcmToken.js";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loading, handleLogin,loginWithGoogle } = useAuth();
@@ -12,7 +12,9 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      const data = await loginWithGoogle();
+       const fcmToken = await getFcmToken();
+       console.log("FCM Token:", fcmToken);
+      const data = await loginWithGoogle(fcmToken);
 
       console.log(data);
 
@@ -29,8 +31,11 @@ export default function LoginPage() {
 
   try {
     setError("");
+    const fcmToken = await getFcmToken();
 
-    await handleLogin(email, password);
+       console.log("FCM Token:", fcmToken);
+
+    await handleLogin(email, password, fcmToken);
 
     // navigate to chat page
     navigate("/");

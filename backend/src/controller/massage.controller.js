@@ -1,6 +1,8 @@
 import Message from "../model/message.model.js";
 import { io } from "../app.js";
 import imagekit from "../db/imagekit.js";
+import { messaging } from "../db/firebase-admin.js";
+import User from "../model/user.model.js";
 /**
  * =========================
  * SEND MESSAGE
@@ -45,7 +47,28 @@ export const sendMessage = async (req, res) => {
       senderId: sender,
       receiverId: receiver,
     });
- 
+ const receiverUser = await User.findById(receiver);
+const senderUser = await User.findById(sender);
+
+if (receiverUser?.fcmToken) {
+  try {
+    await messaging.send({
+      token: receiverUser.fcmToken,
+      notification: {
+        title: senderUser.name,
+        body: text?.trim() || "📷 Image",
+      },
+      data: {
+        senderId: sender.toString(),
+        receiverId: receiver.toString(),
+      },
+    });
+
+    console.log("Notification sent");
+  } catch (err) {
+    console.error("FCM Error:", err);
+  }
+}
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,

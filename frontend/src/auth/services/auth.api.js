@@ -75,11 +75,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-export const login = async (email, password) => {
+export const login = async (email, password,fcmToken) => {
   try {
     const response = await api.post("/auth/login", {
       email,
       password,
+      fcmToken
     });
 
     return response.data;

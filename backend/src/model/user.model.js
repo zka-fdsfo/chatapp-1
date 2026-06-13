@@ -29,6 +29,10 @@ isGoogleUser: {
   type: Boolean,
   default: false,
 },
+  fcmToken: {
+    type: String,
+    default: null,
+  },
 },{ timestamps: true });
 
 const User = mongoose.model("User", Schemauser);
