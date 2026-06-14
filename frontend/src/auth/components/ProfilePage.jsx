@@ -221,7 +221,7 @@ const { currentusernameimg } = useAuth();
           src={msg.image}
           alt=""
           onClick={() => {
-            console.log(msg);
+    //        console.log(msg);
 
             setViewerImage({
               name: isMe ? "You" : selectedUser?.name,

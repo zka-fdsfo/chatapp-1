@@ -15,7 +15,7 @@ export default function LoginPage() {
 
       const data = await loginWithGoogle();
 
-      console.log(data);
+  //    console.log(data);
 
       // setUser(data.user)
       navigate("/")

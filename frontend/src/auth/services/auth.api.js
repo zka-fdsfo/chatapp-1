@@ -85,7 +85,7 @@ export const login = async (email, password,fcmToken) => {
 
     return response.data;
  } catch (error) {
-    console.log("API ERROR:", error.response?.status);
+  //  console.log("API ERROR:", error.response?.status);
 
     throw {
       status: error.response?.status,
@@ -147,7 +147,7 @@ export const getallchatusers = async (userId) => {
 
 export const sendMessage = async (formData) => {
   try {
-    console.log("working")
+ //   console.log("working")
     const response = await api.post("/messages/send",
       formData
     );

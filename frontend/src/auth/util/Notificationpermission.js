@@ -15,7 +15,7 @@ export async function Notificationpermission() {
 
       return true;
     }
-    console.log("tell",permission)
+  //  console.log("tell",permission)
 
     return false;
   } catch (error) {

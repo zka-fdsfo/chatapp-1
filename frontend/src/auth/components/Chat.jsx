@@ -113,7 +113,7 @@ const Chat = ({
   useEffect(() => {
     if (!socketRef.current) return;
 
-    const handleSeenUpdate = ({ messageId }) => {
+    const handleSeenUpdate = ({ messageId }) => { //2
       console.log("✅ Seen Update:", messageId);
 
       setMessages((prev) =>
@@ -131,7 +131,7 @@ const Chat = ({
   }, []);
   // ================= SEEN UPDATE =================
   useEffect(() => {
-    if (!socketRef.current || !user?._id) return;
+    if (!socketRef.current || !user?._id) return; //1
 
     const unseenMessages = messages.filter(
       (msg) =>

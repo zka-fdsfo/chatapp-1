@@ -64,7 +64,7 @@ export const changeCurrentUserinfo = async (req, res) => {
     const currentUserId = req.user._id || req.user;
 
     const { name, bio } = req.body;
-    console.log("name 159",name)
+   
 
     const update = {};
     let avatar;

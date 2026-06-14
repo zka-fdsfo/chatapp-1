@@ -23,7 +23,7 @@ export default function SignupPage() {
 
       const data = await loginWithGoogle();
 
-      console.log(data);
+  //    console.log(data);
 
       // setUser(data.user)
       // navigate("/chat")

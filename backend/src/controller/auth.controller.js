@@ -99,7 +99,7 @@ export const registerUser = async (req, res) => {
       name: newUser.name,
       avatar: newUser.avatar,
     };
-    console.log("Registered user:", safeUser);
+
     res
       .status(201)
       .json({ message: "User registered successfully", user: safeUser });
@@ -112,11 +112,11 @@ export const registerUser = async (req, res) => {
 // loginUser authenticates an existing user. It verifies credentials, refreshes or
 // creates a session record, updates session metadata, and issues JWT cookies.
 export const loginUser = async (req, res) => {
-  console.log(req.body);
+
   try {
     const { email, password ,fcmToken} = req.body;
     let session;
-    console.log("fcmToken",fcmToken)
+ 
     // Verify that the provided email belongs to a registered user.
     const existingUser = await User.findOne({ email });
     if (!existingUser) {

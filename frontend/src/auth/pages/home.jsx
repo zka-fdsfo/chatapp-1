@@ -58,7 +58,7 @@ export default function UsersPage() {
 
   // Request notification permission ONCE when component mounts
 useEffect(() => {
-  console.log("Permission:", Notification.permission);
+
 
   Notificationpermission();
 }, []);
@@ -142,35 +142,32 @@ useEffect(() => {
     Y: "8b5cf6",
     Z: "0092ff",
   };
-useEffect(() => {
-  const handleClick = async () => {
-    console.log("🔥 USER CLICKED");
+// useEffect(() => {
+//   const handleClick = async () => {
+//     try {
+//       await audio.play();
+  
+      
 
-    const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+//       audio.pause();
+//       audio.currentTime = 0;
 
-    try {
-      await audio.play();
-      console.log("✅ AUDIO UNLOCKED");
+//       window.notificationAudio = audio;
+//     } catch (err) {
+//       console.log("❌ UNLOCK FAILED", err);
+//     }
+//   };
 
-      audio.pause();
-      audio.currentTime = 0;
+//   document.addEventListener("click", handleClick, { once: true });
 
-      window.notificationAudio = audio;
-    } catch (err) {
-      console.log("❌ UNLOCK FAILED", err);
-    }
-  };
-
-  document.addEventListener("click", handleClick, { once: true });
-
-  return () => {
-    document.removeEventListener("click", handleClick);
-  };
-}, []);
+//   return () => {
+//     document.removeEventListener("click", handleClick);
+//   };
+// }, []);
 
 useEffect(() => {
   const handleInteraction = () => {
-    console.log("USER CLICKED");
+  
     unlockAudio();
   };
 
@@ -182,51 +179,34 @@ useEffect(() => {
     window.removeEventListener("touchstart", handleInteraction);
   };
 }, []);
-  const handleOpenChat = (payload) => {
+const handleOpenChatRef = useRef(null);
+handleOpenChatRef.current = (payload) => {
   const senderId = payload.data?.senderId;
-
   if (!senderId) return;
-
   const senderUser = users.find((u) => u._id === senderId);
-
-  if (senderUser) {
-    setSelectedUser(senderUser);
-  }
+  if (senderUser) setSelectedUser(senderUser);
 };
+
 useEffect(() => {
+  if (window.__notificationRegistered) return;
+  window.__notificationRegistered = true;
+
   const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
   audio.preload = "auto";
 
-  let isSubscribed = true;
-  const latestPayloadRef = { current: null };
-
   const unsubscribe = onMessage(messaging, (payload) => {
-    if (!isSubscribed) return;
-
-    latestPayloadRef.current = payload;
-
-    console.log("🔥 FCM MESSAGE RECEIVED:", payload);
-
-    const title = payload.notification?.title || "New Message";
-    const body = payload.notification?.body || "";
+    // onMessage ONLY fires when tab is active/focused
+    // service worker handles background — no overlap possible
+    const title = payload.data?.title || "New Message";
+    const body = payload.data?.body || "";
     const senderAvatar = payload.data?.senderAvatar || "";
 
-    console.log("visibility:", document.visibilityState);
-
-    // 🔊 ALWAYS PLAY SOUND
     audio.currentTime = 0;
-
-    audio.play()
-      .then(() => {
-        console.log("✅ Sound played");
-      })
-      .catch((err) => {
-        console.error("❌ Sound error:", err);
-      });
+    audio.play().catch(() => {});
 
     toast.custom(() => (
       <div
-        onClick={() => handleOpenChat(latestPayloadRef.current)}
+        onClick={() => handleOpenChatRef.current(payload)}
         className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10"
       >
         <img
@@ -234,27 +214,18 @@ useEffect(() => {
           className="w-12 h-12 rounded-full object-cover flex-shrink-0"
           alt="avatar"
         />
-
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white truncate">
-            {title}
-          </p>
-
-          <p className="text-gray-300 text-sm truncate">
-            {body}
-          </p>
-
-          <p className="text-blue-400 text-xs mt-1">
-            Tap to open chat
-          </p>
+          <p className="font-semibold text-white truncate">{title}</p>
+          <p className="text-gray-300 text-sm truncate">{body}</p>
+          <p className="text-blue-400 text-xs mt-1">Tap to open chat</p>
         </div>
       </div>
     ));
   });
 
   return () => {
-    isSubscribed = false;
     unsubscribe();
+    // ❌ do NOT reset window.__notificationRegistered here
   };
 }, []);
 
@@ -304,11 +275,10 @@ useEffect(() => {
     <div className="h-screen bg-black flex overflow-hidden">
   <Toaster
   position="top-center"
-  
   toastOptions={{
-    duration: 9000000,
+    duration: 90000,
     style: {
-      zIndex: 999999,
+      zIndex: 99999,
     },
   }}
  

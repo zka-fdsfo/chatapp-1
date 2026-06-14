@@ -107,7 +107,7 @@ export const verifyGoogleToken = async (req, res, next) => {
   try {
     const { idToken } = req.body;
 
-    console.log("TOKEN RECEIVED:", !!idToken);
+//    console.log("TOKEN RECEIVED:", !!idToken);
 
     const decodedToken = await getAuth().verifyIdToken(idToken);
 

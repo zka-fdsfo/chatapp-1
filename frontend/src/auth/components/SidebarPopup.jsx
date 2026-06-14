@@ -48,7 +48,7 @@ const SidebarPopup = ({ open, onClose, user, avatar, onProfileClick,closing }) =
   ];
   const firstLetter = user?.charAt(0)?.toUpperCase() || "A";
   const bgColor = avatarColors[firstLetter] || "6366f1";
-  console.log("SidebarPopup user:", user, "avatar:", avatar);
+ // console.log("SidebarPopup user:", user, "avatar:", avatar);
   return (
     <>
       {/* Backdrop */}

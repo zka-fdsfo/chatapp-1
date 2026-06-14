@@ -54,11 +54,10 @@ if (receiverUser?.fcmToken) {
   try {
     await messaging.send({
       token: receiverUser.fcmToken,
-      notification: {
-        title: senderUser.name,
-        body: text?.trim() || "📷 Image",
-      },
+      // ❌ REMOVED: notification field (was causing auto-display by browser)
       data: {
+        title: senderUser.name,                        // ✅ moved here
+        body: text?.trim() || "📷 Image",              // ✅ moved here
         senderId: sender.toString(),
         receiverId: receiver.toString(),
         senderAvatar: senderUser?.avatar || "",
