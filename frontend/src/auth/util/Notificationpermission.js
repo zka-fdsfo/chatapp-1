@@ -23,3 +23,26 @@ export async function Notificationpermission() {
     return false;
   }
 }
+
+let audioInstance = null;
+
+let audioUnlocked = false;
+
+export function unlockAudio() {
+  if (audioUnlocked) return;
+
+  const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+
+  audio.play()
+    .then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+
+      audioUnlocked = true;
+
+      console.log("🔊 Audio unlocked");
+    })
+    .catch((err) => {
+      console.log("❌ Audio unlock failed:", err);
+    });
+}

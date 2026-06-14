@@ -39,7 +39,7 @@ import EditProfile from "../components/EditProfile.jsx";
 import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
 import { Image as ImageIcon } from "lucide-react";
-import {Notificationpermission} from "../util/Notificationpermission.js"
+import {Notificationpermission,unlockAudio} from "../util/Notificationpermission.js"
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -143,12 +143,67 @@ useEffect(() => {
     Z: "0092ff",
   };
 useEffect(() => {
+  const handleClick = async () => {
+    console.log("🔥 USER CLICKED");
+
+    const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+
+    try {
+      await audio.play();
+      console.log("✅ AUDIO UNLOCKED");
+
+      audio.pause();
+      audio.currentTime = 0;
+
+      window.notificationAudio = audio;
+    } catch (err) {
+      console.log("❌ UNLOCK FAILED", err);
+    }
+  };
+
+  document.addEventListener("click", handleClick, { once: true });
+
+  return () => {
+    document.removeEventListener("click", handleClick);
+  };
+}, []);
+
+useEffect(() => {
+  const handleInteraction = () => {
+    console.log("USER CLICKED");
+    unlockAudio();
+  };
+
+  window.addEventListener("click", handleInteraction, { once: true });
+  window.addEventListener("touchstart", handleInteraction, { once: true });
+
+  return () => {
+    window.removeEventListener("click", handleInteraction);
+    window.removeEventListener("touchstart", handleInteraction);
+  };
+}, []);
+  const handleOpenChat = (payload) => {
+  const senderId = payload.data?.senderId;
+
+  if (!senderId) return;
+
+  const senderUser = users.find((u) => u._id === senderId);
+
+  if (senderUser) {
+    setSelectedUser(senderUser);
+  }
+};
+useEffect(() => {
   const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+  audio.preload = "auto";
 
   let isSubscribed = true;
+  const latestPayloadRef = { current: null };
 
   const unsubscribe = onMessage(messaging, (payload) => {
     if (!isSubscribed) return;
+
+    latestPayloadRef.current = payload;
 
     console.log("🔥 FCM MESSAGE RECEIVED:", payload);
 
@@ -156,22 +211,42 @@ useEffect(() => {
     const body = payload.notification?.body || "";
     const senderAvatar = payload.data?.senderAvatar || "";
 
-    if (document.visibilityState !== "visible") {
-      audio.currentTime = 0; // IMPORTANT fix double sound overlap
-      audio.play().catch(() => {});
-    }
+    console.log("visibility:", document.visibilityState);
+
+    // 🔊 ALWAYS PLAY SOUND
+    audio.currentTime = 0;
+
+    audio.play()
+      .then(() => {
+        console.log("✅ Sound played");
+      })
+      .catch((err) => {
+        console.error("❌ Sound error:", err);
+      });
 
     toast.custom(() => (
-      <div className="bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 w-[320px] border border-white/10">
+      <div
+        onClick={() => handleOpenChat(latestPayloadRef.current)}
+        className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10"
+      >
         <img
           src={senderAvatar || "/default-avatar.png"}
-          className="w-12 h-12 rounded-full object-cover"
-          alt=""
+          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+          alt="avatar"
         />
 
-        <div>
-          <p className="font-semibold text-white">{title}</p>
-          <p className="text-gray-300 text-sm">{body}</p>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-white truncate">
+            {title}
+          </p>
+
+          <p className="text-gray-300 text-sm truncate">
+            {body}
+          </p>
+
+          <p className="text-blue-400 text-xs mt-1">
+            Tap to open chat
+          </p>
         </div>
       </div>
     ));
@@ -182,6 +257,7 @@ useEffect(() => {
     unsubscribe();
   };
 }, []);
+
 
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
@@ -230,7 +306,7 @@ useEffect(() => {
   position="top-center"
   
   toastOptions={{
-    duration: 4000,
+    duration: 9000000,
     style: {
       zIndex: 999999,
     },
@@ -518,7 +594,7 @@ useEffect(() => {
                 setSelectedUser={setSelectedUser}
                 setOnlineUsers={setOnlineUsers}
                 onlineUsers={onlineUsers}
-                lastMessage={selectedUser.lastMessage}
+                lastMessage={selectedUser?.lastMessage}
                 setViewerImage={setViewerImage}
                 className="h-full w-full "
               />
