@@ -210,6 +210,7 @@ const Chat = ({
         <div className={`profile-panel custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}>
           <ProfilePage
             user={selectedUser}
+            showProfile={showProfile}
             currentUserId={currentUserId}
             setViewerImage={setViewerImage}
             lastMessage={selectedUser?.lastMessage?.createdAt}

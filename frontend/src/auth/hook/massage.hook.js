@@ -83,7 +83,7 @@ export const useMessage = () => {
     loadingMessages,
 
     fetchMessages,
-
+    setImageMessages,
     handleSendMessage,
     imageMessages,
     loadingImages,

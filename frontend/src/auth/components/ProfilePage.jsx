@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
-const ProfilePage = ({ user: selectedUser, onClose, lastMessage,setViewerImage ,currentUserId}) => {
+const ProfilePage = ({ user: selectedUser, onClose, lastMessage,setViewerImage ,currentUserId,showProfile}) => {
   const [notifications, setNotifications] = useState(true);
 
   const user = {
@@ -51,14 +51,19 @@ const { currentusernameimg } = useAuth();
     Y: "8b5cf6",
     Z: "0092ff",
   };
-  const { imageMessages, fetchImageMessages, loadingImages} = useMessage();
+  const { imageMessages, fetchImageMessages,setImageMessages, loadingImages} = useMessage();
 
-  useEffect(() => {
-    lastMessage=null
-    if (selectedUser?._id) {
-      fetchImageMessages(selectedUser._id);
-    }
-  }, [selectedUser?._id]);
+useEffect(() => {
+  if (!showProfile || !selectedUser?._id) return;
+
+  fetchImageMessages(selectedUser._id);
+}, [showProfile, selectedUser?._id]);
+
+useEffect(() => {
+  if (!showProfile) {
+    setImageMessages([]);
+  }
+}, [showProfile]);
  
   const formatLastSeen = (dateString) => {
     if (!dateString) return "Offline";
