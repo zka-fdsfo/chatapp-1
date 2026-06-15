@@ -1,3 +1,4 @@
+//components MessageInput.jsx 
 import React, { useState } from "react";
 
 import { Send, Paperclip, Smile } from "lucide-react";

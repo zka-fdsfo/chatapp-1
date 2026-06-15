@@ -1,3 +1,4 @@
+// components ProfilePage.jsx
 import React, { useEffect, useState } from "react";
 import {
   X,
@@ -53,6 +54,7 @@ const { currentusernameimg } = useAuth();
   const { imageMessages, fetchImageMessages, loadingImages} = useMessage();
 
   useEffect(() => {
+    lastMessage=null
     if (selectedUser?._id) {
       fetchImageMessages(selectedUser._id);
     }
@@ -136,7 +138,7 @@ const { currentusernameimg } = useAuth();
               ? "Online"
               : lastMessage
                 ? `Last seen ${formatLastSeen(lastMessage)}`
-                : "Offline"}
+                : ""}
           </p>
 
           <p className="text-[#fff] text-center mt-2 font-bold px-4">

@@ -1,5 +1,5 @@
-import { useState } from "react";
 
+import React, { useEffect, useRef, useState } from "react";
 import {
   getallchatusers,
 } from "../services/auth.api.js";
@@ -57,7 +57,7 @@ const handleSendMessage = async (formData) => {
 };
 
   /* ================= FETCH IMAGE MESSAGES ================= */
-  const fetchImageMessages = async (selectedUserId) => {
+const fetchImageMessages = async (selectedUserId) => {
     try {
       setLoadingImages(true);
     
