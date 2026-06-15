@@ -13,7 +13,6 @@ export default function EditProfile({ user, onClose }) {
    const [formData, setFormData] = useState({
     name: user?.name || "",
     bio: user?.bio || "",
-
   });
 
   const handleChange = (e) => {
@@ -99,7 +98,6 @@ const handleSave = async () => {
   const firstLetter = user?.name?.charAt(0)?.toUpperCase() || "A";
   const bgColor = avatarColors[firstLetter] || "6366f1";
 
-console.log(user)
   return (
 <div className="min-h-screen overflow-y-auto bg-[#0e0f13] text-white flex justify-center">
       <div className="w-full max-w-md px-4 py-4">
@@ -133,6 +131,7 @@ console.log(user)
           user?.name || "User"
         )}&background=${bgColor}&color=fff`
       }
+
       alt={user?.name}
       className="w-full h-full object-cover"
     />
@@ -189,8 +188,6 @@ console.log(user)
             />
           </div>
 
-      
-
           {/* Bio */}
         <div className="mb-4">
   <input
@@ -211,7 +208,6 @@ console.log(user)
     "
   />
 </div>
-
 
           {/* Birthday */}
           <button

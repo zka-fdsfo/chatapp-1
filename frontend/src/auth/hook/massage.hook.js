@@ -10,6 +10,7 @@ import {
   getImageMessagesApi,
 } from "../services/auth.api.js";
 
+// Manages message state and message-related actions for the chat UI.
 export const useMessage = () => {
   const [messages, setMessages] = useState([]);
 
@@ -17,7 +18,8 @@ export const useMessage = () => {
     useState(false);
   const [imageMessages, setImageMessages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
-  /* ================= FETCH MESSAGES ================= */
+
+  // Loads the conversation with another user and marks it as seen.
   const fetchMessages = async (userId) => {
     try {
       setLoadingMessages(true);
@@ -39,8 +41,8 @@ export const useMessage = () => {
     }
   };
 
-  /* ================= SEND MESSAGE ================= */
-const handleSendMessage = async (formData) => {
+  // Sends a new text or image message and appends it to local state.
+  const handleSendMessage = async (formData) => {
   try {
     const newMessage = await sendMessage(formData);
 
@@ -56,8 +58,8 @@ const handleSendMessage = async (formData) => {
   }
 };
 
-  /* ================= FETCH IMAGE MESSAGES ================= */
-const fetchImageMessages = async (selectedUserId) => {
+  // Loads only image messages for the selected chat partner.
+  const fetchImageMessages = async (selectedUserId) => {
     try {
       setLoadingImages(true);
     

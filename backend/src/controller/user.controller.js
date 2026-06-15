@@ -28,10 +28,11 @@ export const getAllUsers = async (req, res) => {
 
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {
-        // Get only the latest message sent BY this user TO the current user
         const lastMessage = await Message.findOne({
-          sender: user._id,
-          receiver: currentUserId,
+          $or: [
+            { sender: currentUserId, receiver: user._id },
+            { sender: user._id, receiver: currentUserId },
+          ],
         })
           .sort({ createdAt: -1 })
           .select("text image message createdAt sender receiver seen");
@@ -43,7 +44,22 @@ export const getAllUsers = async (req, res) => {
       })
     );
 
-    res.status(200).json(usersWithLastMessage);
+    // Chat users first, newest chat on top
+    const sortedUsers = usersWithLastMessage.sort((a, b) => {
+      if (!a.lastMessage && !b.lastMessage) return 0;
+      if (!a.lastMessage) return 1;
+      if (!b.lastMessage) return -1;
+
+      return (
+        new Date(b.lastMessage.createdAt) -
+        new Date(a.lastMessage.createdAt)
+      );
+    });
+
+    // Maximum 8 users
+    const limitedUsers = sortedUsers.slice(0, 8);
+
+    res.status(200).json(limitedUsers);
   } catch (error) {
     console.error("Get All Users Error:", error);
 
@@ -65,7 +81,6 @@ export const changeCurrentUserinfo = async (req, res) => {
 
     const { name, bio } = req.body;
    
-
     const update = {};
     let avatar;
 
@@ -141,6 +156,38 @@ export const saveFcmToken = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to save token",
+    });
+  }
+};
+
+//search user controller
+export const searchUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user;
+    const { query } = req.query;
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({
+        message: "Search query is required",
+      });
+    }
+
+    const users = await User.find({
+      _id: { $ne: currentUserId },
+      name: {
+        $regex: query,
+        $options: "i", // case-insensitive
+      },
+    })
+      .select("name avatar bio")
+      .limit(20);
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Search Users Error:", error);
+
+    res.status(500).json({
+      message: "Server error",
     });
   }
 };

@@ -15,6 +15,7 @@ export async function Notificationpermission() {
 
       return true;
     }
+
   //  console.log("tell",permission)
 
     return false;
@@ -40,7 +41,7 @@ export function unlockAudio() {
 
       audioUnlocked = true;
 
-      console.log("🔊 Audio unlocked");
+      // console.log("🔊 Audio unlocked");
     })
     .catch((err) => {
       console.log("❌ Audio unlock failed:", err);

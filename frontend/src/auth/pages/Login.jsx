@@ -3,6 +3,7 @@ import { useAuth } from '../hook/hookauth';
 import { useNavigate, Link } from "react-router-dom";
 import AppSkeleton from '../components/AppSkeleton.jsx';
 
+// Renders the login page and wires the form handlers for email/password and Google sign-in.
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loading, handleLogin,loginWithGoogle } = useAuth();
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Starts Google sign-in, then sends the user back to the app after success.
   const handleGoogleLogin = async () => {
     try {
 
@@ -24,7 +26,7 @@ export default function LoginPage() {
     }
   };
 
-  
+  // Submits the email/password form, maps API errors to user-friendly messages, and redirects on success.
   const handleLoginsumit = async (e) => {
       e.preventDefault();
 

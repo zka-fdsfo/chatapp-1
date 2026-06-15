@@ -30,7 +30,6 @@ api.interceptors.response.use(
       originalRequest.url?.includes("/auth/refresh-token") ||
       originalRequest.url?.includes("/auth/verify-token");
       
-
     if (isAuthRoute) {
       return Promise.reject(error);
     }
@@ -214,4 +213,12 @@ export const Fcmtokenget = async (token) => {
   });
 
   return response;
+};
+
+export const searchUsersApi = async (query) => {
+  const response = await api.get(
+    `/users/search?query=${encodeURIComponent(query)}`
+  );
+
+  return response.data;
 };

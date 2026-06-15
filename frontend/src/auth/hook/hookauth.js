@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useEffect, useState } from "react"
 import { AuthContext } from "../auth.context.jsx";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
@@ -10,8 +11,10 @@ import {
   verifyrefreshToken,
   changeinfocurrentuserApi,
   googleAuthApi ,
+  searchUsersApi,
 } from "../services/auth.api.js";
 
+// Provides authentication state and all auth-related actions for the app.
 export const useAuth = () => {
   const AuthContextValue = useContext(AuthContext);
 
@@ -26,7 +29,8 @@ const currentusernameimg = {
   name: user?.name,
   avatar: user?.avatar,
 };
-  // LOGIN
+
+  // Logs in with email and password, then stores the authenticated user.
   const handleLogin = async (email, password ,fcmToken) => {
     setLoading(true);
 
@@ -43,7 +47,7 @@ const currentusernameimg = {
   }
   };
 
-  // SIGNUP
+  // Creates a new account and saves the returned user in auth state.
   const handleSignup = async (name, email, password) => {
     setLoading(true);
 
@@ -58,7 +62,7 @@ const currentusernameimg = {
     }
   };
 
-  // FIXED
+  // Fetches the full user list from the backend for the sidebar and chat selection.
   const fetchAllUsers = async () => {
     try {
       const users = await getallusers();
@@ -89,7 +93,6 @@ const currentusernameimg = {
   //       setUser(null);
   //     }
   //     finally {
-
   //     console.error("Token verification failed:", error);
 
   //     setUser(null);
@@ -97,6 +100,7 @@ const currentusernameimg = {
   //   }}
 
   // };
+  // Verifies the current access token and falls back to refresh-token recovery.
   const handleVerifyaccessToken = async () => {
   setLoading(true);
 
@@ -121,7 +125,7 @@ const currentusernameimg = {
   }
 };
 
-  // REFRESH TOKEN
+  // Requests a fresh access token using the refresh-token endpoint.
   const refreshUserToken = async () => {
     setLoading(true);
 
@@ -132,18 +136,16 @@ const currentusernameimg = {
 
       setUser(null);
     } finally {
-      
       setLoading(false);
     }
   };
 
+// Updates the current user's profile information and stores the updated user.
 const changeinfocurrentuser = async (formData) => {
   setLoading(true);
 
   try {
     const updatedUser = await changeinfocurrentuserApi(formData);
-
-    console.log(updatedUser);
 
     setUser(updatedUser);
 
@@ -156,7 +158,7 @@ const changeinfocurrentuser = async (formData) => {
   }
 };
 
-
+  // Signs in with Google, exchanges the Firebase token with the backend, and stores the user.
   const loginWithGoogle = async () => {
     try {
       // Open Google popup
@@ -167,7 +169,7 @@ const changeinfocurrentuser = async (formData) => {
 
       // Firebase token
       const idToken = await result.user.getIdToken();
-console.log(idToken);
+
       // Send to backend
       const data = await googleAuthApi(idToken);
       setUser(data.user)
@@ -178,14 +180,43 @@ console.log(idToken);
       throw error;
     }
   };
+const useSearchUser = () => {
+  const [searchUsers, setSearchUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  const searchUser = async (query) => {
+    if (!query.trim()) {
+      setSearchUsers([]);
+      return;
+    }
 
+    try {
+      setLoading(true);
 
+      const data = await searchUsersApi(query);
+
+      setSearchUsers(data);
+      return data;
+    } catch (error) {
+      console.error("Search User Error:", error);
+      setSearchUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    searchUsers,
+    loading,
+    searchUser,
+  };
+};
   return {
     user,
     currentusernameimg,
     setUser,
-     loginWithGoogle,
+    loginWithGoogle,
+    useSearchUser,
     loading,
     setLoading,
     authReady,

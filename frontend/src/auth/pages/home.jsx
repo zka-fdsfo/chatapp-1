@@ -40,6 +40,8 @@ import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
 import { Image as ImageIcon } from "lucide-react";
 import {Notificationpermission,unlockAudio} from "../util/Notificationpermission.js"
+import SearchPage from "../components/SearchPage.jsx";
+// Main users page component that wires together presence, notifications, and the chat layout.
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
@@ -52,17 +54,16 @@ export default function UsersPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [closingProfile, setClosingProfile] = useState(false);
   const [viewerImage, setViewerImage] = useState(null);
-  
+  const [showSearch, setShowSearch] = useState(false);
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
 
-  // Request notification permission ONCE when component mounts
-useEffect(() => {
+  // Requests notification permission once when the page loads.
+  useEffect(() => {
   Notificationpermission();
 }, []);
 
-  // SOCKET.IO
-  // ================= SOCKET =================
+  // Keeps the Socket.IO connection synced with the current user's online presence.
   useEffect(() => {
     const socket = createSocket();
     socketRef.current = socket;
@@ -88,6 +89,7 @@ useEffect(() => {
       socketRef.current = null;
     };
   }, [user?._id]);
+  // Loads the user list once and avoids duplicate fetches in React Strict Mode.
   useEffect(() => {
     if (fetched.current) return;
 
@@ -161,6 +163,7 @@ useEffect(() => {
 //   };
 // }, []);
 
+// Unlocks notification audio after the first user interaction.
 useEffect(() => {
   const handleInteraction = () => {
     unlockAudio();
@@ -174,6 +177,7 @@ useEffect(() => {
     window.removeEventListener("touchstart", handleInteraction);
   };
 }, []);
+// Stores the notification click handler so a foreground toast can open the matching chat.
 const handleOpenChatRef = useRef(null);
 handleOpenChatRef.current = (payload) => {
   const senderId = payload.data?.senderId;
@@ -182,6 +186,7 @@ handleOpenChatRef.current = (payload) => {
   if (senderUser) setSelectedUser(senderUser);
 };
 
+// Listens for foreground FCM messages and shows the toast preview.
 useEffect(() => {
   if (window.__notificationRegistered) return;
   window.__notificationRegistered = true;
@@ -202,7 +207,7 @@ useEffect(() => {
     toast.custom(() => (
       <div
         onClick={() => handleOpenChatRef.current(payload)}
-        className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10"
+        className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10 mr-[40%] " 
       >
         <img
           src={senderAvatar || "/default-avatar.png"} 
@@ -226,6 +231,7 @@ useEffect(() => {
 
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
+  // Closes the profile drawer with its exit animation.
   const closeProfile = () => {
     setClosingProfile(true);
 
@@ -235,6 +241,7 @@ useEffect(() => {
     }, 350);
   };
 
+  // Closes the sidebar popup with its exit animation.
   const closeMenu = () => {
     setClosingMenu(true);
 
@@ -310,14 +317,14 @@ useEffect(() => {
             <Menu size={24} />
           </button>
 
-          <div className="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 flex items-center gap-3">
-            <Search size={18} className="text-zinc-400" />
-
-            <input
-              type="text"
-              placeholder="Search"
-              className="bg-transparent outline-none text-white w-full placeholder:text-zinc-400"
-            />
+          <div className="flex-1 bg-[#2a2a2a] rounded-full px-2 py-0 flex items-center gap-3">
+            <div
+  onClick={() => setShowSearch(true)}
+  className="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 flex items-center gap-3 cursor-pointer"
+>
+  <Search size={18} className="text-zinc-400" />
+  <span className="text-zinc-400">Search</span>
+</div>
           </div>
         </div>
         {/* Outside the button */}
@@ -336,7 +343,12 @@ useEffect(() => {
           }}
         />
 
-        {/* LOADING */}
+        {showSearch && (
+  <SearchPage
+    onClose={() => setShowSearch(false)}
+    setSelectedUser={setSelectedUser}
+  />
+)}        {/* LOADING */}
         {loading && (
           <div className="flex-1 flex items-center justify-center h-full">
             <UserSkeleton />
