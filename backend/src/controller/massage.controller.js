@@ -53,7 +53,7 @@ const senderUser = await User.findById(sender);
 
 if (receiverUser?.fcmToken) {
   try {
-    await messaging.send({
+    messaging.send({
       token: receiverUser.fcmToken,
       // ❌ REMOVED: notification field (was causing auto-display by browser)
       data: {
