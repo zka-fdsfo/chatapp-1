@@ -216,7 +216,7 @@ export default function UsersPage() {
       toast.custom(() => (
         <div
           onClick={() => handleOpenChatRef.current(payload)}
-          className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10 mr-[40%] "
+          className="w-[320px] cursor-pointer bg-[#27272a] backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10 mr-[40%] "
         >
           <img
             src={senderAvatar || "/default-avatar.png"}
