@@ -55,7 +55,7 @@ const { currentusernameimg } = useAuth();
 
 useEffect(() => {
   if (!showProfile || !selectedUser?._id) return;
-
+setImageMessages([]);
   fetchImageMessages(selectedUser._id);
 }, [showProfile, selectedUser?._id]);
 
