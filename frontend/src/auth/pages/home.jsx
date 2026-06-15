@@ -58,8 +58,6 @@ export default function UsersPage() {
 
   // Request notification permission ONCE when component mounts
 useEffect(() => {
-
-
   Notificationpermission();
 }, []);
 
@@ -147,8 +145,6 @@ useEffect(() => {
 //     try {
 //       await audio.play();
   
-      
-
 //       audio.pause();
 //       audio.currentTime = 0;
 
@@ -167,7 +163,6 @@ useEffect(() => {
 
 useEffect(() => {
   const handleInteraction = () => {
-  
     unlockAudio();
   };
 
@@ -228,7 +223,6 @@ useEffect(() => {
     // ❌ do NOT reset window.__notificationRegistered here
   };
 }, []);
-
 
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
