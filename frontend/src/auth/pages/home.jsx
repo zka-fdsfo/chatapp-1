@@ -250,6 +250,8 @@ useEffect(() => {
       setClosingMenu(false);
     }, 220);
   };
+
+  console.log("users",users)
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
@@ -447,30 +449,38 @@ useEffect(() => {
                     </span>
                   </div>
 
-                  <p
-                    className={`text-sm truncate ${userItem.lastMessage?.text
-                      ? "text-white font-bold"
-                      : "text-zinc-400 font-normal  "
-                      }`}
-                  >
-                    {
-                      userItem.lastMessage?.text ? (
-                        userItem.lastMessage.text
-                      ) : userItem.lastMessage?.image ? (
-                        <span
-                          className={`flex items-center gap-1 ${selectedUser?._id === userItem._id
-                              ? "text-white"
-                              : "text-indigo-400"
-                            }`}
-                        >
-                          <ImageIcon size={14} />
-                          Photo
-                        </span>
-                      ) : (
-                        `${userItem.name} joined the zollo`.toUpperCase()
-                      )
-                    }
-                  </p>
+<p
+  className={`text-sm truncate ${
+    userItem.lastMessage?.text
+      ? "text-white font-bold"
+      : "text-zinc-400 font-normal"
+  }`}
+>
+  {userItem.lastMessage?.text ? (
+    <>
+      {String(userItem.lastMessage.sender) === String(currentUserId) && (
+        <span className="text-zinc-300 font-normal">You: </span>
+      )}
+      {userItem.lastMessage.text}
+    </>
+  ) : userItem.lastMessage?.image ? (
+    <span
+      className={`flex items-center gap-1 ${
+        selectedUser?._id === userItem._id
+          ? "text-white"
+          : "text-indigo-400"
+      }`}
+    >
+      {String(userItem.lastMessage.sender) === String(currentUserId) && (
+        <span className="text-zinc-400 font-normal">You: </span>
+      )}
+      <ImageIcon size={14} />
+      Photo
+    </span>
+  ) : (
+    `${userItem.name} joined the zollo`.toUpperCase()
+  )}
+</p>
                 </div>
               </div>
             );

@@ -35,31 +35,50 @@ export const getAllUsers = async (req, res) => {
           ],
         })
           .sort({ createdAt: -1 })
-          .select("text image message createdAt sender receiver seen");
+          .select(
+            "text image message createdAt sender receiver seen"
+          );
+
+        let formattedLastMessage = null;
+
+        if (lastMessage) {
+          formattedLastMessage = {
+            ...lastMessage.toObject(),
+            displayText:
+              String(lastMessage.sender) === String(currentUserId)
+                ? `(You) ${
+                    lastMessage.text,"(You)" ||
+                    lastMessage.message,"(You)" ||
+                    (lastMessage.image ? "📷 Photo (You)" : "")
+                  }`
+                : lastMessage.text ||
+                  lastMessage.message ||
+                  (lastMessage.image ? "📷 Photo" : ""),
+          };
+        }
 
         return {
           ...user.toObject(),
-          lastMessage,
+          lastMessage: formattedLastMessage,
         };
       })
     );
 
-    // Chat users first, newest chat on top
-    const sortedUsers = usersWithLastMessage.sort((a, b) => {
-      if (!a.lastMessage && !b.lastMessage) return 0;
-      if (!a.lastMessage) return 1;
-      if (!b.lastMessage) return -1;
-
-      return (
-        new Date(b.lastMessage.createdAt) -
-        new Date(a.lastMessage.createdAt)
+    const chattedUsers = usersWithLastMessage
+      .filter((user) => user.lastMessage)
+      .sort(
+        (a, b) =>
+          new Date(b.lastMessage.createdAt) -
+          new Date(a.lastMessage.createdAt)
       );
-    });
 
-    // Maximum 8 users
-    const limitedUsers = sortedUsers.slice(0, 8);
+    const nonChattedUsers = usersWithLastMessage
+      .filter((user) => !user.lastMessage)
+      .slice(0, 8);
 
-    res.status(200).json(limitedUsers);
+    const finalUsers = [...chattedUsers, ...nonChattedUsers];
+
+    res.status(200).json(finalUsers);
   } catch (error) {
     console.error("Get All Users Error:", error);
 
