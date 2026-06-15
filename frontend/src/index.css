@@ -1,8 +1,16 @@
 @import "tailwindcss";
 body {
-  background-image: url('https://i.pinimg.com/736x/65/86/c9/6586c9325be8e3f1889cc27061510e8b.jpg');
-  background-size: cover;
-  background-position: center;
+background-color: #27272a;
+background-image: url('https://images4.alphacoders.com/938/thumb-1920-938819.jpg');
+background-repeat: no-repeat;
+background-position: center;
+background-size: cover;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* Forces the page to be at least full screen height */
 }
 
 @keyframes fade1 {
