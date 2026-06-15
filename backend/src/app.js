@@ -125,7 +125,7 @@ socket.on("message_seen", async ({ messageId, senderId }) => {
     seen: true,
   });
 
-  io.to(senderId).emit("message_seen_update", {
+  io.to(String(senderId)).emit("message_seen_update", {
     messageId,
   });
 });

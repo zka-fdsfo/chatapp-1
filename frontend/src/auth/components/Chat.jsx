@@ -19,6 +19,8 @@ const Chat = ({
   setViewerImage,
 }) => {
   const socketRef = useRef(null);
+  const sentSeenMessageIdsRef = useRef(new Set());
+  const receivedSeenMessageIdsRef = useRef(new Set());
 
   const {
     messages,
@@ -38,7 +40,7 @@ const Chat = ({
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
 
-  const currentUserId = user?._id;
+  const currentUserId = user?._id ? String(user._id) : "";
 
   // ================= SOCKET INIT =================
   useEffect(() => {
@@ -108,17 +110,21 @@ const Chat = ({
     return () => {
       socketRef.current.off("receive_message", handleReceiveMessage);
     };
-  }, [selectedUser?._id]);
+  }, [selectedUser?._id, user?._id]);
 
   useEffect(() => {
     if (!socketRef.current) return;
 
-    const handleSeenUpdate = ({ messageId }) => { //2
+    const handleSeenUpdate = ({ messageId }) => {
       console.log("✅ Seen Update:", messageId);
+
+      receivedSeenMessageIdsRef.current.add(String(messageId));
 
       setMessages((prev) =>
         prev.map((msg) =>
-          String(msg._id) === String(messageId) ? { ...msg, seen: true } : msg,
+          String(msg._id) === String(messageId) && !msg.seen
+            ? { ...msg, seen: true }
+            : msg,
         ),
       );
     };
@@ -129,53 +135,54 @@ const Chat = ({
       socketRef.current.off("message_seen_update", handleSeenUpdate);
     };
   }, []);
+
   // ================= SEEN UPDATE =================
   useEffect(() => {
-    if (!socketRef.current || !user?._id) return; //1
+    if (!socketRef.current || !user?._id) return;
 
     const unseenMessages = messages.filter(
       (msg) =>
         String(msg.receiver || msg.receiverId) === String(user._id) &&
-        !msg.seen,
+        !msg.seen &&
+        msg._id,
     );
 
     unseenMessages.forEach((msg) => {
-      if (!msg._id) return;
-      // console.log("SEEN EVENT", {
-      //   messageId: msg._id,
-      //   senderId: msg.senderId,
-      // });
+      const messageId = String(msg._id);
+
+      if (sentSeenMessageIdsRef.current.has(messageId)) return;
+
+      sentSeenMessageIdsRef.current.add(messageId);
+
       socketRef.current.emit("message_seen", {
-        messageId: msg._id,
-        senderId: msg.sender || msg.senderId,
+        messageId,
+        senderId: String(msg.sender || msg.senderId),
       });
     });
   }, [messages, user?._id]);
 
-  // ================= LISTEN SEEN UPDATE =================
-  // useEffect(() => {
-  //   if (!socketRef.current || !user?._id) return;
+  // If a seen update arrives before the message is present locally,
+  // replay it once the message is added to state.
+  useEffect(() => {
+    if (!receivedSeenMessageIdsRef.current.size) return;
 
-  //   const unseenMessages = messages.filter(
-  //     (msg) =>
-  //       String(msg.receiverId) === String(user._id) &&
-  //       !msg.seen
-  //   );
+    let hasPendingSeenUpdate = false;
 
-  //   unseenMessages.forEach((msg) => {
-  //     if (!msg._id) return;
+    setMessages((prev) => {
+      const next = prev.map((msg) => {
+        const messageId = String(msg._id);
 
-  //     socketRef.current.emit("message_seen", {
-  //       messageId: msg._id,
-  //       senderId: msg.senderId,
-  //     });
-  //     console.log("👀 Seen received:", {
-  //   messageId,
-  //   senderId,
-  //   socketId: socket.id,
-  // });
-  //   });
-  // }, [messages, user?._id]);
+        if (!receivedSeenMessageIdsRef.current.has(messageId) || msg.seen) {
+          return msg;
+        }
+
+        hasPendingSeenUpdate = true;
+        return { ...msg, seen: true };
+      });
+
+      return hasPendingSeenUpdate ? next : prev;
+    });
+  }, [messages, setMessages]);
 
   if (!selectedUser) {
     return (
@@ -200,7 +207,7 @@ const Chat = ({
         />
 
         {/* PANEL */}
-        <div className={`profile-panel .custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}>
+        <div className={`profile-panel custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}>
           <ProfilePage
             user={selectedUser}
             currentUserId={currentUserId}

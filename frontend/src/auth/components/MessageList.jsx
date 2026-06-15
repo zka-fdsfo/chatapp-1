@@ -99,7 +99,7 @@ const MessageList = ({
                 ? msg.sender._id
                 : msg.sender || msg.senderId;
 
-            const isMe = senderId === currentUserId;
+            const isMe = String(senderId) === String(currentUserId);
 
             return (
               <MessageBubble

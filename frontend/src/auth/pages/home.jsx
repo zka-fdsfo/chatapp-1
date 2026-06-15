@@ -211,7 +211,7 @@ useEffect(() => {
       >
         <img
           src={senderAvatar || "/default-avatar.png"}
-          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+          className="w-12 h-12 rounded-full object-cover shrink-0"
           alt="avatar"
         />
         <div className="flex-1 min-w-0">
@@ -293,7 +293,7 @@ useEffect(() => {
         className={`
     absolute md:relative inset-y-0 left-0 z-20
 
-    w-full md:w-[350px]
+    w-full md:w-87.5
     bg-[#1f1f1f]
    
     border-r border-zinc-800
@@ -475,7 +475,7 @@ useEffect(() => {
         {showProfile && (
           <div
             className={`
-      fixed inset-0 z-[9999]
+      fixed inset-0 z-9999
       bg-[#0e0f13]
       overflow-y-auto
       custom-scrollbar
@@ -605,7 +605,7 @@ useEffect(() => {
                 className="w-[20px] md:w-40 mx-auto mb-6"
               /> */}
 
-              <div class="icon-wrap" aria-label="Winking chat bubble icon" className="h-[20%] mb-2">
+              <div className="icon-wrap h-[20%] mb-2" aria-label="Winking chat bubble icon">
                 <svg
                   width="100%"
                   height="100%"
@@ -645,7 +645,7 @@ useEffect(() => {
                     fill="#2563EB"
                   />
 
-                  <g class="wink-group">
+                  <g className="wink-group">
                     <path
                       d="M591.162 290.899C598.016 282.593 611.379 279.768 621.008 284.591C630.636 289.414 632.886 300.059 626.032 308.365L564.172 383.338L653.58 421.467C663.486 425.691 666.384 436.178 660.052 444.889C653.719 453.599 640.555 457.235 630.648 453.011L521.97 406.666C516.744 404.437 513.468 400.465 512.47 395.931C511.272 391.445 512.353 386.413 515.969 382.03L591.162 290.899Z"
                       fill="#2563EB"
@@ -657,7 +657,7 @@ useEffect(() => {
                   </g>
 
                   <path
-                    class="mouth-path"
+                    className="mouth-path"
                     d="M491.02 570.048C526.724 552.564 521.082 467.763 555.668 538.39C590.254 609.016 589.347 680.444 553.643 697.929C517.938 715.413 460.957 672.332 426.371 601.706C391.786 531.08 455.315 587.532 491.02 570.048Z"
                     fill="#2563EB"
                   />

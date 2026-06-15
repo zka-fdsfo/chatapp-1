@@ -35,7 +35,7 @@ const MessageBubble = ({
       {/* MESSAGE WRAPPER */}
 
       <div
-        className={`relative max-w-[82%] md:max-w-[430px] ${msg.image && !msg.text ? "mb-2" : "mb-7"}`}
+        className={`relative max-w-[82%] md:max-w-107.5 ${msg.image && !msg.text ? "mb-2" : "mb-7"}`}
       >
         {/* MESSAGE BUBBLE */}
         <div
@@ -88,8 +88,8 @@ const MessageBubble = ({
                 src={msg.image}
                 alt="message"
                 className="
-        max-w-[280px]
-        max-h-[350px]
+        max-w-70
+        max-h-87.5
         rounded-xl
         object-cover
         cursor-pointer
@@ -111,7 +111,7 @@ const MessageBubble = ({
 
             {/* TEXT */}
             {msg.text && (
-              <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full ml-2">
+              <div className="text-[15px] leading-relaxed font-medium wrap-break-word whitespace-pre-wrap overflow-hidden max-w-full ml-2">
                 {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
                   const isLink = /https?:\/\/[^\s]+/.test(part);
 
@@ -152,7 +152,7 @@ const MessageBubble = ({
             <span>{formatTime(msg.createdAt)}</span>
             {isMe && (
               <span className={msg.seen ? "text-sky-400" : "text-white/50"}>
-                <CheckCheck size={16} />
+                  {msg.seen ? <CheckCheck size={16} /> : <Check size={16} />}
               </span>
             )}
           </div>
@@ -168,8 +168,8 @@ const MessageBubble = ({
   will-change-transform
               ${
                 isMe
-                  ? "-right-[6px] text-[#6457a5] group-hover:text-[#a494ff] scale-x-[-1] rotate-[329deg] bottom-[-7px]"
-                  : "-left-[6px] text-[#313030] group-hover:text-[#181818] rotate-45 bottom-[-7px]"
+                  ? "-right-1.5 text-[#6457a5] group-hover:text-[#a494ff] scale-x-[-1] rotate-329 -bottom-1.75"
+                  : "-left-1.5 text-[#313030] group-hover:text-[#181818] rotate-45 -bottom-1.75"
               }
 
             `}

@@ -16,6 +16,7 @@ export const sendMessage = async (req, res) => {
     if (!receiver) {
       return res.status(400).json({ message: "Receiver is required" });
     }
+
     if (!text?.trim() && !req.file) {
       return res.status(400).json({ message: "Message cannot be empty" });
     }
@@ -69,6 +70,7 @@ if (receiverUser?.fcmToken) {
     console.error("FCM Error:", err);
   }
 }
+
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
@@ -140,6 +142,7 @@ export const markAsSeen = async (req, res) => {
         messageId: msg._id,
       });
     });
+    console.log("Messages marked as seen")
     return res.status(200).json({
       message: "Messages marked as seen",
     });
