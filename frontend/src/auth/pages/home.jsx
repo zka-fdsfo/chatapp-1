@@ -39,14 +39,23 @@ import EditProfile from "../components/EditProfile.jsx";
 import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
 import { Image as ImageIcon } from "lucide-react";
-import {Notificationpermission,unlockAudio} from "../util/Notificationpermission.js"
+import { useQuery } from "@tanstack/react-query";
+import {
+  Notificationpermission,
+  unlockAudio,
+} from "../util/Notificationpermission.js";
 import SearchPage from "../components/SearchPage.jsx";
 // Main users page component that wires together presence, notifications, and the chat layout.
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+  data: users = [],
+  isLoading: loading,
+} = useQuery({
+  queryKey: ["users"],
+  queryFn: fetchAllUsers,
+});
   const [selectedUser, setSelectedUser] = useState(null);
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -60,8 +69,8 @@ export default function UsersPage() {
 
   // Requests notification permission once when the page loads.
   useEffect(() => {
-  Notificationpermission();
-}, []);
+    Notificationpermission();
+  }, []);
 
   // Keeps the Socket.IO connection synced with the current user's online presence.
   useEffect(() => {
@@ -90,29 +99,29 @@ export default function UsersPage() {
     };
   }, [user?._id]);
   // Loads the user list once and avoids duplicate fetches in React Strict Mode.
-  useEffect(() => {
-    if (fetched.current) return;
+  // useEffect(() => {
+  //   if (fetched.current) return;
 
-    fetched.current = true;
+  //   fetched.current = true;
 
-    const loadUsers = async () => {
-      try {
-        const usersData = await fetchAllUsers();
+  //   const loadUsers = async () => {
+  //     try {
+  //       const usersData = await fetchAllUsers();
 
-        if (Array.isArray(usersData)) {
-          setUsers(usersData);
-        } else {
-          setUsers([]);
-        }
-      } catch (error) {
-        console.error("Failed to load users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       if (Array.isArray(usersData)) {
+  //         setUsers(usersData);
+  //       } else {
+  //         setUsers([]);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to load users:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    loadUsers();
-  }, []);
+  //   loadUsers();
+  // }, []);
 
   const avatarColors = {
     A: "ef4444",
@@ -142,92 +151,92 @@ export default function UsersPage() {
     Y: "8b5cf6",
     Z: "0092ff",
   };
-// useEffect(() => {
-//   const handleClick = async () => {
-//     try {
-//       await audio.play();
-  
-//       audio.pause();
-//       audio.currentTime = 0;
+  // useEffect(() => {
+  //   const handleClick = async () => {
+  //     try {
+  //       await audio.play();
 
-//       window.notificationAudio = audio;
-//     } catch (err) {
-//       console.log("❌ UNLOCK FAILED", err);
-//     }
-//   };
+  //       audio.pause();
+  //       audio.currentTime = 0;
 
-//   document.addEventListener("click", handleClick, { once: true });
+  //       window.notificationAudio = audio;
+  //     } catch (err) {
+  //       console.log("❌ UNLOCK FAILED", err);
+  //     }
+  //   };
 
-//   return () => {
-//     document.removeEventListener("click", handleClick);
-//   };
-// }, []);
+  //   document.addEventListener("click", handleClick, { once: true });
 
-// Unlocks notification audio after the first user interaction.
-useEffect(() => {
-  const handleInteraction = () => {
-    unlockAudio();
+  //   return () => {
+  //     document.removeEventListener("click", handleClick);
+  //   };
+  // }, []);
+
+  // Unlocks notification audio after the first user interaction.
+  useEffect(() => {
+    const handleInteraction = () => {
+      unlockAudio();
+    };
+
+    window.addEventListener("click", handleInteraction, { once: true });
+    window.addEventListener("touchstart", handleInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
+  // Stores the notification click handler so a foreground toast can open the matching chat.
+  const handleOpenChatRef = useRef(null);
+  handleOpenChatRef.current = (payload) => {
+    const senderId = payload.data?.senderId;
+    if (!senderId) return;
+    const senderUser = users.find((u) => u._id === senderId);
+    if (senderUser) setSelectedUser(senderUser);
   };
 
-  window.addEventListener("click", handleInteraction, { once: true });
-  window.addEventListener("touchstart", handleInteraction, { once: true });
+  // Listens for foreground FCM messages and shows the toast preview.
+  useEffect(() => {
+    if (window.__notificationRegistered) return;
+    window.__notificationRegistered = true;
 
-  return () => {
-    window.removeEventListener("click", handleInteraction);
-    window.removeEventListener("touchstart", handleInteraction);
-  };
-}, []);
-// Stores the notification click handler so a foreground toast can open the matching chat.
-const handleOpenChatRef = useRef(null);
-handleOpenChatRef.current = (payload) => {
-  const senderId = payload.data?.senderId;
-  if (!senderId) return;
-  const senderUser = users.find((u) => u._id === senderId);
-  if (senderUser) setSelectedUser(senderUser);
-};
+    const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+    audio.preload = "auto";
 
-// Listens for foreground FCM messages and shows the toast preview.
-useEffect(() => {
-  if (window.__notificationRegistered) return;
-  window.__notificationRegistered = true;
-
-  const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
-  audio.preload = "auto";
-
-  const unsubscribe = onMessage(messaging, (payload) => {
-    // onMessage ONLY fires when tab is active/focused
-    // service worker handles background — no overlap possible
-    const title = payload.data?.title || "New Message";
-    const body = payload.data?.body || "";
-    const senderAvatar = payload.data?.senderAvatar || "";
-    console.log("Working");
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
-    console.log("FCM RECEIVED", payload.messageId);
-    toast.custom(() => (
-      <div
-        onClick={() => handleOpenChatRef.current(payload)}
-        className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10 mr-[40%] " 
-      >
-        <img
-          src={senderAvatar || "/default-avatar.png"} 
-          className="w-12 h-12 rounded-full object-cover shrink-0"
-          alt="avatar"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white truncate">{title}</p>
-          <p className="text-gray-300 text-sm truncate">{body}</p>
-          <p className="text-blue-400 text-xs mt-1">Tap to open chat</p>
+    const unsubscribe = onMessage(messaging, (payload) => {
+      // onMessage ONLY fires when tab is active/focused
+      // service worker handles background — no overlap possible
+      const title = payload.data?.title || "New Message";
+      const body = payload.data?.body || "";
+      const senderAvatar = payload.data?.senderAvatar || "";
+      console.log("Working");
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+      console.log("FCM RECEIVED", payload.messageId);
+      toast.custom(() => (
+        <div
+          onClick={() => handleOpenChatRef.current(payload)}
+          className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10 mr-[40%] "
+        >
+          <img
+            src={senderAvatar || "/default-avatar.png"}
+            className="w-12 h-12 rounded-full object-cover shrink-0"
+            alt="avatar"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-white truncate">{title}</p>
+            <p className="text-gray-300 text-sm truncate">{body}</p>
+            <p className="text-blue-400 text-xs mt-1">Tap to open chat</p>
+          </div>
         </div>
-      </div>
-    ));
-  });
+      ));
+    });
 
-  return () => {
-    unsubscribe();
-    // ❌ do NOT reset window.__notificationRegistered here
-  };
-}, []);
+    return () => {
+      unsubscribe();
+      // ❌ do NOT reset window.__notificationRegistered here
+    };
+  }, []);
 
   const [showMenu, setShowMenu] = useState(false);
   const [closingMenu, setClosingMenu] = useState(false);
@@ -251,7 +260,7 @@ useEffect(() => {
     }, 220);
   };
 
-  console.log("users",users)
+  console.log("users", users);
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
@@ -276,7 +285,7 @@ useEffect(() => {
    */
   return (
     <div className="h-screen bg-black flex overflow-hidden">
-  {/* <Toaster
+      {/* <Toaster
   position="top-center"
   toastOptions={{
     duration: 90000,
@@ -286,10 +295,7 @@ useEffect(() => {
   }}
  
 /> */}
-      <ImageViewer
-        image={viewerImage}
-        onClose={() => setViewerImage(null)}
-      />
+      <ImageViewer image={viewerImage} onClose={() => setViewerImage(null)} />
       {/* SIDEBAR */}
       {/* SIDEBAR */}
       <div
@@ -321,12 +327,12 @@ useEffect(() => {
 
           <div className="flex-1 bg-[#2a2a2a] rounded-full px-2 py-0 flex items-center gap-3">
             <div
-  onClick={() => setShowSearch(true)}
-  className="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 flex items-center gap-3 cursor-pointer"
->
-  <Search size={18} className="text-zinc-400" />
-  <span className="text-zinc-400">Search</span>
-</div>
+              onClick={() => setShowSearch(true)}
+              className="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 flex items-center gap-3 cursor-pointer"
+            >
+              <Search size={18} className="text-zinc-400" />
+              <span className="text-zinc-400">Search</span>
+            </div>
           </div>
         </div>
         {/* Outside the button */}
@@ -344,19 +350,18 @@ useEffect(() => {
             }, 220);
           }}
         />
-
         {showSearch && (
-  <SearchPage
-    onClose={() => setShowSearch(false)}
-    setSelectedUser={setSelectedUser}
-  />
-)}        {/* LOADING */}
+          <SearchPage
+            onClose={() => setShowSearch(false)}
+            setSelectedUser={setSelectedUser}
+          />
+        )}{" "}
+        {/* LOADING */}
         {loading && (
           <div className="flex-1 flex items-center justify-center h-full">
             <UserSkeleton />
           </div>
         )}
-
         {/* USER LIST */}
         <div className="flex-1 overflow-y-auto custom-scrollbar ">
           {!loading && users.length === 0 && (
@@ -378,10 +383,11 @@ useEffect(() => {
                 flex items-center gap-3 px-4 py-3
                 cursor-pointer transition
                 scrollbar-hide
-                ${selectedUser?._id === userItem._id
+                ${
+                  selectedUser?._id === userItem._id
                     ? "bg-[#8774e1]   px-4 py-3 rounded-2xl m-1 text-black font-semibold "
                     : "hover:bg-[#2f016480] transition   rounded-2xl"
-                  }
+                }
 
               `}
               >
@@ -396,10 +402,11 @@ useEffect(() => {
                     }
 
                     alt={userItem.name}
-                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${onlineUsers.includes(userItem._id)
-                      ? "border-[#00d652] border-"
-                      : "border-[#5e519b] border-0"
-                      } `}
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl  object-cover ${
+                      onlineUsers.includes(userItem._id)
+                        ? "border-[#00d652] border-"
+                        : "border-[#5e519b] border-0"
+                    } `}
                   />
 
                   {/* ONLINE DOT */}
@@ -417,76 +424,82 @@ useEffect(() => {
                     </h2>
 
                     <span
-                      className={`text-xs ${onlineUsers.includes(userItem._id)
-                        ? "text-white font-bold"
-                        : "text-[#dadada] font-normal"
-                        }`}
+                      className={`text-xs ${
+                        onlineUsers.includes(userItem._id)
+                          ? "text-white font-bold"
+                          : "text-[#dadada] font-normal"
+                      }`}
                     >
                       {onlineUsers.includes(userItem._id)
                         ? "Online"
                         : userItem.lastMessage?.createdAt
                           ? (() => {
-                            const date = new Date(
-                              userItem.lastMessage.createdAt,
-                            );
-                            const now = new Date();
+                              const date = new Date(
+                                userItem.lastMessage.createdAt,
+                              );
+                              const now = new Date();
 
-                            const isToday =
-                              date.toDateString() === now.toDateString();
+                              const isToday =
+                                date.toDateString() === now.toDateString();
 
-                            return isToday
-                              ? date.toLocaleTimeString([], {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                              })
-                              : date.toLocaleDateString([], {
-                                month: "short",
-                                day: "numeric",
-                              });
-                          })()
+                              return isToday
+                                ? date.toLocaleTimeString([], {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })
+                                : date.toLocaleDateString([], {
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                            })()
                           : "Offline"}
                     </span>
                   </div>
 
-<p
-  className={`text-sm truncate ${
-    userItem.lastMessage?.text
-      ? "text-white font-bold"
-      : "text-zinc-400 font-normal"
-  }`}
->
-  {userItem.lastMessage?.text ? (
-    <>
-      {String(userItem.lastMessage.sender) === String(currentUserId) && (
-        <span className="text-zinc-300 font-normal">You: </span>
-      )}
-      {userItem.lastMessage.text}
-    </>
-  ) : userItem.lastMessage?.image ? (
-    <span
-      className={`flex items-center gap-1 ${
-        selectedUser?._id === userItem._id
-          ? "text-white"
-          : "text-indigo-400"
-      }`}
-    >
-      {String(userItem.lastMessage.sender) === String(currentUserId) && (
-        <span className="text-zinc-400 font-normal">You: </span>
-      )}
-      <ImageIcon size={14} />
-      Photo
-    </span>
-  ) : (
-    `${userItem.name} joined the zollo`.toUpperCase()
-  )}
-</p>
+                  <p
+                    className={`text-sm truncate ${
+                      userItem.lastMessage?.text
+                        ? "text-white font-bold"
+                        : "text-zinc-400 font-normal"
+                    }`}
+                  >
+                    {userItem.lastMessage?.text ? (
+                      <>
+                        {String(userItem.lastMessage.sender) ===
+                          String(currentUserId) && (
+                          <span className="text-zinc-300 font-normal">
+                            You:{" "}
+                          </span>
+                        )}
+                        {userItem.lastMessage.text}
+                      </>
+                    ) : userItem.lastMessage?.image ? (
+                      <span
+                        className={`flex items-center gap-1 ${
+                          selectedUser?._id === userItem._id
+                            ? "text-white"
+                            : "text-indigo-400"
+                        }`}
+                      >
+                        {String(userItem.lastMessage.sender) ===
+                          String(currentUserId) && (
+                          <span className="text-zinc-400 font-normal">
+                            You:{" "}
+                          </span>
+                        )}
+                        <ImageIcon size={14} />
+                        Photo
+                      </span>
+                    ) : (
+                      `${userItem.name} joined the zollo`.toUpperCase()
+                    )}
+                  </p>
                 </div>
               </div>
             );
           })}
         </div>
-
         {/* EDIT PROFILE MODAL */}
         {showProfile && (
           <div
@@ -567,10 +580,11 @@ useEffect(() => {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${selectedUser
-                ? "translate-x-0 opacity-100"
-                : "translate-x-full opacity-0 pointer-events-none"
-              }
+        ${
+          selectedUser
+            ? "translate-x-0 opacity-100"
+            : "translate-x-full opacity-0 pointer-events-none"
+        }
 
       `}
           >
@@ -598,19 +612,20 @@ useEffect(() => {
         duration-500
         ease-[cubic-bezier(0.22,1,0.36,1)]
 
-        ${selectedUser
-                ? "-translate-x-full opacity-0 "
-                : "translate-x-0 opacity-100 bg-cover bg-center"
-              }
+        ${
+          selectedUser
+            ? "-translate-x-full opacity-0 "
+            : "translate-x-0 opacity-100 bg-cover bg-center"
+        }
 
           `}
             style={
               selectedUser
                 ? {}
                 : {
-                  backgroundImage:
-                    "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
-                }
+                    backgroundImage:
+                      "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
+                  }
             }
 
           >
@@ -621,7 +636,10 @@ useEffect(() => {
                 className="w-[20px] md:w-40 mx-auto mb-6"
               /> */}
 
-              <div className="icon-wrap h-[20%] mb-2" aria-label="Winking chat bubble icon">
+              <div
+                className="icon-wrap h-[20%] mb-2"
+                aria-label="Winking chat bubble icon"
+              >
                 <svg
                   width="100%"
                   height="100%"

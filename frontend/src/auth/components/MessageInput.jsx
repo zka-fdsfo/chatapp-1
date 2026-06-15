@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Send, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import {ImagePlus } from 'lucide-react';
+import { useQueryClient } from "@tanstack/react-query";
 const MessageInput = ({
   messageText,
   setMessageText,
@@ -38,7 +39,7 @@ const MessageInput = ({
   // };
   const [image, setImage] = useState(null);
   const [sending, setSending] = useState(false);
-
+const queryClient = useQueryClient();
   const sendMessage = async () => {
     if (sending) return; // prevent double click
     if (!messageText.trim() && !image) return;
@@ -58,7 +59,9 @@ const MessageInput = ({
       }
 
       await handleSendMessage(formData);
-
+ queryClient.invalidateQueries({
+    queryKey: ["users"],
+  });
       setMessageText("");
       setImage(null);
     } catch (err) {
