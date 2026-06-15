@@ -195,17 +195,17 @@ useEffect(() => {
     const title = payload.data?.title || "New Message";
     const body = payload.data?.body || "";
     const senderAvatar = payload.data?.senderAvatar || "";
-
+    console.log("Working");
     audio.currentTime = 0;
     audio.play().catch(() => {});
-
+    console.log("FCM RECEIVED", payload.messageId);
     toast.custom(() => (
       <div
         onClick={() => handleOpenChatRef.current(payload)}
         className="w-[320px] cursor-pointer bg-black/90 backdrop-blur-md text-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 border border-white/10"
       >
         <img
-          src={senderAvatar || "/default-avatar.png"}
+          src={senderAvatar || "/default-avatar.png"} 
           className="w-12 h-12 rounded-full object-cover shrink-0"
           alt="avatar"
         />
@@ -267,7 +267,7 @@ useEffect(() => {
    */
   return (
     <div className="h-screen bg-black flex overflow-hidden">
-  <Toaster
+  {/* <Toaster
   position="top-center"
   toastOptions={{
     duration: 90000,
@@ -276,7 +276,7 @@ useEffect(() => {
     },
   }}
  
-/>
+/> */}
       <ImageViewer
         image={viewerImage}
         onClose={() => setViewerImage(null)}
