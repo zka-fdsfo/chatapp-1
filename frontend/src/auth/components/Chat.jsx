@@ -49,7 +49,7 @@ const Chat = ({
     });
 
     socketRef.current.on("connect", () => {
-      console.log("🟢 Socket connected:", socketRef.current.id);
+   //console.log("🟢 Socket connected:", socketRef.current.id);
     });
 
     return () => {
@@ -116,7 +116,7 @@ const Chat = ({
     if (!socketRef.current) return;
 
     const handleSeenUpdate = ({ messageId }) => {
-      console.log("✅ Seen Update:", messageId);
+     // console.log("✅ Seen Update:", messageId);
 
       receivedSeenMessageIdsRef.current.add(String(messageId));
 
@@ -162,6 +162,24 @@ const Chat = ({
   }, [messages, user?._id]);
 
   // If a seen update arrives before the message is present locally,
+
+const [isTyping, setIsTyping] = useState(false);
+
+useEffect(() => {
+  if (!socketRef.current) return;
+
+  const handleTyping = ({ senderId, typing }) => {
+    if (String(senderId) === String(selectedUser?._id)) {
+      setIsTyping(typing);
+    }
+  };
+
+  socketRef.current.on("typing", handleTyping);
+
+  return () => {
+    socketRef.current.off("typing", handleTyping);
+  };
+}, [selectedUser?._id]);
   // replay it once the message is added to state.
   useEffect(() => {
     if (!receivedSeenMessageIdsRef.current.size) return;
@@ -227,6 +245,9 @@ const Chat = ({
         onlineUsers={onlineUsers}
         onOpenProfile={() => setShowProfile(true)}
         lastMessage={lastMessage?.createdAt}
+        socketRef={socketRef}
+        currentUserId={currentUserId}
+        isTyping={isTyping}
       />
 
       {/* ================= MESSAGE LIST ================= */}
@@ -256,6 +277,7 @@ const Chat = ({
         handleSendMessage={handleSendMessage}
         socketRef={socketRef}
         user={user}
+        currentUserId={currentUserId}
       />
     </div>
   );

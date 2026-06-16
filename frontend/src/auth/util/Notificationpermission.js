@@ -32,7 +32,7 @@ let audioUnlocked = false;
 export function unlockAudio() {
   if (audioUnlocked) return;
 
-  const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
+  // const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
 
   audio.play()
     .then(() => {

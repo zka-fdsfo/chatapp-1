@@ -34,9 +34,19 @@ const MessageList = ({
   );
 
   // AUTO SCROLL ON NEW MESSAGE
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+ useEffect(() => {
+  const el = containerRef.current;
+  if (!el) return;
+
+  const isNearBottom =
+    el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+
+  if (isNearBottom) {
+    setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+    }, 50);
+  }
+}, [messages]);
 
   // DETECT SCROLL POSITION
   const handleScroll = () => {

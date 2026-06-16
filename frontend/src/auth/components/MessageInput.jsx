@@ -1,8 +1,8 @@
-//components MessageInput.jsx 
+//components MessageInput.jsx
 import React, { useState, useRef } from "react";
 import { Send, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
-import {ImagePlus } from 'lucide-react';
+import { ImagePlus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 const MessageInput = ({
   messageText,
@@ -11,6 +11,7 @@ const MessageInput = ({
   handleSendMessage,
   socketRef,
   user,
+  currentUserId,
 }) => {
   // const sendMessage = async () => {
   //   try {
@@ -38,8 +39,8 @@ const MessageInput = ({
   // };
   const [image, setImage] = useState(null);
   const [sending, setSending] = useState(false);
-const queryClient = useQueryClient();
-const textareaRef = useRef(null);
+  const queryClient = useQueryClient();
+  const textareaRef = useRef(null);
   const sendMessage = async () => {
     if (sending) return; // prevent double click
     if (!messageText.trim() && !image) return;
@@ -59,12 +60,12 @@ const textareaRef = useRef(null);
       }
 
       await handleSendMessage(formData);
- queryClient.invalidateQueries({
-    queryKey: ["users"],
-  });
-  if (textareaRef.current) {
-  textareaRef.current.style.height = "auto";
-}
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
 
       setMessageText("");
       setImage(null);
@@ -74,6 +75,35 @@ const textareaRef = useRef(null);
       setSending(false);
     }
   };
+  // ================= Typing =================
+  const typingRef = useRef(false);
+  const typingTimeoutRef = useRef(null);
+  const handleTyping = (e) => {
+  const value = e.target.value;
+
+  if (value.trim() && !typingRef.current) {
+    typingRef.current = true;
+
+  socketRef.current.emit("typing", {
+  senderId: currentUserId,
+  receiverId: selectedUser._id,
+  typing: true,
+});
+
+  }
+
+  clearTimeout(typingTimeoutRef.current);
+
+  typingTimeoutRef.current = setTimeout(() => {
+    typingRef.current = false;
+
+   socketRef.current.emit("typing", {
+  senderId: currentUserId,
+  receiverId: selectedUser._id,
+  typing: false,
+});
+  }, 1000);
+};
   const [showEmoji, setShowEmoji] = useState(false);
   return (
     //   <div className="p-3 lg:px-20">
@@ -158,13 +188,13 @@ const textareaRef = useRef(null);
 
         {/* Text Area */}
         <textarea
-         ref={textareaRef}
+          ref={textareaRef}
           rows="1"
           placeholder="Message"
           value={messageText || ""}
           onChange={(e) => {
             setMessageText(e.target.value);
-
+             handleTyping(e)
             e.target.style.height = "auto";
             e.target.style.height = `${e.target.scrollHeight}px`;
           }}
@@ -199,10 +229,7 @@ const textareaRef = useRef(null);
               if (!file) return;
 
               // Only PNG/JPG/JPEG
-              if (
-                file.type !== "image/png" &&
-                file.type !== "image/jpeg"
-              ) {
+              if (file.type !== "image/png" && file.type !== "image/jpeg") {
                 alert("Only PNG and JPG images are allowed");
                 return;
               }
@@ -222,10 +249,9 @@ const textareaRef = useRef(null);
         <button
           onClick={sendMessage}
           disabled={sending}
-          className={`text-[#8774e1] transition ${sending
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:text-[#9d8cff]"
-            }`}
+          className={`text-[#8774e1] transition ${
+            sending ? "opacity-50 cursor-not-allowed" : "hover:text-[#9d8cff]"
+          }`}
         >
           <Send size={24} />
         </button>

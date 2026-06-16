@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect,useState}from "react";
 import { ChevronLeft } from "lucide-react";
 
 const ChatHeader = ({
@@ -7,7 +7,12 @@ const ChatHeader = ({
   onlineUsers,
   onOpenProfile,
   lastMessage,
+  socketRef,
+  currentUserId,
+  isTyping,
+  
 }) => {
+  
   const isOnline = onlineUsers?.includes(selectedUser?._id);
   const avatarColors = {
     A: "ef4444",
@@ -73,6 +78,7 @@ const formatLastSeen = (dateString) => {
     ? "A"
     : selectedUser.name.charAt(0).toUpperCase();
   const bgColor = avatarColors[firstLetter] || "6366f1";
+
   return (
     <div className="h-[70px] md:h-[80px] bg-[#1b1b1b44] backdrop-blur-md px-4 md:px-6 flex items-center gap-3 border-b border-white/5">
       {/* BACK BUTTON MOBILE */}
@@ -116,11 +122,13 @@ const formatLastSeen = (dateString) => {
             isOnline ? "text-white font-medium" : "text-white/50"
           }`}
         >
-          {isOnline
-            ? "Online"
-            : lastMessage
-              ? `Last seen ${formatLastSeen(lastMessage)}`
-              : "Offline"}
+         {isTyping
+  ? "Typing..."
+  : isOnline
+    ? "Online"
+    : lastMessage
+      ? `Last seen ${formatLastSeen(lastMessage)}`
+      : "Offline"}
         </p>
         {/* <p className={`text-xs md:text-sm ${isOnline ? "text-white font-medium" : "text-white/50"}`}>
           {isOnline ? "Online" : lastMessage ? `Last seen: ${new Date(lastMessage).toLocaleString()}` : "Offline"}

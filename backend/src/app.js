@@ -92,21 +92,26 @@ io.on("connection", (socket) => {
   // =========================
   // TYPING
   // =========================
-  socket.on("typing", ({ senderId, receiverId }) => {
-    if (!senderId || !receiverId) return;
-
+  socket.on("typing", ({ senderId, receiverId,typing }) => {
+    if (!senderId || !receiverId ) return;
+      console.log("SERVER RECEIVED:", {
+    senderId,
+    receiverId,
+    typing,
+  });
     io.to(receiverId).emit("typing", {
       senderId,
+      typing,
     });
   });
 
-  socket.on("stop-typing", ({ senderId, receiverId }) => {
-    if (!senderId || !receiverId) return;
+  // socket.on("stop-typing", ({ senderId, receiverId }) => {
+  //   if (!senderId || !receiverId) return;
 
-    io.to(receiverId).emit("stop-typing", {
-      senderId,
-    });
-  });
+  //   io.to(receiverId).emit("stop-typing", {
+  //     senderId,
+  //   });
+  // });
 
   // =========================
   // MESSAGE SEEN
