@@ -28,16 +28,24 @@ export const getAllUsers = async (req, res) => {
 
     const usersWithLastMessage = await Promise.all(
       users.map(async (user) => {
-        const lastMessage = await Message.findOne({
-          $or: [
-            { sender: currentUserId, receiver: user._id },
-            { sender: user._id, receiver: currentUserId },
-          ],
-        })
-          .sort({ createdAt: -1 })
-          .select(
-            "text image message createdAt sender receiver seen"
-          );
+        const [lastMessage, unreadCount] = await Promise.all([
+          Message.findOne({
+            $or: [
+              { sender: currentUserId, receiver: user._id },
+              { sender: user._id, receiver: currentUserId },
+            ],
+          })
+            .sort({ createdAt: -1 })
+            .select(
+              "text image message createdAt sender receiver seen"
+            ),
+
+          Message.countDocuments({
+            sender: user._id,
+            receiver: currentUserId,
+            seen: false,
+          }),
+        ]);
 
         let formattedLastMessage = null;
 
@@ -47,9 +55,9 @@ export const getAllUsers = async (req, res) => {
             displayText:
               String(lastMessage.sender) === String(currentUserId)
                 ? `(You) ${
-                    lastMessage.text,"(You)" ||
-                    lastMessage.message,"(You)" ||
-                    (lastMessage.image ? "📷 Photo (You)" : "")
+                    lastMessage.text ||
+                    lastMessage.message ||
+                    (lastMessage.image ? "📷 Photo" : "")
                   }`
                 : lastMessage.text ||
                   lastMessage.message ||
@@ -59,6 +67,7 @@ export const getAllUsers = async (req, res) => {
 
         return {
           ...user.toObject(),
+          unreadCount,
           lastMessage: formattedLastMessage,
         };
       })
@@ -84,6 +93,7 @@ export const getAllUsers = async (req, res) => {
 
     res.status(500).json({
       message: "Server error",
+      error: error.message,
     });
   }
 };
