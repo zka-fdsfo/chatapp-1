@@ -460,19 +460,22 @@ export default function UsersPage() {
                   <p
                     className={`text-sm truncate ${
                       userItem.lastMessage?.text
-                        ? "text-white font-bold"
-                        : "text-zinc-400 font-normal"
-                    }`}
+                        ? "text-white "
+                        : "text-zinc-300 "
+                    } `}
                   >
                     {userItem.lastMessage?.text ? (
                       <>
                         {String(userItem.lastMessage.sender) ===
                           String(currentUserId) && (
-                          <span className="text-zinc-300 font-normal">
+                          <span className={`text-zinc-300 ${selectedUser?` font-bold`: ` font-medium`}`}>
                             You:{" "}
                           </span>
                         )}
-                        {userItem.lastMessage.text}
+                          {userItem?.lastMessage?.text?.length > 8
+                          ? `${userItem.lastMessage.text.substring(0, 8)}...`
+                          : userItem?.lastMessage?.text}
+                       
                       </>
                     ) : userItem.lastMessage?.image ? (
                       <span
@@ -484,7 +487,7 @@ export default function UsersPage() {
                       >
                         {String(userItem.lastMessage.sender) ===
                           String(currentUserId) && (
-                          <span className="text-zinc-400 font-normal">
+                          <span className={`text-zinc-300 ${selectedUser?` font-bold`: ` font-normal`} `}>
                             You:{" "}
                           </span>
                         )}

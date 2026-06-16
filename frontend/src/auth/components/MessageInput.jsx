@@ -1,6 +1,5 @@
 //components MessageInput.jsx 
-import React, { useState } from "react";
-
+import React, { useState, useRef } from "react";
 import { Send, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import {ImagePlus } from 'lucide-react';
@@ -40,6 +39,7 @@ const MessageInput = ({
   const [image, setImage] = useState(null);
   const [sending, setSending] = useState(false);
 const queryClient = useQueryClient();
+const textareaRef = useRef(null);
   const sendMessage = async () => {
     if (sending) return; // prevent double click
     if (!messageText.trim() && !image) return;
@@ -62,6 +62,10 @@ const queryClient = useQueryClient();
  queryClient.invalidateQueries({
     queryKey: ["users"],
   });
+  if (textareaRef.current) {
+  textareaRef.current.style.height = "auto";
+}
+
       setMessageText("");
       setImage(null);
     } catch (err) {
@@ -143,7 +147,7 @@ const queryClient = useQueryClient();
         </div>
       )}
       {/* Input Bar */}
-      <div className="flex items-end bg-[#1f1f1fc2] backdrop-blur-xs rounded-full px-4 py-3 gap-3">
+      <div className="flex items-end bg-[#1f1f1fc2] backdrop-blur-xs rounded-3xl px-4 py-3 gap-3">
         {/* Emoji Button */}
         <button
           onClick={() => setShowEmoji((prev) => !prev)}
@@ -154,6 +158,7 @@ const queryClient = useQueryClient();
 
         {/* Text Area */}
         <textarea
+         ref={textareaRef}
           rows="1"
           placeholder="Message"
           value={messageText || ""}
