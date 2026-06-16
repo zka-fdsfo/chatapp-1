@@ -627,7 +627,7 @@ export default function UsersPage() {
                 ? {}
                 : {
                     backgroundImage:
-                      "url('https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/73e4a765375341.5af5cc5874ad4.png')",
+                      "url('https://i.pinimg.com/736x/91/56/78/915678c314c10f2c58ca30c043aa7c20.jpg')",
                   }
             }
 
