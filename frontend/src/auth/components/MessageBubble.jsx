@@ -57,8 +57,9 @@ const MessageBubble = ({
 
            ${msg.image ? "flex-col" : ""}
   ${msg.image && msg.text ? "p-2" : msg.image ? "p-[0.4vw]" : "px-3 pt-2 pb-2"}
-           
+           ${(msg?.text || '').length > 20 ? 'flex flex-col' : ''}
           `}
+         
         >
           {/* MESSAGE TEXT */}
           {/* <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
@@ -151,7 +152,7 @@ const MessageBubble = ({
           >
             <span>{formatTime(msg.createdAt)}</span>
             {isMe && (
-              <span className={msg.seen ? "text-sky-400" : "text-white/50"}>
+              <span className={msg.seen ? "text-sky-400 font-medium" : "text-white/50"}>
                   {msg.seen ? <CheckCheck size={16} /> : <Check size={16} />}
               </span>
             )}
