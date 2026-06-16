@@ -537,7 +537,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade1"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/736x/81/c1/79/81c1798f090c8090aefca4886ea768d2.jpg')",
+                "url('https://i.pinimg.com/originals/89/7e/2a/897e2ab8a8f517dcbac01280ceed8948.png')",
             }}
           />
 
@@ -546,7 +546,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade2"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/736x/c6/c5/f1/c6c5f19facf16c2c06c5f2997e5f7193.jpg')",
+                "url('https://inspgr.id/app/uploads/2022/05/art-white-g-17.jpg')",
             }}
           />
 
@@ -555,7 +555,7 @@ export default function UsersPage() {
             className="absolute inset-0 bg-cover bg-center animate-fade3"
             style={{
               backgroundImage:
-                "url('https://i.pinimg.com/originals/b2/e4/fc/b2e4fcb625fe5b31fb96eca51e85c416.gif')",
+                "url('https://i.pinimg.com/originals/09/5e/74/095e741ff45bece31a21bd2b58c70e2e.jpg')",
             }}
           />
 
@@ -627,7 +627,7 @@ export default function UsersPage() {
                 ? {}
                 : {
                     backgroundImage:
-                      "url('https://i.pinimg.com/736x/68/09/f4/6809f49844c3b096d0580755a5a45446.jpg')",
+                      "url('https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/73e4a765375341.5af5cc5874ad4.png')",
                   }
             }
 

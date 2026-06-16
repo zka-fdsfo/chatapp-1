@@ -1,17 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { Reply, Pencil, Copy, Trash2, Check, CheckCheck } from "lucide-react";
 import * as Linkify from "react-linkify";
 import { useAuth } from "../hook/hookauth";
+import { useEffect } from "react";
 const MessageBubble = ({
   msg,
   isMe,
   menuMsg,
   setMenuMsg,
+  menuPosition,
+  setMenuPosition,
   setEditMsg,
   setEditText,
   handleDeleteMessage,
   setViewerImage,
   selectedUser,
+   wrapperRef,
 }) => {
   const { currentusernameimg } = useAuth();
 
@@ -35,15 +39,31 @@ const MessageBubble = ({
       {/* MESSAGE WRAPPER */}
 
       <div
+       data-message
         className={`relative max-w-[82%] md:max-w-107.5 ${msg.image && !msg.text ? "mb-2" : "mb-7"}`}
       >
         {/* MESSAGE BUBBLE */}
         <div
-          onClick={(e) => {
-            e.stopPropagation();
+       onClick={(e) => {
+  e.stopPropagation();
 
-            setMenuMsg(menuMsg === msg._id ? null : msg._id);
-          }}
+  const bubbleRect = e.currentTarget.getBoundingClientRect();
+
+  const menuWidth = 208;
+  const menuHeight = 180;
+
+  let x = e.clientX - bubbleRect.left;
+  let y = e.clientY - bubbleRect.top;
+
+  x = Math.min(x, bubbleRect.width - menuWidth);
+  y = Math.min(y, bubbleRect.height - menuHeight);
+
+  x = Math.max(0, x);
+  y = Math.max(0, y);
+
+  setMenuPosition({ x, y });
+  setMenuMsg(menuMsg === msg._id ? null : msg._id);
+}}
           className={`
             relative group
             rounded-2xl flex gap-2
@@ -56,10 +76,9 @@ const MessageBubble = ({
             }
 
            ${msg.image ? "flex-col" : ""}
-  ${msg.image && msg.text ? "p-2" : msg.image ? "p-[0.4vw]" : "px-3 pt-2 pb-2"}
-           ${(msg?.text || '').length > 20 ? 'flex flex-col' : ''}
+           ${msg.image && msg.text ? "p-2" : msg.image ? "p-[0.4vw]" : "px-3 pt-2 pb-2"}
+           ${(msg?.text || "").length > 20 ? "flex flex-col" : ""}
           `}
-         
         >
           {/* MESSAGE TEXT */}
           {/* <div className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full">
@@ -137,23 +156,28 @@ const MessageBubble = ({
           {/* TIME + TICKS */}
           <div
             className={`
-    flex items-end gap-1
-    text-[11px]
-    self-end
-    whitespace-nowrap
-    text-white
-    ${
-      msg.image && !msg.text
-        ? "absolute bottom-3 right-3 bg-[#00000063] px-3 py-1 rounded-[20px]"
-        : ""
-    }
+            flex items-end gap-1
+            text-[11px]
+            self-end
+            whitespace-nowrap
+            text-white
+             ${
+               msg.image && !msg.text
+                 ? "absolute bottom-3 right-3 bg-[#00000063] px-3 py-1 rounded-[20px]"
+                 : ""
+             }
 
-  `}
+            `}
           >
             <span>{formatTime(msg.createdAt)}</span>
             {isMe && (
-              <span className={msg.seen ? "text-sky-400 font-medium" : "text-white/50"}>
-                  {msg.seen ? <CheckCheck size={16} /> : <Check size={16} />}
+              <span
+                className={
+                  msg.seen ? "text-sky-400 font-medium" : "text-white/50"
+                }
+
+              >
+                {msg.seen ? <CheckCheck size={16} /> : <Check size={16} />}
               </span>
             )}
           </div>
@@ -185,19 +209,24 @@ const MessageBubble = ({
         {/* POPUP MENU */}
         {menuMsg === msg._id && (
           <div
-            className={`
-              absolute z-50 
-              w-52 overflow-hidden
-              rounded-2xl
-              bg-[#1f1f1f]
-              border border-[#ffffff10]
-              shadow-2xl
-              backdrop-blur-xl
-              font-medium
-              origin-top
-              animate-popup
-              ${isMe ? "right-0" : "left-0"}
-            `}
+            data-menu
+style={{
+  position: "absolute",
+  left: `${menuPosition.x}px`,
+  top: `${menuPosition.y}px`,
+}}
+            className="
+    z-[9999]
+    w-52
+    overflow-hidden
+    rounded-2xl
+    bg-[#1f1f1f]
+    border border-[#ffffff10]
+    shadow-2xl
+    backdrop-blur-xl
+    font-medium
+    animate-popup
+  "
           >
             {/* REPLY */}
             <button

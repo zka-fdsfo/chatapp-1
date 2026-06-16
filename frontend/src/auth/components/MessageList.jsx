@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import EmptyChat from "./EmptyChat";
 import { ArrowDown } from "lucide-react";
-import MessageSkeleton from "./MessageSkeleton"
+import MessageSkeleton from "./MessageSkeleton";
 import MessageListSkeleton from "./MessageListSkeleton";
 const MessageList = ({
   messages,
@@ -21,18 +21,16 @@ const MessageList = ({
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
   const bottomRef = useRef(null);
+  const [menuPosition, setMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   // FILTER VALID MESSAGES
   const validMessages = messages.filter(
-    (msg) =>
-      msg &&
-      (
-        msg.text ||
-        msg.message ||
-        msg.image
-      )
+    (msg) => msg && (msg.text || msg.message || msg.image),
   );
 
   // AUTO SCROLL ON NEW MESSAGE
@@ -106,16 +104,19 @@ const MessageList = ({
                 key={msg._id}
                 msg={{
                   ...msg,
-                  text: msg.text || msg.message, // IMPORTANT FIX
+                  text: msg.text || msg.message,
                 }}
                 isMe={isMe}
                 menuMsg={menuMsg}
                 setMenuMsg={setMenuMsg}
+                menuPosition={menuPosition}
+                setMenuPosition={setMenuPosition}
                 setEditMsg={setEditMsg}
                 setEditText={setEditText}
                 handleDeleteMessage={handleDeleteMessage}
                 setViewerImage={setViewerImage}
                 selectedUser={selectedUser}
+                 wrapperRef={wrapperRef}
               />
             );
           })
