@@ -40,6 +40,7 @@ import UserSkeleton from "../components/UsersSkeleton.jsx";
 import ImageViewer from "../components/ImageViewer.jsx";
 import { Image as ImageIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Notificationpermission,
   unlockAudio,
@@ -49,13 +50,10 @@ import SearchPage from "../components/SearchPage.jsx";
 export default function UsersPage() {
   const { fetchAllUsers, user } = useAuth();
 
-  const {
-  data: users = [],
-  isLoading: loading,
-} = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchAllUsers,
-});
+  const { data: users = [], isLoading: loading } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchAllUsers,
+  });
   const [selectedUser, setSelectedUser] = useState(null);
   const socketRef = useRef();
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -64,6 +62,7 @@ export default function UsersPage() {
   const [closingProfile, setClosingProfile] = useState(false);
   const [viewerImage, setViewerImage] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
+  const queryClient = useQueryClient();
   // Prevent double API calls in React Strict Mode
   const fetched = useRef(false);
 
@@ -204,6 +203,9 @@ export default function UsersPage() {
     audio.preload = "auto";
 
     const unsubscribe = onMessage(messaging, (payload) => {
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
       // onMessage ONLY fires when tab is active/focused
       // service worker handles background — no overlap possible
       const title = payload.data?.title || "New Message";
@@ -376,10 +378,10 @@ export default function UsersPage() {
               : userItem.name.charAt(0).toUpperCase();
             const bgColor = avatarColors[firstLetter] || "6366f1";
             return (
-  <div
-    key={userItem._id}
-    onClick={() => setSelectedUser(userItem)}
-    className={`
+              <div
+                key={userItem._id}
+                onClick={() => setSelectedUser(userItem)}
+                className={`
       flex items-center gap-3 px-4 py-3
       cursor-pointer transition
       scrollbar-hide
@@ -388,105 +390,129 @@ export default function UsersPage() {
           ? "bg-[#8774e1] px-4 py-3 rounded-2xl m-1 text-black font-semibold "
           : "hover:bg-[#2f016480] transition rounded-2xl"
       }
+
     `}
-  >
-    {/* Avatar */}
-    <div className="relative">
-      <img
-        src={
-          userItem.avatar ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            userItem.name,
-          )}&background=${bgColor}&color=fff`
-        }
-        alt={userItem.name}
-        className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl object-cover ${
-          onlineUsers.includes(userItem._id)
-            ? "border-[#00d652] border-"
-            : "border-[#5e519b] border-0"
-        }`}
-      />
-      {onlineUsers.includes(userItem._id) && (
-        <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
-      )}
-    </div>
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  <img
+                    src={
+                      userItem.avatar ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        userItem.name,
+                      )}&background=${bgColor}&color=fff`
+                    }
 
-    {/* Name + last message */}
-    <div className="flex-1 min-w-0">
-      <h2 className="text-white font-semibold truncate">
-        {userItem.name}
-        {userItem._id === currentUserId && " (You)"}
-      </h2>
+                    alt={userItem.name}
+                    className={`w-11 h-11 md:w-12 md:h-12 rounded-full text-4xl object-cover ${
+                      onlineUsers.includes(userItem._id)
+                        ? "border-[#00d652] border-"
+                        : "border-[#5e519b] border-0"
+                    }`}
+                  />
+                  {onlineUsers.includes(userItem._id) && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-white border-2 border-[#1b1b1b] rounded-full" />
+                  )}
+                </div>
 
-      <p
-        className={`text-sm truncate ${
-          userItem.lastMessage?.text ? "text-white" : "text-zinc-300"
-        }`}
-      >
-        {userItem.lastMessage?.text ? (
-          <>
-            {String(userItem.lastMessage.sender) === String(currentUserId) && (
-              <span className={`text-zinc-300 ${selectedUser ? "font-bold" : "font-medium"}`}>
-                You:{" "}
-              </span>
-            )}
-            {userItem.lastMessage.text.length > 8
-              ? `${userItem.lastMessage.text.substring(0, 8)}...`
-              : userItem.lastMessage.text}
-          </>
-        ) : userItem.lastMessage?.image ? (
-          <span
-            className={`flex items-center gap-1 ${
-              selectedUser?._id === userItem._id ? "text-white" : "text-indigo-400"
-            }`}
-          >
-            {String(userItem.lastMessage.sender) === String(currentUserId) && (
-              <span className={`text-zinc-300 ${selectedUser ? "font-bold" : "font-normal"}`}>
-                You:{" "}
-              </span>
-            )}
-            <ImageIcon size={14} />
-            Photo
-          </span>
-        ) : (
-          `${userItem.name} joined the zollo`.toUpperCase()
-        )}
-      </p>
-    </div>
+                {/* Name + last message */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-white font-semibold truncate">
+                    {userItem.name}
+                    {userItem._id === currentUserId && " (You)"}
+                  </h2>
 
-    {/* Right column: time + unread badge */}
-    <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
-      <span
-        className={`text-xs ${
-          onlineUsers.includes(userItem._id)
-            ? "text-white font-bold"
-            : "text-[#dadada] font-normal"
-        }`}
-      >
-        {onlineUsers.includes(userItem._id)
-          ? "Online"
-          : userItem.lastMessage?.createdAt
-            ? (() => {
-                const date = new Date(userItem.lastMessage.createdAt);
-                const now = new Date();
-                const isToday = date.toDateString() === now.toDateString();
-                return isToday
-                  ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
-                  : date.toLocaleDateString([], { month: "short", day: "numeric" });
-              })()
-            : "Offline"}
-      </span>
+                  <p
+                    className={`text-sm truncate ${
+                      userItem.lastMessage?.text
+                        ? "text-white"
+                        : "text-zinc-300"
+                    }`}
+                  >
+                    {userItem.lastMessage?.text ? (
+                      <>
+                        {String(userItem.lastMessage.sender) ===
+                          String(currentUserId) && (
+                          <span
+                            className={`text-zinc-300 ${selectedUser ? "font-bold" : "font-medium"}`}
+                          >
+                            You:{" "}
+                          </span>
+                        )}
+                        {userItem.lastMessage.text.length > 8
+                          ? `${userItem.lastMessage.text.substring(0, 8)}...`
+                          : userItem.lastMessage.text}
+                      </>
+                    ) : userItem.lastMessage?.image ? (
+                      <span
+                        className={`flex items-center gap-1 ${
+                          selectedUser?._id === userItem._id
+                            ? "text-white"
+                            : "text-indigo-400"
+                        }`}
+                      >
+                        {String(userItem.lastMessage.sender) ===
+                          String(currentUserId) && (
+                          <span
+                            className={`text-zinc-300 ${selectedUser ? "font-bold" : "font-normal"}`}
+                          >
+                            You:{" "}
+                          </span>
+                        )}
+                        <ImageIcon size={14} />
+                        Photo
+                      </span>
+                    ) : (
+                      `${userItem.name} joined the zollo`.toUpperCase()
+                    )}
+                  </p>
+                </div>
 
-      {userItem.unreadCount > 0 && (
-        <div className="bg-[#fafafa] text-[#474165] text-[11px] font-bold min-w-[18px] h-[18px] px-1 py-2 rounded-full flex items-center justify-center leading-none"><span className="mb-0.5">
- {userItem.unreadCount > 99 ? "99+" : userItem.unreadCount}
-        </span>
-         
-        </div>
-      )}
-    </div>
-  </div>
-);
+                {/* Right column: time + unread badge */}
+                <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                  <span
+                    className={`text-xs ${
+                      onlineUsers.includes(userItem._id)
+                        ? "text-white font-bold"
+                        : "text-[#dadada] font-normal"
+                    }`}
+                  >
+                    {onlineUsers.includes(userItem._id)
+                      ? "Online"
+                      : userItem.lastMessage?.createdAt
+                        ? (() => {
+                            const date = new Date(
+                              userItem.lastMessage.createdAt,
+                            );
+                            const now = new Date();
+                            const isToday =
+                              date.toDateString() === now.toDateString();
+                            return isToday
+                              ? date.toLocaleTimeString([], {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })
+                              : date.toLocaleDateString([], {
+                                  month: "short",
+                                  day: "numeric",
+                                });
+                          })()
+                        : "Offline"}
+                  </span>
+
+                  {userItem.unreadCount > 0 && (
+                    <div className="bg-[#fafafa] text-[#474165] text-[11px] font-bold min-w-[18px] h-[18px] px-1 py-2 rounded-full flex items-center justify-center leading-none">
+                      <span className="mb-0.5">
+                        {userItem.unreadCount > 99
+                          ? "99+"
+                          : userItem.unreadCount}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
           })}
         </div>
         {/* EDIT PROFILE MODAL */}

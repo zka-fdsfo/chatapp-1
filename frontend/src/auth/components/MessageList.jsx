@@ -5,6 +5,7 @@ import EmptyChat from "./EmptyChat";
 import { ArrowDown } from "lucide-react";
 import MessageSkeleton from "./MessageSkeleton";
 import MessageListSkeleton from "./MessageListSkeleton";
+
 const MessageList = ({
   messages,
   currentUserId,

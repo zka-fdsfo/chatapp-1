@@ -9,6 +9,7 @@ import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
 import MessageListSkeleton from "./MessageListSkeleton";
 import ChatSkeleton from "./ChatSkeleton";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Chat = ({
   selectedUser,
@@ -39,7 +40,7 @@ const Chat = ({
   const [loadingMessages, setLoadingMessages] = useState(false);
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
-
+  const queryClient = useQueryClient();
   const currentUserId = user?._id ? String(user._id) : "";
 
   // ================= SOCKET INIT =================
@@ -49,7 +50,7 @@ const Chat = ({
     });
 
     socketRef.current.on("connect", () => {
-   //console.log("🟢 Socket connected:", socketRef.current.id);
+      //console.log("🟢 Socket connected:", socketRef.current.id);
     });
 
     return () => {
@@ -68,6 +69,7 @@ const Chat = ({
   useEffect(() => {
     const loadMessages = async () => {
       if (!selectedUser?._id) return;
+
       setMessages([]); // clear old chat
       setLoadingMessages(true);
 
@@ -87,13 +89,15 @@ const Chat = ({
   useEffect(() => {
     if (!socketRef.current) return;
 
-    const handleReceiveMessage = (msg) => {
+    const  handleReceiveMessage = async (msg) => {
+     await queryClient.refetchQueries({
+    queryKey: ["users"],
+  });;
       const isActiveChat =
         (String(msg.senderId) === String(selectedUser?._id) &&
           String(msg.receiverId) === String(user?._id)) ||
         (String(msg.senderId) === String(user?._id) &&
           String(msg.receiverId) === String(selectedUser?._id));
-
       if (!isActiveChat) return;
 
       setMessages((prev) => {
@@ -116,7 +120,7 @@ const Chat = ({
     if (!socketRef.current) return;
 
     const handleSeenUpdate = ({ messageId }) => {
-     // console.log("✅ Seen Update:", messageId);
+      // console.log("✅ Seen Update:", messageId);
 
       receivedSeenMessageIdsRef.current.add(String(messageId));
 
@@ -163,23 +167,23 @@ const Chat = ({
 
   // If a seen update arrives before the message is present locally,
 
-const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
-useEffect(() => {
-  if (!socketRef.current) return;
+  useEffect(() => {
+    if (!socketRef.current) return;
 
-  const handleTyping = ({ senderId, typing }) => {
-    if (String(senderId) === String(selectedUser?._id)) {
-      setIsTyping(typing);
-    }
-  };
+    const handleTyping = ({ senderId, typing }) => {
+      if (String(senderId) === String(selectedUser?._id)) {
+        setIsTyping(typing);
+      }
+    };
 
-  socketRef.current.on("typing", handleTyping);
+    socketRef.current.on("typing", handleTyping);
 
-  return () => {
-    socketRef.current.off("typing", handleTyping);
-  };
-}, [selectedUser?._id]);
+    return () => {
+      socketRef.current.off("typing", handleTyping);
+    };
+  }, [selectedUser?._id]);
   // replay it once the message is added to state.
   useEffect(() => {
     if (!receivedSeenMessageIdsRef.current.size) return;
@@ -214,10 +218,10 @@ useEffect(() => {
     <div className="flex flex-col h-full relative overflow-hidden">
       {/* ================= PROFILE DRAWER ================= */}
       <div
-  className={`absolute inset-0 z-50  ${
-    showProfile ? "pointer-events-auto" : "pointer-events-none"
-  }`}
->
+        className={`absolute inset-0 z-50  ${
+          showProfile ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
         {/* BACKDROP */}
         <div
           onClick={() => setShowProfile(false)}
@@ -225,7 +229,9 @@ useEffect(() => {
         />
 
         {/* PANEL */}
-        <div className={`profile-panel custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}>
+        <div
+          className={`profile-panel custom-scrollbar ${showProfile ? "open" : ""} h-screen overflow-y-auto`}
+        >
           <ProfilePage
             user={selectedUser}
             showProfile={showProfile}
