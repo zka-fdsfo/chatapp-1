@@ -48,6 +48,11 @@ const MessageList = ({
     }, 50);
   }
 }, [messages]);
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({
+    behavior: "auto",
+  });
+}, [selectedUser, loadingMessages]);
 
   // DETECT SCROLL POSITION
   const handleScroll = () => {
