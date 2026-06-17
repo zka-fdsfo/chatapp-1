@@ -23,12 +23,8 @@ const Chat = ({
   const sentSeenMessageIdsRef = useRef(new Set());
   const receivedSeenMessageIdsRef = useRef(new Set());
 
-  const {
-    messages,
-    setMessages,
-    fetchMessages,
-    handleSendMessage,
-  } = useMessage();
+  const { messages, setMessages, fetchMessages, handleSendMessage } =
+    useMessage();
 
   const { user } = useAuth();
 
@@ -57,31 +53,32 @@ const Chat = ({
       socketRef.current.disconnect();
     };
   }, []);
+  // ================= Message sockit =================
   useEffect(() => {
-  if (!socketRef.current) return;
+    if (!socketRef.current) return;
 
-  const handleMessageDeleted = ({ messageId }) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        String(msg._id) === String(messageId)
-          ? {
-              ...msg,
-              deleted: true,
-              text: "This message was deleted",
-              image: "",
-            }
+    const handleMessageDeleted = ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          String(msg._id) === String(messageId)
+            ? {
+                ...msg,
+                deleted: true,
+                text: "This message was deleted",
+                image: "",
+              }
 
-          : msg
-      )
-    );
-  };
+            : msg,
+        ),
+      );
+    };
 
-  socketRef.current.on("messageDeleted", handleMessageDeleted);
+    socketRef.current.on("messageDeleted", handleMessageDeleted);
 
-  return () => {
-    socketRef.current.off("messageDeleted", handleMessageDeleted);
-  };
-}, []);
+    return () => {
+      socketRef.current.off("messageDeleted", handleMessageDeleted);
+    };
+  }, []);
   // ================= ONLINE USER =================
   useEffect(() => {
     if (!user?._id || !socketRef.current) return;
@@ -113,10 +110,7 @@ const Chat = ({
   useEffect(() => {
     if (!socketRef.current) return;
 
-    const  handleReceiveMessage = async (msg) => {
-     await queryClient.refetchQueries({
-    queryKey: ["users"],
-  });;
+    const handleReceiveMessage = async (msg) => {
       const isActiveChat =
         (String(msg.senderId) === String(selectedUser?._id) &&
           String(msg.receiverId) === String(user?._id)) ||
@@ -145,7 +139,9 @@ const Chat = ({
 
     const handleSeenUpdate = ({ messageId }) => {
       // console.log("✅ Seen Update:", messageId);
-
+queryClient.invalidateQueries({
+  queryKey: ["users"],
+});
       receivedSeenMessageIdsRef.current.add(String(messageId));
 
       setMessages((prev) =>
@@ -174,7 +170,9 @@ const Chat = ({
         !msg.seen &&
         msg._id,
     );
-
+    queryClient.invalidateQueries({
+  queryKey: ["users"],
+});
     unseenMessages.forEach((msg) => {
       const messageId = String(msg._id);
 
@@ -229,38 +227,38 @@ const Chat = ({
       return hasPendingSeenUpdate ? next : prev;
     });
   }, [messages, setMessages]);
-// ================= MessageDeleted=================
+  // ================= MessageDeleted=================
 
-const handleDeleteMessage = async (messageId) => {
-  try {
-    // 1. call API (via hook or direct service)
-    await deleteMessage(messageId);
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      // 1. call API (via hook or direct service)
+      await deleteMessage(messageId);
 
-    // 2. instant UI update (optimistic)
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === messageId
-          ? {
-              ...msg,
-              deleted: true,
-              text: "This message was deleted",
-              image: "",
-            }
+      // 2. instant UI update (optimistic)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? {
+                ...msg,
+                deleted: true,
+                text: "This message was deleted",
+                image: "",
+              }
 
-          : msg
-      )
-    );
+            : msg,
+        ),
+      );
 
-    // 3. SOCKET EMIT (this is the important part)
-    socketRef.current.emit("messageDeleted", {
-      messageId,
-      senderId: user._id,
-      receiverId: selectedUser._id,
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
+      // 3. SOCKET EMIT (this is the important part)
+      socketRef.current.emit("messageDeleted", {
+        messageId,
+        senderId: user._id,
+        receiverId: selectedUser._id,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (!selectedUser) {
     return (

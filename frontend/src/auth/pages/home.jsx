@@ -191,6 +191,9 @@ export default function UsersPage() {
     const senderId = payload.data?.senderId;
     if (!senderId) return;
     const senderUser = users.find((u) => u._id === senderId);
+     queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
     if (senderUser) setSelectedUser(senderUser);
   };
 
@@ -262,7 +265,9 @@ export default function UsersPage() {
     }, 220);
   };
 
-  console.log("users", users);
+//   useEffect(() => {
+//   console.log("users", users);
+// }, [users]);
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
