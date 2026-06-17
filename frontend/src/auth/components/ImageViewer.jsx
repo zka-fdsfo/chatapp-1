@@ -16,7 +16,7 @@ const ImageViewer = ({ image, onClose }) => {
   const [start, setStart] = useState({ x: 0, y: 0 });
 
   const imgRef = useRef(null);
-
+ 
   useEffect(() => {
     if (image) {
       requestAnimationFrame(() => setVisible(true));

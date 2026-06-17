@@ -10,7 +10,7 @@ import { useAuth } from "../hook/hookauth.js";
 import MessageListSkeleton from "./MessageListSkeleton";
 import ChatSkeleton from "./ChatSkeleton";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { useDeleteMessage } from "../hook/useDeleteMessage.hook";
 const Chat = ({
   selectedUser,
   setSelectedUser,
@@ -28,7 +28,6 @@ const Chat = ({
     setMessages,
     fetchMessages,
     handleSendMessage,
-    handleDeleteMessage,
   } = useMessage();
 
   const { user } = useAuth();
@@ -41,6 +40,7 @@ const Chat = ({
   // ✅ PROFILE DRAWER STATE
   const [showProfile, setShowProfile] = useState(false);
   const queryClient = useQueryClient();
+  const { mutate: deleteMessage } = useDeleteMessage();
   const currentUserId = user?._id ? String(user._id) : "";
 
   // ================= SOCKET INIT =================
@@ -205,7 +205,38 @@ const Chat = ({
       return hasPendingSeenUpdate ? next : prev;
     });
   }, [messages, setMessages]);
+// ================= MessageDeleted=================
 
+const handleDeleteMessage = async (messageId) => {
+  try {
+    // 1. call API (via hook or direct service)
+    await deleteMessage(messageId);
+
+    // 2. instant UI update (optimistic)
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId
+          ? {
+              ...msg,
+              deleted: true,
+              text: "This message was deleted",
+              image: "",
+            }
+
+          : msg
+      )
+    );
+
+    // 3. SOCKET EMIT (this is the important part)
+    socketRef.current.emit("messageDeleted", {
+      messageId,
+      senderId: user._id,
+      receiverId: selectedUser._id,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
   if (!selectedUser) {
     return (
       <div className="flex items-center justify-center h-full text-white">

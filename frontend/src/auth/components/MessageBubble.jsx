@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Reply, Pencil, Copy, Trash2, Check, CheckCheck } from "lucide-react";
 import * as Linkify from "react-linkify";
 import { useAuth } from "../hook/hookauth";
+
 import { useEffect } from "react";
 const MessageBubble = ({
   msg,
@@ -15,10 +16,34 @@ const MessageBubble = ({
   handleDeleteMessage,
   setViewerImage,
   selectedUser,
-   wrapperRef,
+  wrapperRef,
 }) => {
   const { currentusernameimg } = useAuth();
+//   const handleDeleteMessage = async (messageId) => {
+//   try {
+//     // 1. Call API first (DB delete)
+//     await deleteMessageApi(messageId);
 
+//     // 2. Optimistic UI update
+//     setMessages((prev) =>
+//       prev.map((msg) =>
+//         msg._id === messageId
+//           ? { ...msg, deleted: true, text: "This message was deleted", image: "" }
+//           : msg
+//       )
+//     );
+
+//     // 3. SOCKET EMIT (👉 THIS IS WHERE YOU ADD IT)
+//     socketRef.current.emit("messageDeleted", {
+//       messageId,
+//       senderId: user._id,
+//       receiverId: selectedUser._id,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+  const messageId = msg?._id;
   // FORMAT TIME
   const formatTime = (date) => {
     if (!date) return "";
@@ -39,31 +64,31 @@ const MessageBubble = ({
       {/* MESSAGE WRAPPER */}
 
       <div
-       data-message
+        data-message
         className={`relative max-w-[82%] md:max-w-107.5 ${msg.image && !msg.text ? "mb-2" : "mb-7"}`}
       >
         {/* MESSAGE BUBBLE */}
         <div
-       onClick={(e) => {
-  e.stopPropagation();
+          onClick={(e) => {
+            e.stopPropagation();
 
-  const bubbleRect = e.currentTarget.getBoundingClientRect();
+            const bubbleRect = e.currentTarget.getBoundingClientRect();
 
-  const menuWidth = 208;
-  const menuHeight = 180;
+            const menuWidth = 208;
+            const menuHeight = 180;
 
-  let x = e.clientX - bubbleRect.left;
-  let y = e.clientY - bubbleRect.top;
+            let x = e.clientX - bubbleRect.left;
+            let y = e.clientY - bubbleRect.top;
 
-  x = Math.min(x, bubbleRect.width - menuWidth);
-  y = Math.min(y, bubbleRect.height - menuHeight);
+            x = Math.min(x, bubbleRect.width - menuWidth);
+            y = Math.min(y, bubbleRect.height - menuHeight);
 
-  x = Math.max(0, x);
-  y = Math.max(0, y);
+            x = Math.max(0, x);
+            y = Math.max(0, y);
 
-  setMenuPosition({ x, y });
-  setMenuMsg(menuMsg === msg._id ? null : msg._id);
-}}
+            setMenuPosition({ x, y });
+            setMenuMsg(menuMsg === msg._id ? null : msg._id);
+          }}
           className={`
             relative group
             rounded-2xl flex gap-2
@@ -131,7 +156,7 @@ const MessageBubble = ({
 
             {/* TEXT */}
             {msg.text && (
-              <div className="text-[15px] leading-relaxed font-medium wrap-break-word whitespace-pre-wrap overflow-hidden max-w-full ml-2">
+              <div className={`text-[15px] leading-relaxed font-medium wrap-break-word whitespace-pre-wrap overflow-hidden max-w-full ml-2  ${msg.deleted ? "italic text-white/40 opacity-70" : "text-white"}`}>
                 {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
                   const isLink = /https?:\/\/[^\s]+/.test(part);
 
@@ -210,11 +235,11 @@ const MessageBubble = ({
         {menuMsg === msg._id && (
           <div
             data-menu
-style={{
-  position: "absolute",
-  left: `${menuPosition.x}px`,
-  top: `${menuPosition.y}px`,
-}}
+            style={{
+              position: "absolute",
+              left: `${menuPosition.x}px`,
+              top: `${menuPosition.y}px`,
+            }}
             className="
     z-[9999]
     w-52
@@ -295,7 +320,7 @@ style={{
             {isMe && (
               <button
                 onClick={() => {
-                  handleDeleteMessage(msg._id);
+                 handleDeleteMessage(msg._id);
                   setMenuMsg(null);
                 }}
                 className="

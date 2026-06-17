@@ -3,6 +3,7 @@ import { io } from "../app.js";
 import imagekit from "../db/imagekit.js";
 import { messaging } from "../db/firebase-admin.js";
 import User from "../model/user.model.js";
+import mongoose from "mongoose";
 /**
  * =========================
  * SEND MESSAGE
@@ -159,8 +160,13 @@ export const markAsSeen = async (req, res) => {
  */
 export const deleteMessage = async (req, res) => {
   try {
-    const { messageId } = req.params;
+    const { messageId } = req.query;
     const userId = req.user._id;
+
+    // 🔥 FIX: prevent crash
+    if (!messageId || !mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({ message: "Invalid message id" });
+    }
 
     const message = await Message.findById(messageId);
 
@@ -168,20 +174,33 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    // only sender can delete
     if (message.sender.toString() !== userId.toString()) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
     message.deleted = true;
     await message.save();
+     // ✅ FIX: use real receiver from message
+    const receiverId = message.receiver.toString();
+    const senderId = message.sender.toString();
+
+    io.to(receiverId).emit("messageDeleted", {
+      messageId,
+    });
+
+    io.to(senderId).emit("messageDeleted", {
+      messageId,
+    });
 
     return res.status(200).json({
       message: "Message deleted",
     });
   } catch (error) {
     console.error("Delete Message Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
   }
 };
 

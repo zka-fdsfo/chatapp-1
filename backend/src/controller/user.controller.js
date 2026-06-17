@@ -30,6 +30,7 @@ export const getAllUsers = async (req, res) => {
       users.map(async (user) => {
         const [lastMessage, unreadCount] = await Promise.all([
           Message.findOne({
+             deleted: false,
             $or: [
               { sender: currentUserId, receiver: user._id },
               { sender: user._id, receiver: currentUserId },

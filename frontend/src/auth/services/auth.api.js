@@ -75,6 +75,7 @@ api.interceptors.response.use(
   }
 );
 export const login = async (email, password,fcmToken) => {
+  // User login API call
   try {
     const response = await api.post("/auth/login", {
       email,
@@ -95,6 +96,7 @@ export const login = async (email, password,fcmToken) => {
 };
 
 export const signup = async (formData) => {
+  // User signup API call
   try {
     const response = await api.post("/auth/register", formData);
     return response.data;
@@ -104,6 +106,7 @@ export const signup = async (formData) => {
 };
 
 export const getallusers = async () => {
+  // Get all users for the authenticated user
   try {
     const response = await api.get("/users/allusers");
     return response.data;
@@ -112,6 +115,7 @@ export const getallusers = async () => {
   }
 };
 export const verifyaccessToken = async () => {
+  // Verify the current user's access token
   try {
     const response = await api.get("/auth/verify-token");
     return response.data;
@@ -121,6 +125,7 @@ export const verifyaccessToken = async () => {
 };
 
 export const verifyrefreshToken = async () => {
+  // Refresh the current user's token
   try {
     await api.get("/auth/refresh-token");
   } catch (error) {
@@ -129,6 +134,7 @@ export const verifyrefreshToken = async () => {
 };
 
 export const getallchatusers = async (userId) => {
+  // Get chat users for the current user
   try {
     const response = await api.get("/messages/chatusers", {
       params: {
@@ -145,6 +151,7 @@ export const getallchatusers = async (userId) => {
 };
 
 export const sendMessage = async (formData) => {
+  // Send a chat message as the current user
   try {
  //   console.log("working")
     const response = await api.post("/messages/send",
@@ -157,6 +164,7 @@ export const sendMessage = async (formData) => {
 };
 
 export const markAsSeen = async (senderId) => {
+  // Mark messages as seen for the current user's conversation
   try {
     const response = await api.put("/messages/seen", { senderId });
 
@@ -169,6 +177,7 @@ export const markAsSeen = async (senderId) => {
 };
 
 export const changeinfocurrentuserApi = async (formData) => {
+  // Update the current user's profile information
   try {
     const response = await api.put("/users/changecurrentuserinfo", formData);
     return response.data;
@@ -180,6 +189,7 @@ export const changeinfocurrentuserApi = async (formData) => {
 };
 
 export const getImageMessagesApi = async (selectedUserId) => {
+  // Get image messages for the current user's chat
   try {
     const response = await api.get("/messages/image-messages", {
       params: {
@@ -196,6 +206,7 @@ export const getImageMessagesApi = async (selectedUserId) => {
 };
 
 export const googleAuthApi = async (idToken) => {
+  // Authenticate a user with Google OAuth
   const response = await api.post(
     "/auth/google",
     { idToken },
@@ -208,6 +219,7 @@ export const googleAuthApi = async (idToken) => {
 };
 
 export const Fcmtokenget = async (token) => {
+  // Update the current user's FCM token
   const response = await api.put("/users/getFcmToken", {
     token,
   });
@@ -216,9 +228,18 @@ export const Fcmtokenget = async (token) => {
 };
 
 export const searchUsersApi = async (query) => {
+  // Search users on behalf of the current user
   const response = await api.get(
     `/users/search?query=${encodeURIComponent(query)}`
   );
 
   return response.data;
+};
+export const deleteMessageApi = async (messageId) => {
+  const res = await api.delete("/messages/delete-message", {
+    params: { messageId },
+    withCredentials: true,
+  });
+
+  return res.data;
 };
