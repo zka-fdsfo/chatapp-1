@@ -57,7 +57,31 @@ const Chat = ({
       socketRef.current.disconnect();
     };
   }, []);
+  useEffect(() => {
+  if (!socketRef.current) return;
 
+  const handleMessageDeleted = ({ messageId }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        String(msg._id) === String(messageId)
+          ? {
+              ...msg,
+              deleted: true,
+              text: "This message was deleted",
+              image: "",
+            }
+
+          : msg
+      )
+    );
+  };
+
+  socketRef.current.on("messageDeleted", handleMessageDeleted);
+
+  return () => {
+    socketRef.current.off("messageDeleted", handleMessageDeleted);
+  };
+}, []);
   // ================= ONLINE USER =================
   useEffect(() => {
     if (!user?._id || !socketRef.current) return;
@@ -237,6 +261,7 @@ const handleDeleteMessage = async (messageId) => {
     console.error(err);
   }
 };
+
   if (!selectedUser) {
     return (
       <div className="flex items-center justify-center h-full text-white">
