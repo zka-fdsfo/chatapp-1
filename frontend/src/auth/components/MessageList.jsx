@@ -48,11 +48,6 @@ const MessageList = ({
     }, 50);
   }
 }, [messages]);
-useEffect(() => {
-  bottomRef.current?.scrollIntoView({
-    behavior: "auto",
-  });
-}, [selectedUser, loadingMessages]);
 
   // DETECT SCROLL POSITION
   const handleScroll = () => {
@@ -85,6 +80,8 @@ useEffect(() => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [menuMsg]);
+
+  
 
   return (
     <div ref={wrapperRef} className="relative flex-1 min-h-0">
