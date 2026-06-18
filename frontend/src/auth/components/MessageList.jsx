@@ -18,6 +18,7 @@ const MessageList = ({
   setViewerImage,
   selectedUser,
   loadingMessages,
+  setReplyMsg,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -33,7 +34,7 @@ const MessageList = ({
   const validMessages = messages.filter(
     (msg) => msg && (msg.text || msg.message || msg.image),
   );
-
+console.log(messages,"messages")
   // AUTO SCROLL ON NEW MESSAGE
  useEffect(() => {
   const el = containerRef.current;
@@ -81,8 +82,6 @@ const MessageList = ({
     };
   }, [menuMsg]);
 
-  
-
   return (
     <div ref={wrapperRef} className="relative flex-1 min-h-0">
       {/* MESSAGES CONTAINER */}
@@ -129,6 +128,7 @@ const MessageList = ({
                 handleDeleteMessage={handleDeleteMessage}
                 setViewerImage={setViewerImage}
                 selectedUser={selectedUser}
+                 setReplyMsg={setReplyMsg}
                  wrapperRef={wrapperRef}
               />
             );

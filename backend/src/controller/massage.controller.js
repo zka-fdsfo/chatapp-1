@@ -81,28 +81,120 @@ import mongoose from "mongoose";
 //     return res.status(500).json({ message: "Internal server error" });
 //   }
 // };
- export const sendMessage = async (req, res) => {
-  try {
-    const { receiver, text } = req.body;
+//  export const sendMessage = async (req, res) => {
+//   try {
+//     const { receiver, text } = req.body;
 
+//     // Validation
+//     if (!receiver) {
+//       return res.status(400).json({
+//         message: "Receiver is required",
+//       });
+//     }
+
+//     const trimmedText = text?.trim() || "";
+
+//     if (!trimmedText && !req.file) {
+//       return res.status(400).json({
+//         message: "Message cannot be empty",
+//       });
+//     }
+
+//     const sender = req.user._id;
+
+//     // Upload image only if present
+//     let image = "";
+
+//     if (req.file) {
+//       const uploaded = await imagekit.files.upload({
+//         file: req.file.buffer.toString("base64"),
+//         fileName: `${Date.now()}-${req.file.originalname}`,
+//         folder: "/avatarsTelegramClone",
+//       });
+
+//       image = uploaded.url;
+//     }
+
+//     // Create message
+//     const message = await Message.create({
+//       sender,
+//       receiver,
+//       text: trimmedText,
+//       image,
+//     });
+
+//     // Socket emit (don't await)
+//     io.to(receiver.toString()).emit("receive_message", {
+//       ...message.toObject(),
+//       senderId: sender,
+//       receiverId: receiver,
+//     });
+
+//     // Send response immediately
+//     res.status(201).json({
+//       message: "Message sent successfully",
+//       data: message,
+//     });
+
+//     // Everything below runs in background
+//     Promise.all([
+//       User.findById(receiver)
+//         .select("fcmToken")
+//         .lean(),
+
+//       User.findById(sender)
+//         .select("name avatar")
+//         .lean(),
+//     ])
+//       .then(async ([receiverUser, senderUser]) => {
+//         if (!receiverUser?.fcmToken) return;
+
+//         try {
+//           await messaging.send({
+//             token: receiverUser.fcmToken,
+//             data: {
+//               title: senderUser?.name || "New Message",
+//               body: trimmedText || "📷 Image",
+//               senderId: sender.toString(),
+//               receiverId: receiver.toString(),
+//               senderAvatar: senderUser?.avatar || "",
+//             },
+//           });
+
+//           console.log("Notification sent");
+//         } catch (err) {
+//           console.error("FCM Error:", err);
+//         }
+//       })
+//       .catch((err) => {
+//         console.error("Background task error:", err);
+//       });
+//   } catch (error) {
+//     console.error("Send Message Error:", error);
+
+//     return res.status(500).json({
+//       message: "Internal server error",
+//     });
+//   }
+// };
+export const sendMessage = async (req, res) => {
+  try {
+    const { receiver, text, replyTo } = req.body;
+      console.log(req.body)
     // Validation
     if (!receiver) {
-      return res.status(400).json({
-        message: "Receiver is required",
-      });
+      return res.status(400).json({ message: "Receiver is required" });
     }
 
     const trimmedText = text?.trim() || "";
 
     if (!trimmedText && !req.file) {
-      return res.status(400).json({
-        message: "Message cannot be empty",
-      });
+      return res.status(400).json({ message: "Message cannot be empty" });
     }
 
     const sender = req.user._id;
 
-    // Upload image only if present
+    // Upload image (if any)
     let image = "";
 
     if (req.file) {
@@ -115,36 +207,33 @@ import mongoose from "mongoose";
       image = uploaded.url;
     }
 
-    // Create message
+    // 1️⃣ Create message
     const message = await Message.create({
       sender,
       receiver,
       text: trimmedText,
       image,
+      replyTo: replyTo || null,
     });
 
-    // Socket emit (don't await)
-    io.to(receiver.toString()).emit("receive_message", {
-      ...message.toObject(),
-      senderId: sender,
-      receiverId: receiver,
-    });
+    // 2️⃣ Populate replyTo (IMPORTANT)
+    const populatedMessage = await Message.findById(message._id)
+      .populate("replyTo")
+      .lean();
 
-    // Send response immediately
+    // 3️⃣ Socket emit
+    io.to(receiver.toString()).emit("receive_message", populatedMessage);
+
+    // 4️⃣ Send response immediately
     res.status(201).json({
       message: "Message sent successfully",
-      data: message,
+      data: populatedMessage,
     });
 
-    // Everything below runs in background
+    // 5️⃣ Background FCM task
     Promise.all([
-      User.findById(receiver)
-        .select("fcmToken")
-        .lean(),
-
-      User.findById(sender)
-        .select("name avatar")
-        .lean(),
+      User.findById(receiver).select("fcmToken").lean(),
+      User.findById(sender).select("name avatar").lean(),
     ])
       .then(async ([receiverUser, senderUser]) => {
         if (!receiverUser?.fcmToken) return;
@@ -188,28 +277,27 @@ export const getMessages = async (req, res) => {
     const myId = req.user._id;
 
     if (!userId) {
-      return res.status(400).json({
-        message: "userId is required",
-      });
+      return res.status(400).json({ message: "userId is required" });
     }
 
     const messages = await Message.find({
       deleted: false,
       $or: [
-        {
-          sender: myId,
-          receiver: userId,
-        },
-        {
-          sender: userId,
-          receiver: myId,
-        },
+        { sender: myId, receiver: userId },
+        { sender: userId, receiver: myId },
       ],
     })
       .sort({ createdAt: 1 })
-      .select(
-        "_id sender receiver text image seen createdAt"
-      )
+
+      // only required fields (FAST)
+      .select("_id sender receiver text image seen createdAt replyTo")
+
+      // populate reply message (IMPORTANT)
+      .populate({
+        path: "replyTo",
+        select: "_id text image sender createdAt",
+      })
+
       .lean();
 
     return res.status(200).json({

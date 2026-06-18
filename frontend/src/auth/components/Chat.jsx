@@ -38,7 +38,7 @@ const Chat = ({
   const queryClient = useQueryClient();
   const { mutate: deleteMessage } = useDeleteMessage();
   const currentUserId = user?._id ? String(user._id) : "";
-
+const [replyMsg, setReplyMsg] = useState(null);
   // ================= SOCKET INIT =================
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
@@ -327,6 +327,7 @@ queryClient.invalidateQueries({
         loadingMessages={loadingMessages}
         handleDeleteMessage={handleDeleteMessage}
         setViewerImage={setViewerImage}
+         setReplyMsg={setReplyMsg}
       />
 
       {/* ================= INPUT ================= */}
@@ -338,6 +339,8 @@ queryClient.invalidateQueries({
         socketRef={socketRef}
         user={user}
         currentUserId={currentUserId}
+        setReplyMsg={setReplyMsg}
+        replyMsg={replyMsg}
       />
     </div>
   );

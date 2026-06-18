@@ -17,8 +17,10 @@ const MessageBubble = ({
   setViewerImage,
   selectedUser,
   wrapperRef,
+  setReplyMsg,
 }) => {
-  const { currentusernameimg } = useAuth();
+  const { currentusernameimg , user } = useAuth();
+  const currentUserId = user?._id ? String(user._id) : "";
 //   const handleDeleteMessage = async (messageId) => {
 //   try {
 //     // 1. Call API first (DB delete)
@@ -126,7 +128,21 @@ const MessageBubble = ({
             })}
           </div> */}
           {/* MESSAGE CONTENT */}
+{msg.replyTo && (
+  <div className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
+    
+    <p className="text-purple-300">
+      Replying to{" "}
+      {String(msg.replyTo.sender) === String(currentUserId) ? "You" : "User"}
+    </p>
+
+    <p className="truncate">
+      {msg.replyTo.text || "Image"}
+    </p>
+  </div>
+)}
           <div className="flex flex-col gap-2 max-w-full">
+
             {/* IMAGE */}
             {msg.image && (
               <img
@@ -255,6 +271,10 @@ const MessageBubble = ({
           >
             {/* REPLY */}
             <button
+             onClick={() => {
+    setReplyMsg(msg);
+    setMenuMsg(null);
+  }}
               className="
                 w-full flex items-center gap-4
                 px-4 py-3

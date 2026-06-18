@@ -34,6 +34,12 @@ const messageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+     // 👇 ADD THIS
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -12,6 +12,8 @@ const MessageInput = ({
   socketRef,
   user,
   currentUserId,
+  replyMsg,
+  setReplyMsg,
 }) => {
   // const sendMessage = async () => {
   //   try {
@@ -59,6 +61,11 @@ const MessageInput = ({
         formData.append("image", image);
       }
 
+       // ⭐ ADD THIS (REPLY FEATURE)
+    if (replyMsg?._id) {
+      formData.append("replyTo", replyMsg._id);
+    }
+
       await handleSendMessage(formData);
       queryClient.invalidateQueries({
         queryKey: ["users"],
@@ -89,7 +96,6 @@ const MessageInput = ({
   receiverId: selectedUser._id,
   typing: true,
 });
-
   }
 
   clearTimeout(typingTimeoutRef.current);
@@ -147,7 +153,27 @@ const MessageInput = ({
 
     //   </div>
     // </div>
+    
     <div className="p-3 lg:px-20 relative">
+      {replyMsg && (
+  <div className="mb-2 p-2 bg-[#2a2a2a] rounded-xl flex justify-between items-center border-l-4 border-purple-500">
+    
+    <div className="text-sm text-white">
+      <p className="text-purple-300 text-xs">Replying to</p>
+
+      <p className="truncate max-w-[250px]">
+        {replyMsg.text || "Image"}
+      </p>
+    </div>
+
+    <button
+      onClick={() => setReplyMsg(null)}
+      className="text-white/60 hover:text-white"
+    >
+      ✕
+    </button>
+  </div>
+)}
       {/* Emoji Picker */}
       {showEmoji && (
         <div className="absolute bottom-20 left-4 z-50">

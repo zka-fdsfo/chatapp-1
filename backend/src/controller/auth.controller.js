@@ -112,7 +112,6 @@ export const registerUser = async (req, res) => {
 // loginUser authenticates an existing user. It verifies credentials, refreshes or
 // creates a session record, updates session metadata, and issues JWT cookies.
 export const loginUser = async (req, res) => {
-
   try {
     const { email, password ,fcmToken} = req.body;
     let session;
@@ -128,10 +127,12 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Incorrect password" });
     }
+
 if (fcmToken) {
   existingUser.fcmToken = fcmToken;
   await existingUser.save();
 }
+
     // Generate JWT token
     const refreshToken = await jwt.sign(
       { id: existingUser._id },
@@ -239,7 +240,6 @@ export const verifyTokenMiddleware = async (req, res) => {
   }
 };
 
-
 export const googleAuth = async (req, res) => {
   try {
     const { email, name, picture, uid, fcmToken } = req.googleUser;
@@ -261,13 +261,11 @@ export const googleAuth = async (req, res) => {
         isGoogleUser: true,
          fcmToken,
       });
-    }
-    else {
+    } else {
   if (fcmToken) {
     user.fcmToken = fcmToken;
     await user.save();
   }
-
 }
 
     // Generate refresh token
