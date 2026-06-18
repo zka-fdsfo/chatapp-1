@@ -322,7 +322,7 @@ const cancelLongPress = () => {
   <div
     className={
       isShortText
-        ? "flex flex-row justify-around gap-2"
+        ? "flex flex-row justify-between gap-2"
         : "flex flex-col"
     }
   >
