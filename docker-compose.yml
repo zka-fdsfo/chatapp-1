@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  chatapp:
+    image: mzkpixels/realtime-chatapp:latest
+
+    container_name: chatapp
+
+    restart: always
+
+    ports:
+      - "5000:5000"
+
+    env_file:
+      - .env
