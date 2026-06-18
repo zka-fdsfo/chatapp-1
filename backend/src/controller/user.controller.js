@@ -20,59 +20,86 @@ import imagekit from "../db/imagekit.js";
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const currentUserId = req.user;
+    const currentUserId = req.user._id.toString();
 
-    const users = await User.find({
-      _id: { $ne: currentUserId },
-    }).select("name avatar bio");
-
-    const usersWithLastMessage = await Promise.all(
-      users.map(async (user) => {
-        const [lastMessage, unreadCount] = await Promise.all([
-          Message.findOne({
-             deleted: false,
-            $or: [
-              { sender: currentUserId, receiver: user._id },
-              { sender: user._id, receiver: currentUserId },
-            ],
-          })
-            .sort({ createdAt: -1 })
-            .select(
-              "text image message createdAt sender receiver seen"
-            ),
-
-          Message.countDocuments({
-            sender: user._id,
-            receiver: currentUserId,
-            seen: false,
-          }),
-        ]);
-
-        let formattedLastMessage = null;
-
-        if (lastMessage) {
-          formattedLastMessage = {
-            ...lastMessage.toObject(),
-            displayText:
-              String(lastMessage.sender) === String(currentUserId)
-                ? `(You) ${
-                    lastMessage.text ||
-                    lastMessage.message ||
-                    (lastMessage.image ? "📷 Photo" : "")
-                  }`
-                : lastMessage.text ||
-                  lastMessage.message ||
-                  (lastMessage.image ? "📷 Photo" : ""),
-          };
-        }
-
-        return {
-          ...user.toObject(),
-          unreadCount,
-          lastMessage: formattedLastMessage,
-        };
+    const [users, messages] = await Promise.all([
+      User.find({
+        _id: { $ne: currentUserId },
       })
-    );
+        .select("name avatar bio")
+        .lean(),
+
+      Message.find({
+        deleted: false,
+        $or: [
+          { sender: currentUserId },
+          { receiver: currentUserId },
+        ],
+      })
+        .sort({ createdAt: -1 })
+        .select(
+          "text image message createdAt sender receiver seen"
+        )
+        .lean(),
+    ]);
+
+    const userMap = new Map();
+
+    for (const msg of messages) {
+      const senderId = String(msg.sender);
+      const receiverId = String(msg.receiver);
+
+      const otherUserId =
+        senderId === currentUserId
+          ? receiverId
+          : senderId;
+
+      if (!userMap.has(otherUserId)) {
+        userMap.set(otherUserId, {
+          lastMessage: msg,
+          unreadCount: 0,
+        });
+      }
+
+      // Count unread messages sent TO current user
+      if (
+        senderId !== currentUserId &&
+        receiverId === currentUserId &&
+        msg.seen === false
+      ) {
+        userMap.get(otherUserId).unreadCount++;
+      }
+    }
+
+    const usersWithLastMessage = users.map((user) => {
+      const data = userMap.get(String(user._id));
+
+      let formattedLastMessage = null;
+
+      if (data?.lastMessage) {
+        const lastMessage = data.lastMessage;
+
+        formattedLastMessage = {
+          ...lastMessage,
+          displayText:
+            String(lastMessage.sender) === currentUserId
+              ? `(You) ${
+                  lastMessage.text ||
+                  lastMessage.message ||
+                  (lastMessage.image ? "📷 Photo" : "")
+                }`
+              : lastMessage.text ||
+                lastMessage.message ||
+                (lastMessage.image ? "📷 Photo" : ""),
+        };
+      }
+
+      return {
+        ...user,
+        unreadCount: data?.unreadCount || 0,
+        lastMessage: formattedLastMessage,
+      };
+    });
 
     const chattedUsers = usersWithLastMessage
       .filter((user) => user.lastMessage)
