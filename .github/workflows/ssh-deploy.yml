@@ -27,8 +27,9 @@ jobs:
       - name: Build Image
         run: |
           docker build \
-          -t $IMAGE_NAME:latest \
-          -t $IMAGE_NAME:$IMAGE_TAG 
+            -t $IMAGE_NAME:latest \
+            -t $IMAGE_NAME:$IMAGE_TAG \
+            . 
 
       - name: Push Image
         run: |
