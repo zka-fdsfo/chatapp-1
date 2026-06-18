@@ -110,22 +110,22 @@ const [replyMsg, setReplyMsg] = useState(null);
   useEffect(() => {
     if (!socketRef.current) return;
 
-    const handleReceiveMessage = async (msg) => {
-      const isActiveChat =
-        (String(msg.senderId) === String(selectedUser?._id) &&
-          String(msg.receiverId) === String(user?._id)) ||
-        (String(msg.senderId) === String(user?._id) &&
-          String(msg.receiverId) === String(selectedUser?._id));
-      if (!isActiveChat) return;
+   const handleReceiveMessage = (msg) => {
+  const isActiveChat =
+    (String(msg.sender) === String(selectedUser?._id) &&
+      String(msg.receiver) === String(user?._id)) ||
+    (String(msg.sender) === String(user?._id) &&
+      String(msg.receiver) === String(selectedUser?._id));
 
-      setMessages((prev) => {
-        const exists = prev.some((m) => String(m._id) === String(msg._id));
+  if (!isActiveChat) return;
 
-        if (exists) return prev;
+  setMessages((prev) => {
+    const exists = prev.some((m) => String(m._id) === String(msg._id));
+    if (exists) return prev;
 
-        return [...prev, msg];
-      });
-    };
+    return [...prev, msg];
+  });
+};
 
     socketRef.current.on("receive_message", handleReceiveMessage);
 
