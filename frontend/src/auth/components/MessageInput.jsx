@@ -43,6 +43,22 @@ const MessageInput = ({
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
   const textareaRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const handleImageFile = (file) => {
+  if (!file) return;
+
+  if (file.type !== "image/png" && file.type !== "image/jpeg") {
+    alert("Only PNG and JPG images are allowed");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Image must be smaller than 5 MB");
+    return;
+  }
+
+  setImage(file);
+};
   const sendMessage = async () => {
     if (sending) return; // prevent double click
     if (!messageText.trim() && !image) return;
@@ -155,7 +171,44 @@ const MessageInput = ({
     //   </div>
     // </div>
     
-    <div className="p-3 lg:px-20 relative">
+    <div
+  className="p-3 lg:px-20 relative"
+  onDragEnter={(e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }}
+  onDragOver={(e) => {
+    e.preventDefault();
+  }}
+ onPaste={(e) => {
+  const items = e.clipboardData?.items;
+
+  for (const item of items) {
+    if (item.type.startsWith("image/")) {
+      const file = item.getAsFile();
+      handleImageFile(file);
+      break;
+    }
+  }
+}}
+  onDrop={(e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+
+    if (!file) return;
+
+    handleImageFile(file);
+  }}
+>
+  {isDragging && (
+  <div className="absolute inset-0 z-[999] bg-black/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-[#8774e1] flex items-center justify-center">
+    <div className="text-white text-lg font-medium">
+      Drop image here 📸
+    </div>
+  </div>
+)}
       {replyMsg && (
   <div className="mb-2 p-2 bg-[#2a2a2a] rounded-xl flex justify-between items-center border-l-4 border-purple-500">
     
@@ -251,24 +304,8 @@ const MessageInput = ({
             accept="image/png,image/jpeg,image/jpg"
             hidden
             onChange={(e) => {
-              const file = e.target.files?.[0];
-
-              if (!file) return;
-
-              // Only PNG/JPG/JPEG
-              if (file.type !== "image/png" && file.type !== "image/jpeg") {
-                alert("Only PNG and JPG images are allowed");
-                return;
-              }
-
-              // Max 5 MB
-              if (file.size > 5 * 1024 * 1024) {
-                alert("Image must be smaller than 5 MB");
-                return;
-              }
-
-              setImage(file);
-            }}
+  handleImageFile(e.target.files?.[0]);
+}}
           />
         </label>
 

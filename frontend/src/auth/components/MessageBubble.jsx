@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Reply, Pencil, Copy, Trash2, Check, CheckCheck } from "lucide-react";
 import { useAuth } from "../hook/hookauth";
 
@@ -22,7 +22,7 @@ const MessageBubble = ({
 }) => {
   const { currentusernameimg, user } = useAuth();
   const currentUserId = user?._id ? String(user._id) : "";
-
+const longPressTimer = useRef(null);
   // ── Read-more state ──────────────────────────────────────────────────────────
   const [expanded, setExpanded] = useState(false);
   const isLong = (msg.text || "").length > PREVIEW_CHAR_LIMIT;
@@ -98,6 +98,36 @@ const handleBubbleClick = (e) => {
       : "bg-[#313030] hover:bg-[#181818] text-white rounded-bl-md"
     }
   `;
+const startLongPress = (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+
+  let clientX;
+  let clientY;
+
+  if (e.touches && e.touches[0]) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+
+  longPressTimer.current = setTimeout(() => {
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    setMenuPosition({ x, y });
+    setMenuMsg(msg._id);
+  }, 500);
+};
+
+const cancelLongPress = () => {
+  if (longPressTimer.current) {
+    clearTimeout(longPressTimer.current);
+    longPressTimer.current = null;
+  }
+};
+
 
   // ── Tail SVG ─────────────────────────────────────────────────────────────────
   const Tail = () => (
@@ -181,7 +211,12 @@ const handleBubbleClick = (e) => {
       >
         {/* ── IMAGE-ONLY bubble ─────────────────────────────────────────────── */}
         {msg.image && !msg.text && (
-          <div onClick={handleBubbleClick} className={`${bubbleBase} p-[0.4vw]`}>
+          <div   onMouseDown={startLongPress}
+  onMouseUp={cancelLongPress}
+  onMouseLeave={cancelLongPress}
+  onTouchStart={startLongPress}
+  onTouchEnd={cancelLongPress}
+  onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} p-[0.4vw]`}>
             <div className="relative">
               <img
                 src={msg.image}
@@ -215,7 +250,12 @@ const handleBubbleClick = (e) => {
 
         {/* ── IMAGE + TEXT bubble ───────────────────────────────────────────── */}
         {msg.image && msg.text && (
-          <div onClick={handleBubbleClick} className={`${bubbleBase} p-2 gap-1`}>
+          <div   onMouseDown={startLongPress}
+  onMouseUp={cancelLongPress}
+  onMouseLeave={cancelLongPress}
+  onTouchStart={startLongPress}
+  onTouchEnd={cancelLongPress}
+  onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} p-2 gap-1`}>
             {/* Reply preview */}
             {msg.replyTo && (
               <div className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
@@ -261,7 +301,12 @@ const handleBubbleClick = (e) => {
 
         {/* ── TEXT-ONLY bubble ──────────────────────────────────────────────── */}
         {!msg.image && (
-          <div onClick={handleBubbleClick} className={`${bubbleBase} px-3 pt-2 pb-1.5`}>
+          <div   onMouseDown={startLongPress}
+  onMouseUp={cancelLongPress}
+  onMouseLeave={cancelLongPress}
+  onTouchStart={startLongPress}
+  onTouchEnd={cancelLongPress}
+  onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} px-3 pt-2 pb-1.5`}>
             {/* Reply preview */}
             {msg.replyTo && (
               <div className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
