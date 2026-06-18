@@ -186,25 +186,42 @@ export const getMessages = async (req, res) => {
   try {
     const { userId } = req.query;
     const myId = req.user._id;
- 
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "userId is required",
+      });
+    }
+
     const messages = await Message.find({
-      $or: [
-        { sender: myId, receiver: userId },
-        { sender: userId, receiver: myId },
-      ],
       deleted: false,
+      $or: [
+        {
+          sender: myId,
+          receiver: userId,
+        },
+        {
+          sender: userId,
+          receiver: myId,
+        },
+      ],
     })
       .sort({ createdAt: 1 })
-      .select("sender receiver text image seen createdAt")  // only fetch needed fields
-      .lean();                                               // plain JS objects, skips Mongoose overhead
- 
+      .select(
+        "_id sender receiver text image seen createdAt"
+      )
+      .lean();
+
     return res.status(200).json({
       message: "Messages fetched successfully",
       data: messages,
     });
   } catch (error) {
     console.error("Get Messages Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
