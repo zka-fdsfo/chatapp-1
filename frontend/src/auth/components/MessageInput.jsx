@@ -75,6 +75,7 @@ const MessageInput = ({
       }
 
       setMessageText("");
+      setReplyMsg("")
       setImage(null);
     } catch (err) {
       console.log(err);
