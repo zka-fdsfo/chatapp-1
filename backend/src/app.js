@@ -134,6 +134,9 @@ socket.on("message_seen", async ({ messageId, senderId }) => {
     messageId,
   });
 });
+// =====================
+//Unread
+//==============
 
   // =========================
   // DISCONNECT

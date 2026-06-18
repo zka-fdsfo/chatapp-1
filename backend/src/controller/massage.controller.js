@@ -9,79 +9,174 @@ import mongoose from "mongoose";
  * SEND MESSAGE
  * =========================
  */
-export const sendMessage = async (req, res) => {
+// export const sendMessage = async (req, res) => {
+//   try {
+//     const { receiver, text } = req.body;
+ 
+//     // EARLY EXITS — before any async work
+//     if (!receiver) {
+//       return res.status(400).json({ message: "Receiver is required" });
+//     }
+
+//     if (!text?.trim() && !req.file) {
+//       return res.status(400).json({ message: "Message cannot be empty" });
+//     }
+ 
+//     const sender = req.user._id;
+ 
+//     // UPLOAD IMAGE — only if file exists
+//     let image = "";
+//     if (req.file) {
+//       const uploaded = await imagekit.files.upload({         // imagekit.upload() is faster than imagekit.files.upload()
+//         file: req.file.buffer.toString("base64"),
+//         fileName: `${Date.now()}-${req.file.originalname}`,
+//         folder: "/avatarsTelegramClone",
+//       });
+//       image = uploaded.url;
+//     }
+ 
+//     // CREATE MESSAGE
+//     const message = await Message.create({
+//       sender,
+//       receiver,
+//       text: text?.trim() || "",
+//       image,
+//     });
+ 
+//     // EMIT + RESPOND in parallel — don't await emit
+//     io.to(receiver.toString()).emit("receive_message", {
+//       ...message.toObject(),
+//       senderId: sender,
+//       receiverId: receiver,
+//     });
+//  const receiverUser = await User.findById(receiver);
+// const senderUser = await User.findById(sender);
+
+// if (receiverUser?.fcmToken) {
+//   try {
+//     await messaging.send({
+//       token: receiverUser.fcmToken,
+//       // ❌ REMOVED: notification field (was causing auto-display by browser)
+//       data: {
+//         title: senderUser.name,                        // ✅ moved here
+//         body: text?.trim() || "📷 Image",              // ✅ moved here
+//         senderId: sender.toString(),
+//         receiverId: receiver.toString(),
+//         senderAvatar: senderUser?.avatar || "",
+//       },
+//     });
+
+//     console.log("Notification sent");
+//   } catch (err) {
+//     console.error("FCM Error:", err);
+//   }
+// }
+
+//     return res.status(201).json({
+//       message: "Message sent successfully",
+//       data: message,
+//     });
+//   } catch (error) {
+//     console.error("Send Message Error:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+ export const sendMessage = async (req, res) => {
   try {
     const { receiver, text } = req.body;
- 
-    // EARLY EXITS — before any async work
+
+    // Validation
     if (!receiver) {
-      return res.status(400).json({ message: "Receiver is required" });
+      return res.status(400).json({
+        message: "Receiver is required",
+      });
     }
 
-    if (!text?.trim() && !req.file) {
-      return res.status(400).json({ message: "Message cannot be empty" });
+    const trimmedText = text?.trim() || "";
+
+    if (!trimmedText && !req.file) {
+      return res.status(400).json({
+        message: "Message cannot be empty",
+      });
     }
- 
+
     const sender = req.user._id;
- 
-    // UPLOAD IMAGE — only if file exists
+
+    // Upload image only if present
     let image = "";
+
     if (req.file) {
-      const uploaded = await imagekit.files.upload({         // imagekit.upload() is faster than imagekit.files.upload()
+      const uploaded = await imagekit.files.upload({
         file: req.file.buffer.toString("base64"),
         fileName: `${Date.now()}-${req.file.originalname}`,
         folder: "/avatarsTelegramClone",
       });
+
       image = uploaded.url;
     }
- 
-    // CREATE MESSAGE
+
+    // Create message
     const message = await Message.create({
       sender,
       receiver,
-      text: text?.trim() || "",
+      text: trimmedText,
       image,
     });
- 
-    // EMIT + RESPOND in parallel — don't await emit
+
+    // Socket emit (don't await)
     io.to(receiver.toString()).emit("receive_message", {
       ...message.toObject(),
       senderId: sender,
       receiverId: receiver,
     });
- const receiverUser = await User.findById(receiver);
-const senderUser = await User.findById(sender);
 
-if (receiverUser?.fcmToken) {
-  try {
-    await messaging.send({
-      token: receiverUser.fcmToken,
-      // ❌ REMOVED: notification field (was causing auto-display by browser)
-      data: {
-        title: senderUser.name,                        // ✅ moved here
-        body: text?.trim() || "📷 Image",              // ✅ moved here
-        senderId: sender.toString(),
-        receiverId: receiver.toString(),
-        senderAvatar: senderUser?.avatar || "",
-      },
-    });
-
-    console.log("Notification sent");
-  } catch (err) {
-    console.error("FCM Error:", err);
-  }
-}
-
-    return res.status(201).json({
+    // Send response immediately
+    res.status(201).json({
       message: "Message sent successfully",
       data: message,
     });
+
+    // Everything below runs in background
+    Promise.all([
+      User.findById(receiver)
+        .select("fcmToken")
+        .lean(),
+
+      User.findById(sender)
+        .select("name avatar")
+        .lean(),
+    ])
+      .then(async ([receiverUser, senderUser]) => {
+        if (!receiverUser?.fcmToken) return;
+
+        try {
+          await messaging.send({
+            token: receiverUser.fcmToken,
+            data: {
+              title: senderUser?.name || "New Message",
+              body: trimmedText || "📷 Image",
+              senderId: sender.toString(),
+              receiverId: receiver.toString(),
+              senderAvatar: senderUser?.avatar || "",
+            },
+          });
+
+          console.log("Notification sent");
+        } catch (err) {
+          console.error("FCM Error:", err);
+        }
+      })
+      .catch((err) => {
+        console.error("Background task error:", err);
+      });
   } catch (error) {
     console.error("Send Message Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
- 
 /**
  * =========================
  * GET CHAT BETWEEN TWO USERS

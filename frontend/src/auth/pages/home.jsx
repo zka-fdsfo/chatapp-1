@@ -265,9 +265,9 @@ export default function UsersPage() {
     }, 220);
   };
 
-//   useEffect(() => {
-//   console.log("users", users);
-// }, [users]);
+  useEffect(() => {
+  console.log("users", users);
+}, [users]);
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
