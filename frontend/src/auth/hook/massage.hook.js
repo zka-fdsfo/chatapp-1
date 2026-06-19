@@ -20,26 +20,37 @@ export const useMessage = () => {
   const [loadingImages, setLoadingImages] = useState(false);
 
   // Loads the conversation with another user and marks it as seen.
-  const fetchMessages = async (userId) => {
-    try {
-      setLoadingMessages(true);
+const fetchMessages = async (userId, page = 1) => {
+  try {
+    setLoadingMessages(true);
 
-      const response =
-        await getallchatusers(userId);
+    const response = await getallchatusers(userId, page);
 
-      setMessages(response.data || []);
+    const data = response.data || [];
+    const pagination = response.pagination || {};
 
-      /* MARK AS SEEN */
+    if (page === 1) {
+      setMessages(data);
       await markAsSeen(userId);
-    } catch (error) {
-      console.error(
-        "Fetch Messages Error:",
-        error.message
-      );
-    } finally {
-      setLoadingMessages(false);
     }
-  };
+
+    return {
+      data,
+      page: pagination.page || page,
+      hasMore: pagination.hasMore ?? false,
+    };
+  } catch (error) {
+    console.error("Fetch Messages Error:", error.message);
+
+    return {
+      data: [],
+      page,
+      hasMore: false,
+    };
+  } finally {
+    setLoadingMessages(false);
+  }
+};
 
   // Sends a new text or image message and appends it to local state.
   const handleSendMessage = async (formData) => {

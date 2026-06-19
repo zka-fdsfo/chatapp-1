@@ -276,33 +276,48 @@ export const getMessages = async (req, res) => {
     const { userId } = req.query;
     const myId = req.user._id;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     if (!userId) {
       return res.status(400).json({ message: "userId is required" });
     }
 
-    const messages = await Message.find({
+    const query = {
       deleted: false,
       $or: [
         { sender: myId, receiver: userId },
         { sender: userId, receiver: myId },
       ],
-    })
-      .sort({ createdAt: 1 })
+    };
 
-      // only required fields (FAST)
-      .select("_id sender receiver text image seen createdAt replyTo")
+    const [messages, totalMessages] = await Promise.all([
+      Message.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select("_id sender receiver text image seen createdAt replyTo")
+        .populate({
+          path: "replyTo",
+          select: "_id text image sender createdAt",
+        })
+        .lean(),
 
-      // populate reply message (IMPORTANT)
-      .populate({
-        path: "replyTo",
-        select: "_id text image sender createdAt",
-      })
+      Message.countDocuments(query),
+    ]);
 
-      .lean();
+    const orderedMessages = messages.reverse();
 
     return res.status(200).json({
       message: "Messages fetched successfully",
-      data: messages,
+      data: orderedMessages,
+      pagination: {
+        page,
+        limit,
+        totalMessages,
+        hasMore: skip + messages.length < totalMessages,
+      },
     });
   } catch (error) {
     console.error("Get Messages Error:", error);
@@ -312,6 +327,47 @@ export const getMessages = async (req, res) => {
     });
   }
 };
+// export const getMessages = async (req, res) => {
+//   try {
+//     const { userId } = req.query;
+//     const myId = req.user._id;
+
+//     if (!userId) {
+//       return res.status(400).json({ message: "userId is required" });
+//     }
+
+//     const messages = await Message.find({
+//       deleted: false,
+//       $or: [
+//         { sender: myId, receiver: userId },
+//         { sender: userId, receiver: myId },
+//       ],
+//     })
+//       .sort({ createdAt: 1 })
+
+//       // only required fields (FAST)
+//       .select("_id sender receiver text image seen createdAt replyTo")
+
+//       // populate reply message (IMPORTANT)
+//       .populate({
+//         path: "replyTo",
+//         select: "_id text image sender createdAt",
+//       })
+
+//       .lean();
+
+//     return res.status(200).json({
+//       message: "Messages fetched successfully",
+//       data: messages,
+//     });
+//   } catch (error) {
+//     console.error("Get Messages Error:", error);
+
+//     return res.status(500).json({
+//       message: "Internal server error",
+//     });
+//   }
+// };
 
 /**
  * =========================

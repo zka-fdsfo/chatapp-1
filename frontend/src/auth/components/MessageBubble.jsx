@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Reply, Pencil, Copy, Trash2, Check, CheckCheck } from "lucide-react";
+import { Reply, Pencil, Copy, Trash2, Check, CheckCheck,ChevronDown  } from "lucide-react";
 import { useAuth } from "../hook/hookauth";
 
 // Characters shown before "Read more" appears
@@ -160,7 +160,7 @@ const cancelLongPress = () => {
     left: `${menuPosition.x}px`,
     top: `${menuPosition.y}px`,
   }}
-  className="z-[9999] w-52 overflow-hidden rounded-2xl bg-[#1f1f1f] border border-[#ffffff10] shadow-2xl backdrop-blur-xl font-medium animate-popup"
+  className="z-[5] w-52 overflow-hidden rounded-2xl bg-[#1f1f1f] border border-[#ffffff10] shadow-2xl backdrop-blur-xl font-medium animate-popup"
 >
         <button
           onClick={() => { setReplyMsg(msg); setMenuMsg(null); }}
@@ -217,6 +217,28 @@ const cancelLongPress = () => {
   onTouchStart={startLongPress}
   onTouchEnd={cancelLongPress}
   onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} p-[0.4vw]`}>
+     <button
+  onClick={(e) => {
+    e.stopPropagation();
+
+    const rect = e.currentTarget
+      .closest("[data-message]")
+      .getBoundingClientRect();
+
+    setMenuPosition({
+      x: rect.right - rect.left - 200,
+      y: 10,
+    });
+
+    setMenuMsg(menuMsg === msg._id ? null : msg._id);
+  }}
+className="absolute top-2 right-2 z-[5] bg-black/50 text-white p-1 rounded-full opacity-100"
+>
+  {/* <button className="absolute top-2 right-2 z-[5] bg-red-500 text-white px-2">
+  V
+</button> */}
+  <ChevronDown size={18} />
+</button>
             <div className="relative">
               <img
                 src={msg.image}
@@ -256,9 +278,31 @@ const cancelLongPress = () => {
   onTouchStart={startLongPress}
   onTouchEnd={cancelLongPress}
   onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} p-2 gap-1`}>
+   <button
+  onClick={(e) => {
+    e.stopPropagation();
+
+    const rect = e.currentTarget
+      .closest("[data-message]")
+      .getBoundingClientRect();
+
+    setMenuPosition({
+      x: rect.right - rect.left - 200,
+      y: 10,
+    });
+
+    setMenuMsg(menuMsg === msg._id ? null : msg._id);
+  }}
+className="absolute top-2 right-2 z-[5] bg-black/5 text-white p-1 rounded-full opacity-100"
+>
+  {/* <button className="absolute top-2 right-2 z-[5] bg-red-500 text-white px-2">
+  V
+</button> */}
+  <ChevronDown size={18} />
+</button>
             {/* Reply preview */}
             {msg.replyTo && (
-              <div className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
+              <div className="mb-1 p-2 bg-black/10 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
                 <p className="text-purple-300">
                   Replying to {String(msg.replyTo.sender) === String(currentUserId) ? "You" : "User"}
                 </p>
@@ -307,9 +351,10 @@ const cancelLongPress = () => {
   onTouchStart={startLongPress}
   onTouchEnd={cancelLongPress}
   onContextMenu={(e) => e.preventDefault()} className={`${bubbleBase} px-3 pt-2 pb-1.5`}>
+
             {/* Reply preview */}
             {msg.replyTo && (
-              <div className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
+              <div className="mb-1 p-2 bg-black/5 border-l-2 border-purple-400 rounded-md text-xs text-white/70">
                 <p className="text-purple-300">
                   Replying to {String(msg.replyTo.sender) === String(currentUserId) ? "You" : "User"}
                 </p>

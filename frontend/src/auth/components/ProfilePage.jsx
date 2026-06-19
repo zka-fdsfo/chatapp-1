@@ -103,7 +103,7 @@ useEffect(() => {
     : selectedUser.name.charAt(0).toUpperCase();
   const bgColor = avatarColors[firstLetter] || "6366f1";
   return (
-    <div className="w-full h-screen bg-[#0f0f0f00] text-white overflow-y-auto custom-scrollbar">
+    <div className="w-full h-screen bg-[#0f0f0f00] z-99999 text-white overflow-y-auto custom-scrollbar">
       <div className=" relative min-h-screen bg-[#0f0f0f] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 custom-scrollbar">
         {/* Header */}
         <div className="flex items-center justify-between p-5">
@@ -155,13 +155,13 @@ useEffect(() => {
         <div className="px-4 mt-4 mb-6">
           <div className="bg-[#1c1c1f] rounded-3xl p-5 space-y-6">
             {/* Phone */}
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <Phone size={24} className="text-zinc-400" />
               <div>
                 <p className="font-medium text-lg">{user.phone}</p>
                 <span className="text-zinc-500 text-sm">Phone</span>
               </div>
-            </div>
+            </div> */}
 
             {/* Notifications */}
             <div className="flex items-center justify-between">

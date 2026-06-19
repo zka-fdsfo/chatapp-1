@@ -19,46 +19,72 @@ const MessageList = ({
   selectedUser,
   loadingMessages,
   setReplyMsg,
+  pageLoading,
+  loadOlderMessages,
 }) => {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
   const bottomRef = useRef(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [menuPosition, setMenuPosition] = useState({
     x: 0,
     y: 0,
   });
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const prevHeightRef = useRef(0);
+  const initialLoadRef = useRef(true);
 
-  // FILTER VALID MESSAGES
   const validMessages = messages.filter(
     (msg) => msg && (msg.text || msg.message || msg.image),
   );
-console.log(messages,"messages")
-  // AUTO SCROLL ON NEW MESSAGE
- useEffect(() => {
-  const el = containerRef.current;
-  if (!el) return;
 
-  const isNearBottom =
-    el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-
-  if (isNearBottom) {
-    setTimeout(() => {
-      el.scrollTop = el.scrollHeight;
-    }, 50);
-  }
-}, [messages]);
-
-  // DETECT SCROLL POSITION
-  const handleScroll = () => {
+  useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    if (prevHeightRef.current) {
+      const newHeight = el.scrollHeight;
+      el.scrollTop = newHeight - prevHeightRef.current;
+      prevHeightRef.current = 0;
+      return;
+    }
 
-    setShowScrollBtn(!isNearBottom);
-  };
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight;
+      }, 50);
+      return;
+    }
+
+    const isNearBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+
+    if (isNearBottom) {
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight;
+      }, 50);
+    }
+  }, [messages]);
+
+  // DETECT SCROLL POSITION
+  const handleScroll = (e) => {
+  const el = e.target;
+
+  // 1. LOAD OLD MESSAGES (when top reached)
+if (el.scrollTop < 10 && !loadingMore) {
+  prevHeightRef.current = el.scrollHeight;
+  setLoadingMore(true);
+  loadOlderMessages().finally(() => setLoadingMore(false));
+}
+
+  // 2. SHOW/HIDE scroll button
+  const isNearBottom =
+    el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+
+  setShowScrollBtn(!isNearBottom);
+};
 
   // OUTSIDE CLICK TO CLOSE MENU
   useEffect(() => {

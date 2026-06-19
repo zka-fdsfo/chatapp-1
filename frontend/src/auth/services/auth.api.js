@@ -133,19 +133,19 @@ export const verifyrefreshToken = async () => {
   }
 };
 
-export const getallchatusers = async (userId) => {
-  // Get chat users for the current user
+export const getallchatusers = async (userId, page = 1) => {
   try {
     const response = await api.get("/messages/chatusers", {
       params: {
         userId,
+        page,
       },
     });
 
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch messages",
+      error.response?.data?.message || "Failed to fetch messages"
     );
   }
 };

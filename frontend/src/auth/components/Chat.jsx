@@ -39,6 +39,29 @@ const Chat = ({
   const { mutate: deleteMessage } = useDeleteMessage();
   const currentUserId = user?._id ? String(user._id) : "";
 const [replyMsg, setReplyMsg] = useState(null);
+const [pageLoading, setPageLoading] = useState(false);
+const [hasMore, setHasMore] = useState(true);
+const [page, setPage] = useState(1);
+const loadOlderMessages = async () => {
+  if (!hasMore || pageLoading || !selectedUser?._id) return;
+
+  setPageLoading(true);
+
+  const nextPage = page + 1;
+  const res = await fetchMessages(selectedUser._id, nextPage);
+
+  if (!res.data || res.data.length === 0) {
+    setHasMore(false);
+    setPageLoading(false);
+    return;
+  }
+
+  setMessages((prev) => [...res.data, ...prev]);
+  setPage(res.page);
+  setHasMore(res.hasMore);
+
+  setPageLoading(false);
+};
   // ================= SOCKET INIT =================
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
@@ -91,11 +114,17 @@ const [replyMsg, setReplyMsg] = useState(null);
     const loadMessages = async () => {
       if (!selectedUser?._id) return;
 
-      setMessages([]); // clear old chat
+      setMessages([]);
       setLoadingMessages(true);
+      setHasMore(true);
+      setPage(1);
 
       try {
-        await fetchMessages(selectedUser._id);
+        const res = await fetchMessages(selectedUser._id, 1);
+
+        setMessages(res.data);
+        setPage(res.page);
+        setHasMore(res.hasMore);
       } catch (error) {
         console.error(error);
       } finally {
@@ -312,6 +341,8 @@ queryClient.invalidateQueries({
 
       {/* ================= MESSAGE LIST ================= */}
       <MessageList
+      loadOlderMessages={loadOlderMessages}
+  pageLoading={pageLoading}
         messages={messages}
         setuserid={selectedUser?._id}
         selectedUser={{
