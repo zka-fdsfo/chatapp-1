@@ -4,7 +4,6 @@ import MessageBubble from "./MessageBubble";
 import EmptyChat from "./EmptyChat";
 import { ArrowDown } from "lucide-react";
 import MessageSkeleton from "./MessageSkeleton";
-import MessageListSkeleton from "./MessageListSkeleton";
 
 const MessageList = ({
   messages,
@@ -44,9 +43,11 @@ const MessageList = ({
     if (!el) return;
 
     if (prevHeightRef.current) {
-      const newHeight = el.scrollHeight;
-      el.scrollTop = newHeight - prevHeightRef.current;
-      prevHeightRef.current = 0;
+      requestAnimationFrame(() => {
+        const newHeight = el.scrollHeight;
+        el.scrollTop = newHeight - prevHeightRef.current;
+        prevHeightRef.current = 0;
+      });
       return;
     }
 
@@ -68,31 +69,28 @@ const MessageList = ({
     }
   }, [messages]);
 
-  // DETECT SCROLL POSITION
   const handleScroll = (e) => {
-  const el = e.target;
+    const el = e.target;
 
-  // 1. LOAD OLD MESSAGES (when top reached)
-if (el.scrollTop < 10 && !loadingMore) {
-  prevHeightRef.current = el.scrollHeight;
-  setLoadingMore(true);
-  loadOlderMessages().finally(() => setLoadingMore(false));
-}
+    if (el.scrollTop < 10 && !loadingMore) {
+      prevHeightRef.current = el.scrollHeight;
+      setLoadingMore(true);
+      loadOlderMessages().finally(() => {
+        setLoadingMore(false);
+      });
+    }
 
-  // 2. SHOW/HIDE scroll button
-  const isNearBottom =
-    el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    const isNearBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 100;
 
-  setShowScrollBtn(!isNearBottom);
-};
+    setShowScrollBtn(!isNearBottom);
+  };
 
   // OUTSIDE CLICK TO CLOSE MENU
   useEffect(() => {
     const handleClickOutside = (e) => {
-      // if no menu open → ignore
       if (!menuMsg) return;
 
-      // check if click is inside a message bubble
       const isInsideMessage = e.target.closest("[data-message]");
       const isInsideMenu = e.target.closest("[data-menu]");
 
@@ -114,6 +112,7 @@ if (el.scrollTop < 10 && !loadingMore) {
       <div
         ref={containerRef}
         onScroll={handleScroll}
+        style={{ scrollBehavior: "auto" }}
         className="
           h-full
           overflow-y-auto
@@ -125,40 +124,47 @@ if (el.scrollTop < 10 && !loadingMore) {
       >
         {/* EMPTY STATE */}
         {loadingMessages ? (
-          <MessageSkeleton />
+          <div className="animate-slide-down">
+    <MessageSkeleton />
+  </div>
         ) : validMessages.length === 0 ? (
           <EmptyChat userId={setuserid} />
         ) : (
-          validMessages.map((msg) => {
-            const senderId =
-              typeof msg.sender === "object"
-                ? msg.sender._id
-                : msg.sender || msg.senderId;
+          <>
+            {pageLoading && <div className="animate-fade-in">
+    <MessageSkeleton />
+  </div>}
+            {validMessages.map((msg) => {
+              const senderId =
+                typeof msg.sender === "object"
+                  ? msg.sender._id
+                  : msg.sender || msg.senderId;
 
-            const isMe = String(senderId) === String(currentUserId);
+              const isMe = String(senderId) === String(currentUserId);
 
-            return (
-              <MessageBubble
-                key={msg._id}
-                msg={{
-                  ...msg,
-                  text: msg.text || msg.message,
-                }}
-                isMe={isMe}
-                menuMsg={menuMsg}
-                setMenuMsg={setMenuMsg}
-                menuPosition={menuPosition}
-                setMenuPosition={setMenuPosition}
-                setEditMsg={setEditMsg}
-                setEditText={setEditText}
-                handleDeleteMessage={handleDeleteMessage}
-                setViewerImage={setViewerImage}
-                selectedUser={selectedUser}
-                 setReplyMsg={setReplyMsg}
-                 wrapperRef={wrapperRef}
-              />
-            );
-          })
+              return (
+                <MessageBubble
+                  key={msg._id}
+                  msg={{
+                    ...msg,
+                    text: msg.text || msg.message,
+                  }}
+                  isMe={isMe}
+                  menuMsg={menuMsg}
+                  setMenuMsg={setMenuMsg}
+                  menuPosition={menuPosition}
+                  setMenuPosition={setMenuPosition}
+                  setEditMsg={setEditMsg}
+                  setEditText={setEditText}
+                  handleDeleteMessage={handleDeleteMessage}
+                  setViewerImage={setViewerImage}
+                  selectedUser={selectedUser}
+                  setReplyMsg={setReplyMsg}
+                  wrapperRef={wrapperRef}
+                />
+              );
+            })}
+          </>
         )}
 
         {/* BOTTOM ANCHOR */}

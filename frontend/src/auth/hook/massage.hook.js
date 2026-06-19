@@ -21,15 +21,19 @@ export const useMessage = () => {
 
   // Loads the conversation with another user and marks it as seen.
 const fetchMessages = async (userId, page = 1) => {
+  const isInitialLoad = page === 1;
+
   try {
-    setLoadingMessages(true);
+    if (isInitialLoad) {
+      setLoadingMessages(true);
+    }
 
     const response = await getallchatusers(userId, page);
 
     const data = response.data || [];
     const pagination = response.pagination || {};
 
-    if (page === 1) {
+    if (isInitialLoad) {
       setMessages(data);
       await markAsSeen(userId);
     }
@@ -48,7 +52,9 @@ const fetchMessages = async (userId, page = 1) => {
       hasMore: false,
     };
   } finally {
-    setLoadingMessages(false);
+    if (isInitialLoad) {
+      setLoadingMessages(false);
+    }
   }
 };
 
