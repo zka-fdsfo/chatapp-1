@@ -277,7 +277,7 @@ export const getMessages = async (req, res) => {
     const myId = req.user._id;
 
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 15;
     const skip = (page - 1) * limit;
 
     if (!userId) {
