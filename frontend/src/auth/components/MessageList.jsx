@@ -97,7 +97,7 @@ const MessageList = ({
         ref={containerRef}
         onScroll={handleScroll}
         style={{ scrollBehavior: "auto", overflowAnchor: "none" }}
-        className="h-full overflow-y-auto px-6 py-4 lg:px-25 space-y-4 scrollbar-none"
+        className="h-full overflow-y-auto  px-6 py-4 lg:px-25 space-y-4 scrollbar-none"
       >
         {loadingMessages ? (
           <MessageSkeleton />
@@ -150,6 +150,7 @@ const MessageList = ({
           onClick={() =>
             bottomRef.current?.scrollIntoView({ behavior: "smooth" })
           }
+
           className="absolute bottom-5 right-[45%] bg-gray-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg transition z-40 flex items-center justify-center"
         >
           <ArrowDown size={22} />

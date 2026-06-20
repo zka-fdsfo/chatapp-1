@@ -409,3 +409,18 @@ html, body {
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+/* ── Reply scroll highlight ───────────────────────────────────────────────────
+   Add this to your index.css or App.css
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes msgFlash {
+  0%   { background-color: transparent; }
+  20%  { background-color: rgba(139, 92, 246, 0.25); }   /* purple glow */
+  80%  { background-color: rgba(139, 92, 246, 0.15); }
+  100% { background-color: transparent; }
+}
+
+.msg-highlight {
+  animation: msgFlash 1.8s ease-in-out forwards;
+}
