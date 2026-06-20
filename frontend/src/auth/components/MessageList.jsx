@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import MessageBubble from "./MessageBubble";
 import EmptyChat from "./EmptyChat";
@@ -34,11 +34,18 @@ const MessageList = ({
     (msg) => msg && (msg.text || msg.message || msg.image)
   );
 
+  // ✅ Reset initialLoadRef every time the conversation changes
+  // so the first batch of messages always scrolls to the bottom
   useEffect(() => {
+    initialLoadRef.current = true;
+  }, [setuserid]);
+
+  // ✅ useLayoutEffect fires BEFORE the browser paints — no visible jump
+  useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    // OLDER MESSAGES LOADED — silently lock scroll position, no jump
+    // OLDER MESSAGES LOADED — restore scroll position without jumping
     if (prevHeightRef.current) {
       const newHeight = el.scrollHeight;
       el.scrollTop = newHeight - prevHeightRef.current;
@@ -46,27 +53,28 @@ const MessageList = ({
       return;
     }
 
-    // FIRST LOAD — jump to bottom
-    if (initialLoadRef.current) {
+    // FIRST LOAD or conversation switch — jump straight to bottom
+    if (initialLoadRef.current && !loadingMessages) {
       initialLoadRef.current = false;
       el.scrollTop = el.scrollHeight;
       return;
     }
 
-    // NEW MESSAGE SENT/RECEIVED — scroll to bottom only if already near bottom
+    // NEW MESSAGE SENT/RECEIVED — only auto-scroll if already near bottom
     const isNearBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight < 150;
 
     if (isNearBottom) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, loadingMessages]);
 
   const handleScroll = (e) => {
     const el = e.target;
 
     // Load older messages when reaching top
     if (el.scrollTop < 10 && !loadingMore) {
+      // Capture height SYNCHRONOUSLY before the async load changes the DOM
       prevHeightRef.current = el.scrollHeight;
       setLoadingMore(true);
       loadOlderMessages().finally(() => {
@@ -97,7 +105,7 @@ const MessageList = ({
         ref={containerRef}
         onScroll={handleScroll}
         style={{ scrollBehavior: "auto", overflowAnchor: "none" }}
-        className="h-full overflow-y-auto  px-6 py-4 lg:px-25 space-y-4 scrollbar-none"
+        className="h-full overflow-y-auto px-6 py-4 lg:px-25 space-y-4 scrollbar-none"
       >
         {loadingMessages ? (
           <MessageSkeleton />
@@ -105,7 +113,6 @@ const MessageList = ({
           <EmptyChat userId={setuserid} />
         ) : (
           <>
-            {/* SUBTLE TOP SPINNER — only a tiny dot, not a skeleton */}
             {loadingMore && (
               <div className="flex justify-center py-2">
                 <div className="w-5 h-5 rounded-full border-2 border-zinc-200 border-t-transparent animate-spin" />

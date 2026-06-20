@@ -72,13 +72,9 @@ const MessageBubble = ({
   const handleReplyClick = (e) => {
     e.stopPropagation();
     if (!msg.replyTo?._id) return;
-
     const target = document.getElementById(`msg-${msg.replyTo._id}`);
     if (!target) return;
-
     target.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    // Add highlight class, then remove after animation ends
     target.classList.add("msg-highlight");
     setTimeout(() => target.classList.remove("msg-highlight"), 1800);
   };
@@ -98,13 +94,16 @@ const MessageBubble = ({
     setMenuMsg(menuMsg === msg._id ? null : msg._id);
   };
 
+  // ── Desktop: right-click ─────────────────────────────────────────────────────
   const handleContextMenu = (e) => {
     e.preventDefault();
     e.stopPropagation();
     openMenu(e.clientX, e.clientY);
   };
 
+  // ── Mobile: tap tracking ──────────────────────────────────────────────────────
   const touchStartRef = useRef(null);
+
   const handleTouchStart = (e) => {
     if (e.touches?.[0])
       touchStartRef.current = {
@@ -112,6 +111,7 @@ const MessageBubble = ({
         y: e.touches[0].clientY,
       };
   };
+
   const handleTouchEnd = (e) => {
     if (!touchStartRef.current) return;
     const touch = e.changedTouches?.[0];
@@ -126,6 +126,19 @@ const MessageBubble = ({
     touchStartRef.current = null;
   };
 
+  // ── Block touch events on interactive children (image, reply preview) ─────────
+  // Without this, tapping these elements bubbles up to the bubble's onTouchEnd
+  // and incorrectly opens the context menu on mobile.
+  const handleChildTouchStart = (e) => {
+    touchStartRef.current = null; // clear so touchEnd has nothing to act on
+  };
+
+  const handleChildTouchEnd = (e) => {
+    e.stopPropagation(); // prevent bubble's onTouchEnd from firing
+    touchStartRef.current = null;
+  };
+
+  // ── ChevronDown button (image bubbles) ──────────────────────────────────────
   const handleChevronClick = (e) => {
     e.stopPropagation();
     const el = bubbleRef.current;
@@ -137,10 +150,17 @@ const MessageBubble = ({
     setMenuMsg(menuMsg === msg._id ? null : msg._id);
   };
 
+  // ── Shared event props for the bubble wrapper ────────────────────────────────
   const bubbleEvents = {
     onContextMenu: handleContextMenu,
     onTouchStart: handleTouchStart,
     onTouchEnd: handleTouchEnd,
+  };
+
+  // Spread onto any child element that should NOT open the menu when tapped
+  const childTouchEvents = {
+    onTouchStart: handleChildTouchStart,
+    onTouchEnd: handleChildTouchEnd,
   };
 
   const bubbleBase = `
@@ -185,24 +205,18 @@ const MessageBubble = ({
     </svg>
   );
 
-  // ── Reply preview — clickable, scrolls to original message ───────────────────
   const ReplyPreview = () =>
     msg.replyTo ? (
       <div
         onClick={handleReplyClick}
+        {...childTouchEvents}
         className="mb-1 p-2 bg-black/20 border-l-2 border-purple-400 rounded-md text-xs cursor-pointer hover:bg-black/30 active:scale-[0.98] transition-all select-none"
       >
         <p className="text-purple-300 font-semibold text-[11px] mb-0.5">
           {String(msg.replyTo.sender) === String(currentUserId) ? (
-            <>
-              <Reply size={12} className="inline mr-1" />
-              You
-            </>
+            <><Reply size={12} className="inline mr-1" />You</>
           ) : (
-            <>
-              <Reply size={12} className="inline mr-1" />
-              {selectedUser?.name || "User"}
-            </>
+            <><Reply size={12} className="inline mr-1" />{selectedUser?.name || "User"}</>
           )}
         </p>
         <p className="truncate text-white/60">
@@ -223,21 +237,14 @@ const MessageBubble = ({
         className="z-[50] w-52 overflow-hidden rounded-2xl bg-[#1f1f1f] border border-[#ffffff10] shadow-2xl backdrop-blur-xl font-medium animate-popup"
       >
         <button
-          onClick={() => {
-            setReplyMsg(msg);
-            setMenuMsg(null);
-          }}
+          onClick={() => { setReplyMsg(msg); setMenuMsg(null); }}
           className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-white text-sm transition"
         >
           <Reply size={18} strokeWidth={2.2} /> Reply
         </button>
         {isMe && (
           <button
-            onClick={() => {
-              setEditMsg(msg);
-              setEditText(msg.text);
-              setMenuMsg(null);
-            }}
+            onClick={() => { setEditMsg(msg); setEditText(msg.text); setMenuMsg(null); }}
             className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-white text-sm transition"
           >
             <Pencil size={18} strokeWidth={2.2} /> Edit
@@ -245,15 +252,12 @@ const MessageBubble = ({
         )}
         <button
           onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(msg.text);
-            } catch {
+            try { await navigator.clipboard.writeText(msg.text); }
+            catch {
               const ta = document.createElement("textarea");
               ta.value = msg.text;
-              document.body.appendChild(ta);
-              ta.select();
-              document.execCommand("copy");
-              document.body.removeChild(ta);
+              document.body.appendChild(ta); ta.select();
+              document.execCommand("copy"); document.body.removeChild(ta);
             }
 
             setMenuMsg(null);
@@ -264,10 +268,7 @@ const MessageBubble = ({
         </button>
         {isMe && (
           <button
-            onClick={() => {
-              handleDeleteMessage(msg._id);
-              setMenuMsg(null);
-            }}
+            onClick={() => { handleDeleteMessage(msg._id); setMenuMsg(null); }}
             className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-red-500 text-sm transition"
           >
             <Trash2 size={18} strokeWidth={2.2} /> Delete
@@ -277,7 +278,6 @@ const MessageBubble = ({
     ) : null;
 
   return (
-    // ✅ id="msg-{_id}" is what handleReplyClick targets
     <div
       id={`msg-${msg._id}`}
       className={`flex ${isMe ? "justify-end" : "justify-start"} relative mb-1 px-2`}
@@ -302,14 +302,12 @@ const MessageBubble = ({
                 src={msg.image}
                 alt="message"
                 className="max-w-[280px] max-h-[350px] rounded-xl object-cover cursor-pointer"
+                {...childTouchEvents}
                 onClick={(e) => {
                   e.stopPropagation();
                   setViewerImage({
                     name: isMe ? currentusernameimg?.name : selectedUser?.name,
-                    avatar: isMe
-                      ? currentusernameimg?.avatar
-                    
-                      : selectedUser?.avatar,
+                    avatar: isMe ? currentusernameimg?.avatar : selectedUser?.avatar,
                     image: msg?.image,
                     createdAt: msg?.createdAt,
                   });
@@ -344,13 +342,12 @@ const MessageBubble = ({
               src={msg.image}
               alt="message"
               className="w-full max-h-[350px] rounded-xl object-cover cursor-pointer mb-2"
+              {...childTouchEvents}
               onClick={(e) => {
                 e.stopPropagation();
                 setViewerImage({
                   name: isMe ? currentusernameimg?.name : selectedUser?.name,
-                  avatar: isMe
-                    ? currentusernameimg?.avatar
-                    : selectedUser?.avatar,
+                  avatar: isMe ? currentusernameimg?.avatar : selectedUser?.avatar,
                   image: msg?.image,
                   createdAt: msg?.createdAt,
                 });
@@ -363,10 +360,7 @@ const MessageBubble = ({
             </div>
             {isLong && !msg.deleted && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded((p) => !p);
-                }}
+                onClick={(e) => { e.stopPropagation(); setExpanded((p) => !p); }}
                 className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors px-1"
               >
                 {expanded ? "Show less" : "Read more"}
@@ -382,14 +376,7 @@ const MessageBubble = ({
           <div {...bubbleEvents} className={`${bubbleBase} px-3 pt-2 pb-1.5`}>
             <ReplyPreview />
             {msg.text && (
-              <div
-                className={
-                  isShortText
-                    ? "flex flex-row justify-between gap-2"
-                    : "flex flex-col"
-                }
-
-              >
+              <div className={isShortText ? "flex flex-row justify-between gap-2" : "flex flex-col"}>
                 <div
                   className={`text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full ${msg.deleted ? "italic text-white/40 opacity-70" : "text-white"}`}
                 >
@@ -401,14 +388,8 @@ const MessageBubble = ({
                       {formatTime(msg.createdAt)}
                     </span>
                     {isMe && (
-                      <span
-                        className={msg.seen ? "text-sky-400" : "text-white/50"}
-                      >
-                        {msg.seen ? (
-                          <CheckCheck size={15} />
-                        ) : (
-                          <Check size={15} />
-                        )}
+                      <span className={msg.seen ? "text-sky-400" : "text-white/50"}>
+                        {msg.seen ? <CheckCheck size={15} /> : <Check size={15} />}
                       </span>
                     )}
                   </div>
@@ -417,10 +398,7 @@ const MessageBubble = ({
             )}
             {isLong && !msg.deleted && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded((p) => !p);
-                }}
+                onClick={(e) => { e.stopPropagation(); setExpanded((p) => !p); }}
                 className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors mt-0.5 ml-4"
               >
                 {expanded ? "Show less" : "Read more"}
