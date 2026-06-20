@@ -217,7 +217,7 @@ const MessageBubble = ({
         data-menu
         style={{
           position: "absolute",
-          left: `${menuPosition.x}px`,
+          left: `${isMe ? menuPosition.x - 90 : menuPosition.x}px`,
           top: `${menuPosition.y}px`,
         }}
         className="z-[50] w-52 overflow-hidden rounded-2xl bg-[#1f1f1f] border border-[#ffffff10] shadow-2xl backdrop-blur-xl font-medium animate-popup"
@@ -308,6 +308,7 @@ const MessageBubble = ({
                     name: isMe ? currentusernameimg?.name : selectedUser?.name,
                     avatar: isMe
                       ? currentusernameimg?.avatar
+                    
                       : selectedUser?.avatar,
                     image: msg?.image,
                     createdAt: msg?.createdAt,
