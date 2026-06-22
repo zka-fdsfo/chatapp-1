@@ -5,6 +5,7 @@ import {
   markAsSeen,
   deleteMessage,
   getImageMessages,
+  editMessages,
 } from "../controller/massage.controller.js";
 
 import { authMiddleware } from "../middleware/auth.middleware.js";
@@ -16,5 +17,5 @@ router.get("/chatusers", authMiddleware, getMessages);
 router.put("/seen", authMiddleware, markAsSeen);
 router.delete("/delete-message", authMiddleware, deleteMessage);
 router.get("/image-messages", authMiddleware, getImageMessages);
-
+router.put("/edit-message", authMiddleware, editMessages);
 export default router;

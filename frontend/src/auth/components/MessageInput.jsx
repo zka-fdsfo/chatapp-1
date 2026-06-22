@@ -1,9 +1,10 @@
 //components MessageInput.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, Smile } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import { ImagePlus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useMessage } from "../hook/massage.hook.js";
 const MessageInput = ({
   messageText,
   setMessageText,
@@ -14,7 +15,15 @@ const MessageInput = ({
   currentUserId,
   replyMsg,
   setReplyMsg,
+
+  editMsg,
+  setEditMsg,
+  editText,
+  setEditText,
+  setMessages,
+  editMessage,
 }) => {
+  const { editMessageinchat } = useMessage();
   // const sendMessage = async () => {
   //   try {
   //     if (!messageText?.trim()) return;
@@ -44,21 +53,64 @@ const MessageInput = ({
   const queryClient = useQueryClient();
   const textareaRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  useEffect(() => {
+    if (editMsg) {
+      setMessageText(editMsg.text || "");
+
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
+    }
+  }, [editMsg]);
+  const handleEditMessage = async () => {
+    try {
+      await editMessageinchat(editMsg._id, messageText);
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === editMsg._id
+            ? {
+                ...m,
+                text: messageText,
+                edited: true,
+                editedAt: new Date(),
+              }
+
+            : m,
+        ),
+      );
+
+      socketRef.current.emit("messageEdited", {
+        messageId: editMsg._id,
+        text: messageText,
+        edited: true,
+        editedAt: new Date(),
+        senderId: user._id,
+        receiverId: selectedUser._id,
+      });
+
+      setEditMsg(null);
+      setEditText("");
+      setMessageText("");
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const handleImageFile = (file) => {
-  if (!file) return;
+    if (!file) return;
 
-  if (file.type !== "image/png" && file.type !== "image/jpeg") {
-    alert("Only PNG and JPG images are allowed");
-    return;
-  }
+    if (file.type !== "image/png" && file.type !== "image/jpeg") {
+      alert("Only PNG and JPG images are allowed");
+      return;
+    }
 
-  if (file.size > 5 * 1024 * 1024) {
-    alert("Image must be smaller than 5 MB");
-    return;
-  }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be smaller than 5 MB");
+      return;
+    }
 
-  setImage(file);
-};
+    setImage(file);
+  };
   const sendMessage = async () => {
     if (sending) return; // prevent double click
     if (!messageText.trim() && !image) return;
@@ -77,10 +129,10 @@ const MessageInput = ({
         formData.append("image", image);
       }
 
-       // ⭐ ADD THIS (REPLY FEATURE)
-    if (replyMsg?._id) {
-      formData.append("replyTo", replyMsg._id);
-    }
+      // ⭐ ADD THIS (REPLY FEATURE)
+      if (replyMsg?._id) {
+        formData.append("replyTo", replyMsg._id);
+      }
 
       await handleSendMessage(formData);
       queryClient.invalidateQueries({
@@ -91,7 +143,7 @@ const MessageInput = ({
       }
 
       setMessageText("");
-      setReplyMsg("")
+      setReplyMsg("");
       setImage(null);
     } catch (err) {
       console.log(err);
@@ -103,30 +155,30 @@ const MessageInput = ({
   const typingRef = useRef(false);
   const typingTimeoutRef = useRef(null);
   const handleTyping = (e) => {
-  const value = e.target.value;
+    const value = e.target.value;
 
-  if (value.trim() && !typingRef.current) {
-    typingRef.current = true;
+    if (value.trim() && !typingRef.current) {
+      typingRef.current = true;
 
-  socketRef.current.emit("typing", {
-  senderId: currentUserId,
-  receiverId: selectedUser._id,
-  typing: true,
-});
-  }
+      socketRef.current.emit("typing", {
+        senderId: currentUserId,
+        receiverId: selectedUser._id,
+        typing: true,
+      });
+    }
 
-  clearTimeout(typingTimeoutRef.current);
+    clearTimeout(typingTimeoutRef.current);
 
-  typingTimeoutRef.current = setTimeout(() => {
-    typingRef.current = false;
+    typingTimeoutRef.current = setTimeout(() => {
+      typingRef.current = false;
 
-   socketRef.current.emit("typing", {
-  senderId: currentUserId,
-  receiverId: selectedUser._id,
-  typing: false,
-});
-  }, 1000);
-};
+      socketRef.current.emit("typing", {
+        senderId: currentUserId,
+        receiverId: selectedUser._id,
+        typing: false,
+      });
+    }, 1000);
+  };
   const [showEmoji, setShowEmoji] = useState(false);
   return (
     //   <div className="p-3 lg:px-20">
@@ -170,64 +222,80 @@ const MessageInput = ({
 
     //   </div>
     // </div>
-    
+
     <div
-  className="p-3 lg:px-20 relative"
-  onDragEnter={(e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }}
-  onDragOver={(e) => {
-    e.preventDefault();
-  }}
- onPaste={(e) => {
-  const items = e.clipboardData?.items;
+      className="p-3 lg:px-20 relative"
+      onDragEnter={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+      }}
+      onPaste={(e) => {
+        const items = e.clipboardData?.items;
 
-  for (const item of items) {
-    if (item.type.startsWith("image/")) {
-      const file = item.getAsFile();
-      handleImageFile(file);
-      break;
-    }
-  }
-}}
-  onDrop={(e) => {
-    e.preventDefault();
-    setIsDragging(false);
+        for (const item of items) {
+          if (item.type.startsWith("image/")) {
+            const file = item.getAsFile();
+            handleImageFile(file);
+            break;
+          }
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
 
-    const file = e.dataTransfer.files?.[0];
+        const file = e.dataTransfer.files?.[0];
 
-    if (!file) return;
+        if (!file) return;
 
-    handleImageFile(file);
-  }}
->
-  {isDragging && (
-  <div className="absolute inset-0 z-[999] bg-black/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-[#8774e1] flex items-center justify-center">
-    <div className="text-white text-lg font-medium">
-      Drop image here 📸
-    </div>
-  </div>
-)}
-      {replyMsg && (
-  <div className="mb-2 p-2 bg-[#2a2a2a] rounded-xl flex justify-between items-center border-l-4 border-purple-500">
-    
-    <div className="text-sm text-white">
-      <p className="text-purple-300 text-xs">Replying to</p>
-
-      <p className="truncate max-w-[250px]">
-        {replyMsg.text || "Image"}
-      </p>
-    </div>
-
-    <button
-      onClick={() => setReplyMsg(null)}
-      className="text-white/60 hover:text-white"
+        handleImageFile(file);
+      }}
     >
-      ✕
-    </button>
-  </div>
-)}
+      {editMsg && (
+        <div className="mb-2 p-2 bg-[#2a2a2a] rounded-xl flex justify-between items-center border-l-4 border-blue-500">
+          <div>
+            <p className="text-blue-300 text-xs">Editing message</p>
+
+            <p className="truncate text-white max-w-[250px]">{editMsg.text}</p>
+          </div>
+
+          <button
+            onClick={() => {
+              setEditMsg(null);
+              setEditText("");
+            }}
+            className="text-white/60 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {isDragging && (
+        <div className="absolute inset-0 z-[999] bg-black/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-[#8774e1] flex items-center justify-center">
+          <div className="text-white text-lg font-medium">
+            Drop image here 📸
+          </div>
+        </div>
+      )}
+      {replyMsg && (
+        <div className="mb-2 p-2 bg-[#2a2a2a] rounded-xl flex justify-between items-center border-l-4 border-purple-500">
+          <div className="text-sm text-white">
+            <p className="text-purple-300 text-xs">Replying to</p>
+
+            <p className="truncate max-w-[250px]">{replyMsg.text || "Image"}</p>
+          </div>
+
+          <button
+            onClick={() => setReplyMsg(null)}
+            className="text-white/60 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {/* Emoji Picker */}
       {showEmoji && (
         <div className="absolute bottom-20 left-4 z-50">
@@ -274,14 +342,19 @@ const MessageInput = ({
           value={messageText || ""}
           onChange={(e) => {
             setMessageText(e.target.value);
-             handleTyping(e)
+            handleTyping(e);
             e.target.style.height = "auto";
             e.target.style.height = `${e.target.scrollHeight}px`;
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              sendMessage();
+
+              if (editMsg) {
+                handleEditMessage();
+              } else {
+                sendMessage();
+              }
             }
           }}
           className="
@@ -304,14 +377,20 @@ const MessageInput = ({
             accept="image/png,image/jpeg,image/jpg"
             hidden
             onChange={(e) => {
-  handleImageFile(e.target.files?.[0]);
-}}
+              handleImageFile(e.target.files?.[0]);
+            }}
           />
         </label>
 
         {/* Send Button */}
         <button
-          onClick={sendMessage}
+          onClick={() => {
+            if (editMsg) {
+              handleEditMessage();
+            } else {
+              sendMessage();
+            }
+          }}
           disabled={sending}
           className={`text-[#8774e1] transition ${
             sending ? "opacity-50 cursor-not-allowed" : "hover:text-[#9d8cff]"

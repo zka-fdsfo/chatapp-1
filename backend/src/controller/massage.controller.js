@@ -177,6 +177,10 @@ import mongoose from "mongoose";
 //     });
 //   }
 // };
+/**
+ * Send a new message to another user, including optional image upload,
+ * reply linkage, socket emit, and background FCM notification.
+ */
 export const sendMessage = async (req, res) => {
   try {
     const { receiver, text, replyTo } = req.body;
@@ -214,6 +218,8 @@ export const sendMessage = async (req, res) => {
       text: trimmedText,
       image,
       replyTo: replyTo || null,
+      edited:false,
+      editedAt:null,
     });
 
     // 2️⃣ Populate replyTo (IMPORTANT)
@@ -271,6 +277,10 @@ export const sendMessage = async (req, res) => {
  * GET CHAT BETWEEN TWO USERS
  * =========================
  */
+/**
+ * Retrieve paginated chat messages between the authenticated user and
+ * a specific conversation partner.
+ */
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -297,7 +307,7 @@ export const getMessages = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("_id sender receiver text image seen createdAt replyTo")
+        .select("_id sender receiver text image seen createdAt replyTo editedAt edited")
         .populate({
           path: "replyTo",
           select: "_id text image sender createdAt",
@@ -374,6 +384,10 @@ export const getMessages = async (req, res) => {
  * MARK AS SEEN
  * =========================
  */
+/**
+ * Mark all unseen messages from a sender as seen and notify the sender
+ * via socket events so the UI can reflect read receipts.
+ */
 export const markAsSeen = async (req, res) => {
   try {
     const { senderId } = req.body;
@@ -413,6 +427,10 @@ export const markAsSeen = async (req, res) => {
  * =========================
  * DELETE MESSAGE (SOFT DELETE)
  * =========================
+ */
+/**
+ * Soft delete a message owned by the authenticated user, and broadcast
+ * deletion events to both sender and receiver.
  */
 export const deleteMessage = async (req, res) => {
   try {
@@ -460,6 +478,10 @@ export const deleteMessage = async (req, res) => {
   }
 };
 
+/**
+ * Fetch image-only messages exchanged between the authenticated user and
+ * a selected conversation partner.
+ */
 export const getImageMessages = async (req, res) => {
   try {
     const myId = req.user._id;
@@ -487,6 +509,87 @@ export const getImageMessages = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+/**
+ * Edit an existing text message owned by the authenticated user,
+ * marking it as edited with a timestamp.
+ */
+
+export const editMessages = async (req, res) => {
+  try {
+    const { messageId } = req.query;
+    const { text } = req.body;
+    const userId = req.user._id;
+
+    // 1. Validate messageId
+    if (!messageId || !mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({
+        message: "Invalid message id",
+      });
+    }
+
+    // 2. Find message
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({
+        message: "Message not found",
+      });
+    }
+
+    // 3. Authorization check
+    if (message.sender.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message: "Not allowed to edit this message",
+      });
+    }
+
+    // 4. Update message
+    message.text = text;
+    message.edited = true;
+    message.editedAt = new Date();
+
+    await message.save();
+
+    // 5. Payload (IMPORTANT: keep frontend compatible)
+    const payload = {
+      _id: message._id,
+      messageId: message._id, // extra safety for frontend mismatch cases
+      text: message.text,
+      edited: message.edited,
+      editedAt: message.editedAt,
+    };
+
+    // 6. Emit to receiver
+    const receiverSocketId = getReceiverSocketId(
+      message.receiver.toString()
+    );
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messageEdited", payload);
+    }
+
+    // 7. Emit to sender (multi-device sync)
+    const senderSocketId = getReceiverSocketId(
+      message.sender.toString()
+    );
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageEdited", payload);
+    }
+
+    // 8. Response
+    return res.status(200).json({
+      message: "Message updated successfully",
+      data: payload,
+    });
+  } catch (error) {
+    console.error("Edit Message Error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
 };

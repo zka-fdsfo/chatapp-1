@@ -38,30 +38,30 @@ const Chat = ({
   const queryClient = useQueryClient();
   const { mutate: deleteMessage } = useDeleteMessage();
   const currentUserId = user?._id ? String(user._id) : "";
-const [replyMsg, setReplyMsg] = useState(null);
-const [pageLoading, setPageLoading] = useState(false);
-const [hasMore, setHasMore] = useState(true);
-const [page, setPage] = useState(1);
-const loadOlderMessages = async () => {
-  if (!hasMore || pageLoading || !selectedUser?._id) return;
+  const [replyMsg, setReplyMsg] = useState(null);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const loadOlderMessages = async () => {
+    if (!hasMore || pageLoading || !selectedUser?._id) return;
 
-  setPageLoading(true);
+    setPageLoading(true);
 
-  const nextPage = page + 1;
-  const res = await fetchMessages(selectedUser._id, nextPage);
+    const nextPage = page + 1;
+    const res = await fetchMessages(selectedUser._id, nextPage);
 
-  if (!res.data || res.data.length === 0) {
-    setHasMore(false);
+    if (!res.data || res.data.length === 0) {
+      setHasMore(false);
+      setPageLoading(false);
+      return;
+    }
+
+    setMessages((prev) => [...res.data, ...prev]);
+    setPage(res.page);
+    setHasMore(res.hasMore);
+
     setPageLoading(false);
-    return;
-  }
-
-  setMessages((prev) => [...res.data, ...prev]);
-  setPage(res.page);
-  setHasMore(res.hasMore);
-
-  setPageLoading(false);
-};
+  };
   // ================= SOCKET INIT =================
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
@@ -76,6 +76,7 @@ const loadOlderMessages = async () => {
       socketRef.current.disconnect();
     };
   }, []);
+  
   // ================= Message sockit =================
   useEffect(() => {
     if (!socketRef.current) return;
@@ -139,22 +140,22 @@ const loadOlderMessages = async () => {
   useEffect(() => {
     if (!socketRef.current) return;
 
-   const handleReceiveMessage = (msg) => {
-  const isActiveChat =
-    (String(msg.sender) === String(selectedUser?._id) &&
-      String(msg.receiver) === String(user?._id)) ||
-    (String(msg.sender) === String(user?._id) &&
-      String(msg.receiver) === String(selectedUser?._id));
+    const handleReceiveMessage = (msg) => {
+      const isActiveChat =
+        (String(msg.sender) === String(selectedUser?._id) &&
+          String(msg.receiver) === String(user?._id)) ||
+        (String(msg.sender) === String(user?._id) &&
+          String(msg.receiver) === String(selectedUser?._id));
 
-  if (!isActiveChat) return;
+      if (!isActiveChat) return;
 
-  setMessages((prev) => {
-    const exists = prev.some((m) => String(m._id) === String(msg._id));
-    if (exists) return prev;
+      setMessages((prev) => {
+        const exists = prev.some((m) => String(m._id) === String(msg._id));
+        if (exists) return prev;
 
-    return [...prev, msg];
-  });
-};
+        return [...prev, msg];
+      });
+    };
 
     socketRef.current.on("receive_message", handleReceiveMessage);
 
@@ -168,9 +169,9 @@ const loadOlderMessages = async () => {
 
     const handleSeenUpdate = ({ messageId }) => {
       // console.log("✅ Seen Update:", messageId);
-queryClient.invalidateQueries({
-  queryKey: ["users"],
-});
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
       receivedSeenMessageIdsRef.current.add(String(messageId));
 
       setMessages((prev) =>
@@ -200,8 +201,8 @@ queryClient.invalidateQueries({
         msg._id,
     );
     queryClient.invalidateQueries({
-  queryKey: ["users"],
-});
+      queryKey: ["users"],
+    });
     unseenMessages.forEach((msg) => {
       const messageId = String(msg._id);
 
@@ -288,6 +289,34 @@ queryClient.invalidateQueries({
       console.error(err);
     }
   };
+  // ================= MESSAGE EDITED =================
+useEffect(() => {
+  if (!socketRef.current) return;
+
+const handleMessageEdited = (updatedMessage) => {
+  console.log("EDIT RECEIVED:", updatedMessage);
+
+  setMessages((prev) =>
+    prev.map((msg) =>
+      String(msg._id) === String(updatedMessage._id)
+        ? {
+            ...msg,
+            text: updatedMessage.text,
+            edited: updatedMessage.edited,
+            editedAt: updatedMessage.editedAt,
+          }
+
+        : msg
+    )
+  );
+};
+
+  socketRef.current.on("messageEdited", handleMessageEdited);
+
+  return () => {
+    socketRef.current.off("messageEdited", handleMessageEdited);
+  };
+}, []);
 
   if (!selectedUser) {
     return (
@@ -341,8 +370,8 @@ queryClient.invalidateQueries({
 
       {/* ================= MESSAGE LIST ================= */}
       <MessageList
-      loadOlderMessages={loadOlderMessages}
-  pageLoading={pageLoading}
+        loadOlderMessages={loadOlderMessages}
+        pageLoading={pageLoading}
         messages={messages}
         setuserid={selectedUser?._id}
         selectedUser={{
@@ -358,7 +387,7 @@ queryClient.invalidateQueries({
         loadingMessages={loadingMessages}
         handleDeleteMessage={handleDeleteMessage}
         setViewerImage={setViewerImage}
-         setReplyMsg={setReplyMsg}
+        setReplyMsg={setReplyMsg}
       />
 
       {/* ================= INPUT ================= */}
@@ -372,6 +401,11 @@ queryClient.invalidateQueries({
         currentUserId={currentUserId}
         setReplyMsg={setReplyMsg}
         replyMsg={replyMsg}
+        editMsg={editMsg}
+        setEditMsg={setEditMsg}
+        editText={editText}
+        setEditText={setEditText}
+        setMessages={setMessages}
       />
     </div>
   );

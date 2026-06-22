@@ -8,6 +8,7 @@ import {
   sendMessage,
   markAsSeen,
   getImageMessagesApi,
+  editMessageApi,
 } from "../services/auth.api.js";
 
 // Manages message state and message-related actions for the chat UI.
@@ -91,14 +92,25 @@ const fetchMessages = async (userId, page = 1) => {
       setLoadingImages(false);
     }
   };
+const editMessageinchat = async (messageId, text) => {
+  try {
+    const data = await editMessageApi(
+      messageId,
+      text
+    );
 
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
   return {
     messages,
 
     setMessages,
 
     loadingMessages,
-
+    editMessageinchat,
     fetchMessages,
     setImageMessages,
     handleSendMessage,

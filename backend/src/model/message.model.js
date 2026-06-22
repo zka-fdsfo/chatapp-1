@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { time } from "node:console";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -34,16 +35,24 @@ const messageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-     // 👇 ADD THIS
+    // 👇 ADD THIS
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
       default: null,
     },
+    edited: {
+      type: Boolean,
+      default: false,
+    },
+    editedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // ==========================
@@ -77,9 +86,6 @@ messageSchema.index({
   receiver: 1,
 });
 
-const Message = mongoose.model(
-  "Message",
-  messageSchema
-);
+const Message = mongoose.model("Message", messageSchema);
 
 export default Message;

@@ -243,3 +243,14 @@ export const deleteMessageApi = async (messageId) => {
 
   return res.data;
 };
+export const editMessageApi = async (messageId, text) => {
+  const res = await api.put(
+    "/messages/edit-message",
+    { text },
+    {
+      params: { messageId },
+    }
+  );
+
+  return res.data;
+};

@@ -175,9 +175,14 @@ const MessageBubble = ({
 
   const TimeRow = () => (
     <div className="flex justify-end items-center gap-1 mt-0.5">
+      {msg.edited && (
+        <span className="text-[11px] text-white/50 italic">Edited</span>
+      )}
+
       <span className="text-[11px] text-white/70 whitespace-nowrap">
         {formatTime(msg.createdAt)}
       </span>
+
       {isMe && (
         <span className={msg.seen ? "text-sky-400" : "text-white/50"}>
           {msg.seen ? <CheckCheck size={15} /> : <Check size={15} />}
@@ -214,9 +219,15 @@ const MessageBubble = ({
       >
         <p className="text-purple-300 font-semibold text-[11px] mb-0.5">
           {String(msg.replyTo.sender) === String(currentUserId) ? (
-            <><Reply size={12} className="inline mr-1" />You</>
+            <>
+              <Reply size={12} className="inline mr-1" />
+              You
+            </>
           ) : (
-            <><Reply size={12} className="inline mr-1" />{selectedUser?.name || "User"}</>
+            <>
+              <Reply size={12} className="inline mr-1" />
+              {selectedUser?.name || "User"}
+            </>
           )}
         </p>
         <p className="truncate text-white/60">
@@ -237,14 +248,21 @@ const MessageBubble = ({
         className="z-[50] w-52 overflow-hidden rounded-2xl bg-[#1f1f1f] border border-[#ffffff10] shadow-2xl backdrop-blur-xl font-medium animate-popup"
       >
         <button
-          onClick={() => { setReplyMsg(msg); setMenuMsg(null); }}
+          onClick={() => {
+            setReplyMsg(msg);
+            setMenuMsg(null);
+          }}
           className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-white text-sm transition"
         >
           <Reply size={18} strokeWidth={2.2} /> Reply
         </button>
         {isMe && (
           <button
-            onClick={() => { setEditMsg(msg); setEditText(msg.text); setMenuMsg(null); }}
+            onClick={() => {
+              setEditMsg(msg);
+              setEditText(msg.text);
+              setMenuMsg(null);
+            }}
             className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-white text-sm transition"
           >
             <Pencil size={18} strokeWidth={2.2} /> Edit
@@ -252,12 +270,15 @@ const MessageBubble = ({
         )}
         <button
           onClick={async () => {
-            try { await navigator.clipboard.writeText(msg.text); }
-            catch {
+            try {
+              await navigator.clipboard.writeText(msg.text);
+            } catch {
               const ta = document.createElement("textarea");
               ta.value = msg.text;
-              document.body.appendChild(ta); ta.select();
-              document.execCommand("copy"); document.body.removeChild(ta);
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
             }
 
             setMenuMsg(null);
@@ -268,7 +289,10 @@ const MessageBubble = ({
         </button>
         {isMe && (
           <button
-            onClick={() => { handleDeleteMessage(msg._id); setMenuMsg(null); }}
+            onClick={() => {
+              handleDeleteMessage(msg._id);
+              setMenuMsg(null);
+            }}
             className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[#2b2b2b] text-red-500 text-sm transition"
           >
             <Trash2 size={18} strokeWidth={2.2} /> Delete
@@ -307,16 +331,26 @@ const MessageBubble = ({
                   e.stopPropagation();
                   setViewerImage({
                     name: isMe ? currentusernameimg?.name : selectedUser?.name,
-                    avatar: isMe ? currentusernameimg?.avatar : selectedUser?.avatar,
+                    avatar: isMe
+                      ? currentusernameimg?.avatar
+                      : selectedUser?.avatar,
                     image: msg?.image,
                     createdAt: msg?.createdAt,
                   });
                 }}
               />
               <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded-full">
-                <span className="text-[11px] text-white whitespace-nowrap">
-                  {formatTime(msg.createdAt)}
-                </span>
+                <div className="flex items-center gap-1">
+                  {msg.edited && (
+                    <span className="text-[11px] text-white/50 italic">
+                      Edited
+                    </span>
+                  )}
+
+                  <span className="text-[11px] text-white/70 whitespace-nowrap">
+                    {formatTime(msg.createdAt)}
+                  </span>
+                </div>
                 {isMe && (
                   <span className={msg.seen ? "text-sky-400" : "text-white/60"}>
                     {msg.seen ? <CheckCheck size={14} /> : <Check size={14} />}
@@ -347,7 +381,9 @@ const MessageBubble = ({
                 e.stopPropagation();
                 setViewerImage({
                   name: isMe ? currentusernameimg?.name : selectedUser?.name,
-                  avatar: isMe ? currentusernameimg?.avatar : selectedUser?.avatar,
+                  avatar: isMe
+                    ? currentusernameimg?.avatar
+                    : selectedUser?.avatar,
                   image: msg?.image,
                   createdAt: msg?.createdAt,
                 });
@@ -360,7 +396,10 @@ const MessageBubble = ({
             </div>
             {isLong && !msg.deleted && (
               <button
-                onClick={(e) => { e.stopPropagation(); setExpanded((p) => !p); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((p) => !p);
+                }}
                 className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors px-1"
               >
                 {expanded ? "Show less" : "Read more"}
@@ -376,7 +415,14 @@ const MessageBubble = ({
           <div {...bubbleEvents} className={`${bubbleBase} px-3 pt-2 pb-1.5`}>
             <ReplyPreview />
             {msg.text && (
-              <div className={isShortText ? "flex flex-row justify-between gap-2" : "flex flex-col"}>
+              <div
+                className={
+                  isShortText
+                    ? "flex flex-row justify-between gap-2"
+                    : "flex flex-col"
+                }
+
+              >
                 <div
                   className={`text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap overflow-hidden max-w-full ${msg.deleted ? "italic text-white/40 opacity-70" : "text-white"}`}
                 >
@@ -384,12 +430,25 @@ const MessageBubble = ({
                 </div>
                 {isShortText && (
                   <div className="flex items-center gap-1 mt-2">
+                    {msg.edited && (
+                      <span className="text-[11px] text-white/50 italic">
+                        Edited
+                      </span>
+                    )}
+
                     <span className="text-[11px] text-white/70 whitespace-nowrap">
                       {formatTime(msg.createdAt)}
                     </span>
+
                     {isMe && (
-                      <span className={msg.seen ? "text-sky-400" : "text-white/50"}>
-                        {msg.seen ? <CheckCheck size={15} /> : <Check size={15} />}
+                      <span
+                        className={msg.seen ? "text-sky-400" : "text-white/50"}
+                      >
+                        {msg.seen ? (
+                          <CheckCheck size={15} />
+                        ) : (
+                          <Check size={15} />
+                        )}
                       </span>
                     )}
                   </div>
@@ -398,7 +457,10 @@ const MessageBubble = ({
             )}
             {isLong && !msg.deleted && (
               <button
-                onClick={(e) => { e.stopPropagation(); setExpanded((p) => !p); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((p) => !p);
+                }}
                 className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors mt-0.5 ml-4"
               >
                 {expanded ? "Show less" : "Read more"}
