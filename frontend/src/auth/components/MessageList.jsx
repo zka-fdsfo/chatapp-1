@@ -33,7 +33,6 @@ const MessageList = ({
   const validMessages = messages.filter(
     (msg) => msg && (msg.text || msg.message || msg.image)
   );
-  console.log(messages)
 
   // ✅ Reset initialLoadRef every time the conversation changes
   // so the first batch of messages always scrolls to the bottom

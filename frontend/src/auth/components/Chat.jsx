@@ -293,30 +293,28 @@ const Chat = ({
 useEffect(() => {
   if (!socketRef.current) return;
 
-const handleMessageEdited = (updatedMessage) => {
-  console.log("EDIT RECEIVED:", updatedMessage);
+  const handleMessageEdited = (updatedMessage) => {
+    // Handle both "_id" (from server) and "messageId" (from client emit)
+    const id = updatedMessage._id || updatedMessage.messageId;
 
-  setMessages((prev) =>
-    prev.map((msg) =>
-      String(msg._id) === String(updatedMessage._id)
-        ? {
-            ...msg,
-            text: updatedMessage.text,
-            edited: updatedMessage.edited,
-            editedAt: updatedMessage.editedAt,
-          }
+    setMessages((prev) =>
+      prev.map((msg) =>
+        String(msg._id) === String(id)
+          ? {
+              ...msg,
+              text: updatedMessage.text,
+              edited: updatedMessage.edited,
+              editedAt: updatedMessage.editedAt,
+            }
 
-        : msg
-    )
-  );
-};
+          : msg
+      )
+    );
+  };
 
   socketRef.current.on("messageEdited", handleMessageEdited);
-
-  return () => {
-    socketRef.current.off("messageEdited", handleMessageEdited);
-  };
-}, []);
+  return () => socketRef.current.off("messageEdited", handleMessageEdited);
+}, [setMessages]); // ← add setMessages to deps
 
   if (!selectedUser) {
     return (

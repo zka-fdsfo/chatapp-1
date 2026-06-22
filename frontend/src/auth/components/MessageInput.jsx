@@ -62,40 +62,43 @@ const MessageInput = ({
       }, 0);
     }
   }, [editMsg]);
-  const handleEditMessage = async () => {
-    try {
-      await editMessageinchat(editMsg._id, messageText);
+const handleEditMessage = async () => {
+  try {
+    const finalText = messageText; // ✅ capture BEFORE clearing
 
-      setMessages((prev) =>
-        prev.map((m) =>
-          m._id === editMsg._id
-            ? {
-                ...m,
-                text: messageText,
-                edited: true,
-                editedAt: new Date(),
-              }
+    await editMessageinchat(editMsg._id, finalText);
 
-            : m,
-        ),
-      );
+    setMessages((prev) =>
+      prev.map((m) =>
+        m._id === editMsg._id
+          ? {
+              ...m,
+              text: finalText, // ✅ use captured value
+              edited: true,
+              editedAt: new Date(),
+            }
 
-      socketRef.current.emit("messageEdited", {
-        messageId: editMsg._id,
-        text: messageText,
-        edited: true,
-        editedAt: new Date(),
-        senderId: user._id,
-        receiverId: selectedUser._id,
-      });
+          : m,
+      ),
+    );
 
-      setEditMsg(null);
-      setEditText("");
-      setMessageText("");
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    socketRef.current.emit("messageEdited", {
+      _id: editMsg._id,
+      messageId: editMsg._id,
+      text: finalText, // ✅ use captured value
+      edited: true,
+      editedAt: new Date(),
+      senderId: user._id,
+      receiverId: selectedUser._id,
+    });
+
+    setEditMsg(null);
+    setEditText("");
+    setMessageText(""); // ✅ clear AFTER everything
+  } catch (err) {
+    console.log(err);
+  }
+};
   const handleImageFile = (file) => {
     if (!file) return;
 

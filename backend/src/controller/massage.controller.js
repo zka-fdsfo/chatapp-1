@@ -523,73 +523,44 @@ export const editMessages = async (req, res) => {
     const { text } = req.body;
     const userId = req.user._id;
 
-    // 1. Validate messageId
     if (!messageId || !mongoose.Types.ObjectId.isValid(messageId)) {
-      return res.status(400).json({
-        message: "Invalid message id",
-      });
+      return res.status(400).json({ message: "Invalid message id" });
     }
 
-    // 2. Find message
     const message = await Message.findById(messageId);
 
     if (!message) {
-      return res.status(404).json({
-        message: "Message not found",
-      });
+      return res.status(404).json({ message: "Message not found" });
     }
 
-    // 3. Authorization check
     if (message.sender.toString() !== userId.toString()) {
-      return res.status(403).json({
-        message: "Not allowed to edit this message",
-      });
+      return res.status(403).json({ message: "Not allowed to edit this message" });
     }
 
-    // 4. Update message
     message.text = text;
     message.edited = true;
     message.editedAt = new Date();
 
     await message.save();
 
-    // 5. Payload (IMPORTANT: keep frontend compatible)
     const payload = {
       _id: message._id,
-      messageId: message._id, // extra safety for frontend mismatch cases
+      messageId: message._id,
       text: message.text,
       edited: message.edited,
       editedAt: message.editedAt,
     };
 
-    // 6. Emit to receiver
-    const receiverSocketId = getReceiverSocketId(
-      message.receiver.toString()
-    );
+    // ✅ Emit directly using io.to() — no getReceiverSocketId needed
+    io.to(message.receiver.toString()).emit("messageEdited", payload);
+    io.to(message.sender.toString()).emit("messageEdited", payload);
 
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("messageEdited", payload);
-    }
-
-    // 7. Emit to sender (multi-device sync)
-    const senderSocketId = getReceiverSocketId(
-      message.sender.toString()
-    );
-
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("messageEdited", payload);
-    }
-
-    // 8. Response
     return res.status(200).json({
       message: "Message updated successfully",
       data: payload,
     });
   } catch (error) {
     console.error("Edit Message Error:", error);
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
