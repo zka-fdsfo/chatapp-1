@@ -461,7 +461,7 @@ const MessageBubble = ({
                   e.stopPropagation();
                   setExpanded((p) => !p);
                 }}
-                className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors mt-0.5 ml-4"
+                className="self-start text-[13px] font-semibold text-[#c3c3c3] transition-colors mt-0.5 ml-3"
               >
                 {expanded ? "Show less" : "Read more"}
               </button>

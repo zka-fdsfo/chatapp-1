@@ -12,7 +12,14 @@ import {
 } from "lucide-react";
 import { useMessage } from "../hook/massage.hook.js";
 import { useAuth } from "../hook/hookauth.js";
-const ProfilePage = ({ user: selectedUser, onClose, lastMessage,setViewerImage ,currentUserId,showProfile}) => {
+const ProfilePage = ({
+  user: selectedUser,
+  onClose,
+  lastMessage,
+  setViewerImage,
+  currentUserId,
+  showProfile,
+}) => {
   const [notifications, setNotifications] = useState(true);
 
   const user = {
@@ -21,7 +28,7 @@ const ProfilePage = ({ user: selectedUser, onClose, lastMessage,setViewerImage ,
     lastSeen: selectedUser?.lastSeen || "last seen 2 hours ago",
     avatar: selectedUser?.avatar || null,
   };
-const { currentusernameimg } = useAuth();
+  const { currentusernameimg } = useAuth();
 
   const avatarColors = {
     A: "ef4444",
@@ -51,20 +58,32 @@ const { currentusernameimg } = useAuth();
     Y: "8b5cf6",
     Z: "0092ff",
   };
-  const { imageMessages, fetchImageMessages,setImageMessages, loadingImages} = useMessage();
+  const { imageMessages, fetchImageMessages, setImageMessages, loadingImages } =
+    useMessage();
+  const [loadingMore, setLoadingMore] = useState(false);
+  useEffect(() => {
+    const loadImages = async () => {
+      if (!showProfile || !selectedUser?._id) return;
 
-useEffect(() => {
-  if (!showProfile || !selectedUser?._id) return;
-setImageMessages([]);
-  fetchImageMessages(selectedUser._id);
-}, [showProfile, selectedUser?._id]);
+      setLoadingMore(true);
+      setImageMessages([]);
 
-useEffect(() => {
-  if (!showProfile) {
-    setImageMessages([]);
-  }
-}, [showProfile]);
- 
+      try {
+        await fetchImageMessages(selectedUser._id);
+      } finally {
+        setLoadingMore(false);
+      }
+    };
+
+    loadImages();
+  }, [showProfile, selectedUser?._id]);
+
+  useEffect(() => {
+    if (!showProfile) {
+      setImageMessages([]);
+    }
+  }, [showProfile]);
+
   const formatLastSeen = (dateString) => {
     if (!dateString) return "Offline";
 
@@ -113,9 +132,7 @@ useEffect(() => {
 
           <h2 className="text-xl font-bold">User Info</h2>
 
-          <button>
-      
-          </button>
+          <button></button>
         </div>
 
         {/* Profile */}
@@ -214,41 +231,52 @@ useEffect(() => {
         {/* Gallery */}
 
         <div className="px-4 pb-4">
-          <h3 className="text-lg flex gap-3.5 justify-center-safe font-semibold mb-3">Media<Image /></h3>
+          <h3 className="text-lg flex gap-3.5 justify-center-safe font-semibold mb-3">
+            Media
+            <Image />
+          </h3>
 
-         <div className="grid grid-cols-3 gap-2">
-  {imageMessages?.length > 0 ? (
-    imageMessages.map((msg) => {
-      const isMe =
-        String(msg.sender || msg.senderId) === String(currentUserId);
+          <div className="grid grid-cols-3 gap-2">
+            {imageMessages?.length > 0 ? (
+              imageMessages.map((msg) => {
+                const isMe =
+                  String(msg.sender || msg.senderId) === String(currentUserId);
 
-      return (
-        <img
-          key={msg._id}
-          src={msg.image}
-          alt=""
-          onClick={() => {
-    //        console.log(msg);
+                return (
+                  <img
+                    key={msg._id}
+                    src={msg.image}
+                    alt=""
+                    onClick={() => {
+                      //        console.log(msg);
 
-            setViewerImage({
-              name: isMe ? "You" : selectedUser?.name,
-              avatar: isMe
-                ? currentusernameimg.avatar || selectedUser?.avatar
-                : selectedUser?.avatar,
-              image: msg.image,
-              createdAt: msg.createdAt,
-            });
-          }}
-          className="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-90 transition hover:scale-100 duration-300"
-        />
-      );
-    })
-  ) : (
-    <p className="col-span-3 text-zinc-500 text-center py-4">
-      No media files yet
-    </p>
-  )}
-</div>
+                      setViewerImage({
+                        name: isMe ? "You" : selectedUser?.name,
+                        avatar: isMe
+                          ? currentusernameimg.avatar || selectedUser?.avatar
+                          : selectedUser?.avatar,
+                        image: msg.image,
+                        createdAt: msg.createdAt,
+                      });
+                    }}
+                    className="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-90 transition hover:scale-100 duration-300"
+                  />
+                );
+              })
+            ) : (
+              <>
+                {loadingMore ? (
+                  <div className="col-span-3 flex justify-center py-4">
+                    <div className="w-5 h-5 rounded-full border-2 border-zinc-200 border-t-transparent animate-spin" />
+                  </div>
+                ) : (
+                  <p className="col-span-3 text-zinc-500 text-center py-4">
+                    No media files yet
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
