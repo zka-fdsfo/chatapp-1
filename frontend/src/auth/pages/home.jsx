@@ -123,6 +123,86 @@ export default function UsersPage() {
   //   loadUsers();
   // }, []);
 
+  useEffect(() => {
+  const handleSwMessage = (event) => {
+    if (event.data?.type === 'BACKGROUND_NOTIFICATION') {
+      window.__unreadCount = (window.__unreadCount || 0) + 1;
+      showNotificationDot(window.__unreadCount);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    }
+  };
+
+  navigator.serviceWorker?.addEventListener('message', handleSwMessage);
+
+  return () => {
+    navigator.serviceWorker?.removeEventListener('message', handleSwMessage);
+  };
+}, []);
+  function showNotificationDot(count = 1) {
+    const favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) return;
+
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 32;
+      canvas.height = 32;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, 32, 32);
+
+      // red dot
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(25, 7, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // number badge (optional upgrade)
+      ctx.fillStyle = "white";
+      ctx.font = "bold 10px Arial";
+      ctx.fillText(String(count > 99 ? "99+" : count), 18, 20);
+
+      favicon.href = canvas.toDataURL("image/png");
+    };
+
+    img.src = favicon.href;
+  }
+
+  useEffect(() => {
+  const handleVisibility = () => {
+    if (!document.hidden) {
+      window.__unreadCount = 0;
+      clearNotificationDot();
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibility);
+  return () => document.removeEventListener('visibilitychange', handleVisibility);
+}, []);
+
+  function clearNotificationDot() {
+    const favicon = document.querySelector("link[rel='icon']");
+    if (favicon) favicon.href = "/logo.png";
+  }
+
+  // useEffect(() => {
+  //   const handleVisibility = () => {
+  //     if (!document.hidden) {
+  //       clearNotificationDot();
+  //       console.log("int he page")
+  //     }
+
+  //      console.log("not in the page")
+  //   };
+
+  //   document.addEventListener("visibilitychange", handleVisibility);
+
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibility);
+  //   };
+  // }, []);
+
   const avatarColors = {
     A: "ef4444",
     B: "f97316",
@@ -192,33 +272,44 @@ export default function UsersPage() {
     const senderId = payload.data?.senderId;
     if (!senderId) return;
     const senderUser = users.find((u) => u._id === senderId);
-     queryClient.invalidateQueries({
-        queryKey: ["users"],
-      });
+    queryClient.invalidateQueries({
+      queryKey: ["users"],
+    });
     if (senderUser) setSelectedUser(senderUser);
   };
 
   // Listens for foreground FCM messages and shows the toast preview.
   useEffect(() => {
     if (window.__notificationRegistered) return;
+
     window.__notificationRegistered = true;
 
     const audio = new Audio("/sound/mixkit-software-interface-start-2574.wav");
     audio.preload = "auto";
 
     const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("🔥 notification received in foreground");
+
+      console.log("document.hidden =", document.hidden);
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
+      // increase unread count
+
+      // ONLY show dot if tab is hidden
+      if (document.hidden) {
+        showNotificationDot(window.__unreadCount);
+      }
+
       // onMessage ONLY fires when tab is active/focused
       // service worker handles background — no overlap possible
       const title = payload.data?.title || "New Message";
       const body = payload.data?.body || "";
       const senderAvatar = payload.data?.senderAvatar || "";
-      console.log("Working");
+
       audio.currentTime = 0;
       audio.play().catch(() => {});
-      console.log("FCM RECEIVED", payload.messageId);
+
       toast.custom(() => (
         <div
           onClick={() => handleOpenChatRef.current(payload)}
@@ -267,8 +358,8 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-  console.log("users", users);
-}, [users]);
+    console.log("users", users);
+  }, [users]);
   /*
    * =============================================================================
    * Layout / Render Notes (Important UI sections)
